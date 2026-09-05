@@ -52,7 +52,7 @@ class TestContrastFloor:
         lifted = get_sim_accent("cite-des-dames")
         raw = _SIM_EMAIL_COLORS["cite-des-dames"].lstrip("#")
         # Blue channel still dominant, red still weakest — same colour, brighter.
-        r, g, b = (int(lifted.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4))
+        r, g, b = (int(lifted.lstrip("#")[i : i + 2], 16) for i in (0, 2, 4))
         assert b > g > r
         assert int(raw[4:6], 16) > int(raw[2:4], 16) > int(raw[0:2], 16)
 
@@ -214,7 +214,7 @@ class TestRenderCycleBriefing:
         html = render_cycle_briefing(self._sample_data())
         assert html.startswith("<!DOCTYPE html>")
         assert "</html>" in html
-        assert '<body' in html
+        assert "<body" in html
 
     def test_escapes_epoch_name(self):
         data = self._sample_data()
@@ -672,9 +672,7 @@ class TestRenderEpochInvitation:
         ausgerechnet in der Mail, deren ganzer Zweck „komm herein" ist.
         """
         html = self._render()
-        assert "/settings/notifications" not in html, (
-            "die Einladung verweist wieder auf Kontoeinstellungen"
-        )
+        assert "/settings/notifications" not in html, "die Einladung verweist wieder auf Kontoeinstellungen"
         assert "unsubscribe from" in html or "abzubestellen" in html, (
             "der Satz, der erklärt, warum es nichts abzubestellen gibt, fehlt"
         )
@@ -822,10 +820,12 @@ class TestCycleBriefingPhase7:
 
     def test_afk_warning_shown(self):
         """AFK warning section appears when player was absent."""
-        html = render_cycle_briefing(self._sample_data(
-            player_was_afk=True,
-            afk_penalty_rp=15,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                player_was_afk=True,
+                afk_penalty_rp=15,
+            )
+        )
         # Header present
         assert "ABSENCE DETECTED" in html or "ABWESENHEIT ERKANNT" in html
         # Penalty amount shown
@@ -838,36 +838,44 @@ class TestCycleBriefingPhase7:
 
     def test_afk_ai_takeover_message(self):
         """AI takeover message shown when player replaced by bot."""
-        html = render_cycle_briefing(self._sample_data(
-            player_was_afk=True,
-            replaced_by_ai=True,
-            afk_ai_personality="sentinel",
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                player_was_afk=True,
+                replaced_by_ai=True,
+                afk_ai_personality="sentinel",
+            )
+        )
         assert "SENTINEL" in html
         assert "AI" in html or "KI" in html
 
     def test_afk_consecutive_count(self):
         """Consecutive absence count shown when > 0."""
-        html = render_cycle_briefing(self._sample_data(
-            player_was_afk=True,
-            consecutive_afk=3,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                player_was_afk=True,
+                consecutive_afk=3,
+            )
+        )
         assert "3" in html
 
     # ── Participation Summary ──
 
     def test_participation_summary_shown(self):
         """Participation stats shown when data available."""
-        html = render_cycle_briefing(self._sample_data(
-            participation_summary={"acted": 3, "total": 4},
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                participation_summary={"acted": 3, "total": 4},
+            )
+        )
         assert "3" in html and "4" in html
 
     def test_participation_summary_hidden(self):
         """No participation stats when data is None."""
-        html = render_cycle_briefing(self._sample_data(
-            participation_summary=None,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                participation_summary=None,
+            )
+        )
         # Should not contain the participation summary i18n key output
         assert "players acted" not in html.lower()
 
@@ -875,32 +883,38 @@ class TestCycleBriefingPhase7:
 
     def test_deadline_info_shown(self):
         """Deadline info shown when config includes deadline minutes."""
-        html = render_cycle_briefing(self._sample_data(
-            cycle_deadline_minutes=480,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                cycle_deadline_minutes=480,
+            )
+        )
         assert "480" in html
 
     def test_deadline_info_hidden(self):
         """No deadline info when not configured."""
-        html = render_cycle_briefing(self._sample_data(
-            cycle_deadline_minutes=None,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                cycle_deadline_minutes=None,
+            )
+        )
         assert "deadline" not in html.lower() or "frist" not in html.lower()
 
     # ── Combined Scenario ──
 
     def test_full_afk_scenario(self):
         """All Phase 7 fields active simultaneously."""
-        html = render_cycle_briefing(self._sample_data(
-            auto_resolved=True,
-            player_was_afk=True,
-            afk_penalty_rp=20,
-            replaced_by_ai=True,
-            afk_ai_personality="guardian",
-            consecutive_afk=2,
-            participation_summary={"acted": 2, "total": 4},
-            cycle_deadline_minutes=480,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                auto_resolved=True,
+                player_was_afk=True,
+                afk_penalty_rp=20,
+                replaced_by_ai=True,
+                afk_ai_personality="guardian",
+                consecutive_afk=2,
+                participation_summary={"acted": 2, "total": 4},
+                cycle_deadline_minutes=480,
+            )
+        )
         # Auto-resolve banner
         assert "auto-resolved" in html.lower() or "automatisch" in html.lower()
         # AFK warning header
@@ -939,15 +953,19 @@ class TestCycleBriefingPhase7:
 
     def test_no_rgba_in_inline_styles(self):
         """No rgba() in inline styles — only in @keyframes (which are in <style> block)."""
-        html = render_cycle_briefing(self._sample_data(
-            auto_resolved=True,
-            player_was_afk=True,
-            afk_penalty_rp=10,
-        ))
+        html = render_cycle_briefing(
+            self._sample_data(
+                auto_resolved=True,
+                player_was_afk=True,
+                afk_penalty_rp=10,
+            )
+        )
         # Split: everything outside <style>...</style> should have no rgba
         import re
+
         outside_style = re.sub(r"<style>.*?</style>", "", html, flags=re.DOTALL)
         assert "rgba(" not in outside_style
+
 
 # ── Shell hygiene ─────────────────────────────────────────────
 #
@@ -958,19 +976,31 @@ class TestCycleBriefingPhase7:
 class TestShellHygiene:
     def _every_template(self) -> dict[str, str]:
         lb = [
-            {"simulation_id": "sim-a", "simulation_name": "A", "composite_score": 80.0,
-             "composite": 80.0, "rank": 1, "name": "A"},
+            {
+                "simulation_id": "sim-a",
+                "simulation_name": "A",
+                "composite_score": 80.0,
+                "composite": 80.0,
+                "rank": 1,
+                "name": "A",
+            },
         ]
         return {
             "briefing": render_cycle_briefing(TestRenderCycleBriefing()._sample_data()),
             "invitation": render_epoch_invitation("Op", "Lore.", "https://x/j"),
             "phase": render_phase_change(
-                epoch_name="Op", old_phase="foundation", new_phase="competition",
-                cycle_count=4, command_center_url="https://x",
+                epoch_name="Op",
+                old_phase="foundation",
+                new_phase="competition",
+                cycle_count=4,
+                command_center_url="https://x",
             ),
             "completed": render_epoch_completed(
-                epoch_name="Op", leaderboard=lb, player_simulation_id="sim-a",
-                cycle_count=9, command_center_url="https://x",
+                epoch_name="Op",
+                leaderboard=lb,
+                player_simulation_id="sim-a",
+                cycle_count=9,
+                command_center_url="https://x",
             ),
         }
 
@@ -1028,9 +1058,15 @@ class TestShellHygiene:
 class TestSubjectLines:
     def _data(self, **over) -> dict:
         base = {
-            "cycle_number": 7, "rank": 2, "prev_rank": 3, "total_players": 4,
-            "composite": 72.3, "composite_delta": 3.2,
-            "resolved_ops": 3, "success_ops": 2, "detected_ops": 1,
+            "cycle_number": 7,
+            "rank": 2,
+            "prev_rank": 3,
+            "total_players": 4,
+            "composite": 72.3,
+            "composite_delta": 3.2,
+            "resolved_ops": 3,
+            "success_ops": 2,
+            "detected_ops": 1,
             "epoch_name": "Operation Shadow",
         }
         base.update(over)
@@ -1090,8 +1126,12 @@ class TestSubjectLines:
 class TestPreheader:
     def _html(self, locale="de") -> str:
         return render_phase_change(
-            epoch_name="Op", old_phase="competition", new_phase="reckoning",
-            cycle_count=7, command_center_url="https://x", email_locale=locale,
+            epoch_name="Op",
+            old_phase="competition",
+            new_phase="reckoning",
+            cycle_count=7,
+            command_center_url="https://x",
+            email_locale=locale,
             standing_data={"rank": 2, "total_players": 4, "composite": 70.1},
         )
 
@@ -1158,24 +1198,43 @@ class TestPodium:
 
     def _lb(self, n=3) -> list[dict]:
         rows = [
-            {"simulation_id": "a", "simulation_name": "Velgarien", "composite": 80.0,
-             "composite_score": 80.0, "rank": 1},
-            {"simulation_id": "b", "simulation_name": "Speranza", "composite": 66.5,
-             "composite_score": 66.5, "rank": 2},
-            {"simulation_id": "c", "simulation_name": "Station Null", "composite": 51.2,
-             "composite_score": 51.2, "rank": 3},
+            {
+                "simulation_id": "a",
+                "simulation_name": "Velgarien",
+                "composite": 80.0,
+                "composite_score": 80.0,
+                "rank": 1,
+            },
+            {
+                "simulation_id": "b",
+                "simulation_name": "Speranza",
+                "composite": 66.5,
+                "composite_score": 66.5,
+                "rank": 2,
+            },
+            {
+                "simulation_id": "c",
+                "simulation_name": "Station Null",
+                "composite": 51.2,
+                "composite_score": 51.2,
+                "rank": 3,
+            },
         ]
         return rows[:n]
 
     def _html(self, lb, player="b", locale="de") -> str:
         return render_epoch_completed(
-            epoch_name="Op", leaderboard=lb, player_simulation_id=player,
-            cycle_count=9, command_center_url="https://x", email_locale=locale,
+            epoch_name="Op",
+            leaderboard=lb,
+            player_simulation_id=player,
+            cycle_count=9,
+            command_center_url="https://x",
+            email_locale=locale,
         )
 
     def test_the_order_is_second_first_third(self):
         html = self._html(self._lb())
-        podium = html[html.index("Das Podium"):html.index("ENDSTAND")]
+        podium = html[html.index("Das Podium") : html.index("ENDSTAND")]
         assert podium.index("Speranza") < podium.index("Velgarien") < podium.index("Station Null")
 
     def test_the_winner_block_is_the_tallest(self):

@@ -43,9 +43,23 @@ def _mock_supabase():
     result.count = 0
     chain.execute = AsyncMock(return_value=result)
     for m in (
-        "select", "eq", "insert", "update", "delete", "upsert",
-        "limit", "single", "maybe_single", "order", "range",
-        "filter", "in_", "is_", "not_", "or_", "ilike",
+        "select",
+        "eq",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
+        "limit",
+        "single",
+        "maybe_single",
+        "order",
+        "range",
+        "filter",
+        "in_",
+        "is_",
+        "not_",
+        "or_",
+        "ilike",
     ):
         getattr(chain, m).return_value = chain
     mock.table.return_value = chain
@@ -109,9 +123,7 @@ class TestDungeonContentAuthGate:
     def test_non_admin_rejected(self, client: TestClient, method: str, path: str):
         _setup_non_admin()
         r = client.request(method, path, json={"data": {}})
-        assert r.status_code == 403, (
-            f"Non-admin {method} {path} returned {r.status_code}"
-        )
+        assert r.status_code == 403, f"Non-admin {method} {path} returned {r.status_code}"
 
 
 # ===========================================================================
@@ -331,8 +343,16 @@ class TestAllContentTypes:
     """Verify all 10 content types are accessible."""
 
     CONTENT_TYPES = [
-        "banter", "enemies", "spawns", "encounters", "choices",
-        "loot", "anchors", "entrance_texts", "barometer_texts", "abilities",
+        "banter",
+        "enemies",
+        "spawns",
+        "encounters",
+        "choices",
+        "loot",
+        "anchors",
+        "entrance_texts",
+        "barometer_texts",
+        "abilities",
     ]
 
     @patch(
@@ -341,11 +361,12 @@ class TestAllContentTypes:
     )
     @pytest.mark.parametrize("content_type", CONTENT_TYPES)
     def test_all_types_accessible(
-        self, mock_list, client: TestClient, content_type: str,
+        self,
+        mock_list,
+        client: TestClient,
+        content_type: str,
     ):
         _setup_admin()
         mock_list.return_value = ([], 0)
         r = client.get(f"/api/v1/admin/dungeon-content/{content_type}")
-        assert r.status_code == 200, (
-            f"Content type '{content_type}' returned {r.status_code}"
-        )
+        assert r.status_code == 200, f"Content type '{content_type}' returned {r.status_code}"

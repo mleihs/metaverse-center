@@ -64,13 +64,9 @@ def run_seed_cli(
     parser.add_argument("--root", type=Path, default=None, help=root_help)
 
     output_mode = parser.add_mutually_exclusive_group()
-    output_mode.add_argument(
-        "--output", type=Path, default=None, help="Write generated SQL to this file."
-    )
+    output_mode.add_argument("--output", type=Path, default=None, help="Write generated SQL to this file.")
     output_mode.add_argument("--stdout", action="store_true", help="Write generated SQL to stdout.")
-    output_mode.add_argument(
-        "--dry-run", action="store_true", help="Load packs and count rows, but emit no SQL."
-    )
+    output_mode.add_argument("--dry-run", action="store_true", help="Load packs and count rows, but emit no SQL.")
 
     parser.add_argument(
         "--no-truncate",

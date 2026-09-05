@@ -86,8 +86,15 @@ class TestSitemapXml:
         text = r.text
         # Public views enumerated in backend/seo/registry.py — full set.
         for view in [
-            "lore", "agents", "buildings", "events", "locations",
-            "chronicle", "broadsheet", "social", "health",
+            "lore",
+            "agents",
+            "buildings",
+            "events",
+            "locations",
+            "chronicle",
+            "broadsheet",
+            "social",
+            "health",
         ]:
             assert f"/simulations/{SIM_VELGARIEN_SLUG}/{view}" in text
 
@@ -103,8 +110,14 @@ class TestSitemapXml:
         text = r.text
         # Eight Resonance Dungeon archetype literary detail pages
         for slug in [
-            "shadow", "tower", "mother", "entropy",
-            "prometheus", "deluge", "awakening", "overthrow",
+            "shadow",
+            "tower",
+            "mother",
+            "entropy",
+            "prometheus",
+            "deluge",
+            "awakening",
+            "overthrow",
         ]:
             assert f"https://metaverse.center/archetypes/{slug}" in text
 

@@ -148,9 +148,7 @@ class TestPublicChartRead:
                 timeout=5.0,
             )
             assert resp.status_code == 200, resp.text
-            assert any(r["id"] == node_id for r in resp.json()), (
-                f"anon could not read public chart node: {resp.json()}"
-            )
+            assert any(r["id"] == node_id for r in resp.json()), f"anon could not read public chart node: {resp.json()}"
         finally:
             admin_client.table("drift_chart_nodes").delete().eq("id", node_id).execute()
             admin_client.table("chart_versions").delete().eq("version", version).execute()

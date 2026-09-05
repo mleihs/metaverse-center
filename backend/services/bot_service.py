@@ -152,10 +152,14 @@ class BotService:
                     exc_info=True,
                 )
                 sentry_sdk.capture_exception(exc)
-                fortification_outcomes.append({
-                    "zone_id": fort_plan.zone_id, "cost": fort_plan.cost_rp,
-                    "success": False, "reason": str(exc)[:100],
-                })
+                fortification_outcomes.append(
+                    {
+                        "zone_id": fort_plan.zone_id,
+                        "cost": fort_plan.cost_rp,
+                        "success": False,
+                        "reason": str(exc)[:100],
+                    }
+                )
 
         # 3b. Execute deployments (via same OperativeService humans use)
         deployed = []
@@ -232,9 +236,7 @@ class BotService:
                     "Bot cast alliance vote",
                     extra={"bot_id": participant.get("simulation_id"), "proposal_id": pv.proposal_id, "vote": pv.vote},
                 )
-                proposal_vote_outcomes.append(
-                    {"proposal_id": pv.proposal_id, "vote": pv.vote, "success": True}
-                )
+                proposal_vote_outcomes.append({"proposal_id": pv.proposal_id, "vote": pv.vote, "success": True})
             except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError) as exc:
                 logger.warning(
                     "Bot proposal vote failed: %s",
@@ -389,15 +391,11 @@ class BotService:
                     {"type": d.operative_type, "target": d.target_simulation_id, "cost": d.cost_rp}
                     for d in decisions.deployments
                 ],
-                "planned_fortifications": [
-                    {"zone_id": f.zone_id, "cost": f.cost_rp} for f in decisions.fortifications
-                ],
+                "planned_fortifications": [{"zone_id": f.zone_id, "cost": f.cost_rp} for f in decisions.fortifications],
                 "alliance_actions": [
                     {"action": a.action, "target": a.target_simulation_id} for a in decisions.alliances
                 ],
-                "proposal_votes": [
-                    {"proposal_id": v.proposal_id, "vote": v.vote} for v in decisions.proposal_votes
-                ],
+                "proposal_votes": [{"proposal_id": v.proposal_id, "vote": v.vote} for v in decisions.proposal_votes],
                 # Outcomes (what actually happened — per-action success/failure)
                 "deployment_outcomes": deployment_outcomes or [],
                 "deployment_success_count": len(deployed),

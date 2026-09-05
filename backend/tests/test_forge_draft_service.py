@@ -86,9 +86,7 @@ class TestCreateDraft:
         row = {"id": str(DRAFT_ID), "user_id": str(USER_ID), "status": "draft"}
         mock, _ = _mock_supabase(data=[row])
 
-        result = await ForgeDraftService.create_draft(
-            mock, USER_ID, ForgeDraftCreate(seed_prompt="Test seed")
-        )
+        result = await ForgeDraftService.create_draft(mock, USER_ID, ForgeDraftCreate(seed_prompt="Test seed"))
         assert result["id"] == str(DRAFT_ID)
 
     @pytest.mark.asyncio
@@ -96,9 +94,7 @@ class TestCreateDraft:
         mock, _ = _mock_supabase(data=None)
 
         with pytest.raises(HTTPException) as exc_info:
-            await ForgeDraftService.create_draft(
-                mock, USER_ID, ForgeDraftCreate(seed_prompt="Test")
-            )
+            await ForgeDraftService.create_draft(mock, USER_ID, ForgeDraftCreate(seed_prompt="Test"))
         assert exc_info.value.status_code == 500
 
 
@@ -119,9 +115,7 @@ class TestUpdateDraft:
         row = {"id": str(DRAFT_ID)}
         mock, builder = _mock_supabase(data=row)
 
-        result = await ForgeDraftService.update_draft(
-            mock, USER_ID, DRAFT_ID, ForgeDraftUpdate()
-        )
+        result = await ForgeDraftService.update_draft(mock, USER_ID, DRAFT_ID, ForgeDraftUpdate())
         assert result == row
 
 

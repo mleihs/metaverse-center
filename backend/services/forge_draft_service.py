@@ -30,7 +30,6 @@ logger = logging.getLogger(__name__)
 _SERVER_OWNED_ANCHOR_KEYS = frozenset({"scans", "seed"})
 
 
-
 # ── Domain Exceptions ────────────────────────────────────────────────
 # Services raise these; routers catch and translate to HTTP status codes.
 # Keeps business logic free of FastAPI/HTTP coupling.
@@ -503,11 +502,7 @@ class ForgeDraftService:
         hint, no way to ask. This is the handle.
         """
         try:
-            resp = await (
-                supabase.table("byok_requests")
-                .insert({"user_id": str(user_id), "reason": reason})
-                .execute()
-            )
+            resp = await supabase.table("byok_requests").insert({"user_id": str(user_id), "reason": reason}).execute()
         except PostgrestAPIError as exc:
             # 23505 = unique_violation on idx_byok_requests_one_pending.
             if getattr(exc, "code", None) == "23505":

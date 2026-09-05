@@ -160,10 +160,16 @@ def load_packs_with_overlay(
     consumed: set[tuple[str, str]] = set()
 
     _load_archetype_trees(
-        root / "archetypes", result, overlay=overlay, consumed=consumed,
+        root / "archetypes",
+        result,
+        overlay=overlay,
+        consumed=consumed,
     )
     _load_abilities_tree(
-        root / "abilities", result, overlay=overlay, consumed=consumed,
+        root / "abilities",
+        result,
+        overlay=overlay,
+        consumed=consumed,
     )
     # Orphans (overlay entries with no on-disk counterpart) are ingested LAST
     # so both tree-walkers have had their chance to match + mark entries as
@@ -175,7 +181,9 @@ def load_packs_with_overlay(
 
     logger.info(
         "content packs loaded from %s (overlay=%d): %s",
-        root, len(overlay), result.summary(),
+        root,
+        len(overlay),
+        result.summary(),
     )
     return result
 
@@ -230,7 +238,12 @@ def _load_archetype_trees(
             logger.warning("unknown archetype slug '%s' under %s – skipping", slug, archetypes_root)
             continue
         _load_one_archetype(
-            child, slug, archetype, result, overlay=overlay, consumed=consumed,
+            child,
+            slug,
+            archetype,
+            result,
+            overlay=overlay,
+            consumed=consumed,
         )
 
 
@@ -322,9 +335,7 @@ def _ingest_banter(raw: dict, archetype: str, result: PackLoadResult) -> None:
     pack = BanterPack.model_validate(raw)
     # Runtime cache stores banter as list[dict], not list[BanterItem], so
     # mirror that directly. The Pydantic step was the validation gate.
-    result.banter.setdefault(archetype, []).extend(
-        item.model_dump() for item in pack.banter
-    )
+    result.banter.setdefault(archetype, []).extend(item.model_dump() for item in pack.banter)
 
 
 def _ingest_loot(raw: dict, archetype: str, result: PackLoadResult) -> None:

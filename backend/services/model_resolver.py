@@ -284,9 +284,7 @@ class ResolvedImageModel:
             # `stable-diffusion-3.5-large` fuehrt kein `3:4`, und `3:4` ist
             # unser Vorgabewert fuer Portraets — ein unzulaessiger Enum-Wert
             # beendet den ganzen Aufruf mit 422.
-            params["aspect_ratio"] = _naechstes_verhaeltnis(
-                self.aspect_ratio, fam.aspect_ratio_choices
-            )
+            params["aspect_ratio"] = _naechstes_verhaeltnis(self.aspect_ratio, fam.aspect_ratio_choices)
         if fam.supports_output_fields:
             params["output_format"] = self.output_format or "png"
             params["output_quality"] = self.output_quality
@@ -445,9 +443,7 @@ class ModelResolver:
         ohne dass jemand den eingestellten Wert wiedergefunden haette.
         """
         schluessel = (
-            "image_safety_tolerance_mature"
-            if rating is ContentRating.MATURE
-            else "image_safety_tolerance_general"
+            "image_safety_tolerance_mature" if rating is ContentRating.MATURE else "image_safety_tolerance_general"
         )
         if schluessel not in self._toleranz_cache:
             zeile = await maybe_single_data(

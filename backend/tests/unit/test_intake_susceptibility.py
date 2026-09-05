@@ -48,9 +48,7 @@ def _rpc_client(*results):
             # String — ein `PostgrestAPIError("boom")` scheitert schon beim
             # Anlegen und pruefte dann etwas anderes als gemeint.
             handle.execute = AsyncMock(
-                side_effect=outcome(
-                    {"message": "rpc missing", "code": "42883", "hint": "", "details": ""}
-                )
+                side_effect=outcome({"message": "rpc missing", "code": "42883", "hint": "", "details": ""})
             )
         else:
             handle.execute = AsyncMock(return_value=MagicMock(data=outcome))
@@ -121,9 +119,7 @@ class TestPreviewSusceptibility:
             [{"id": "w1", "name": "Velgarien", "slug": "velgarien"}],
             [0.8],
         )
-        rows = await ResonanceService.preview_susceptibility(
-            client, signature="economic_tremor", magnitude=0.5
-        )
+        rows = await ResonanceService.preview_susceptibility(client, signature="economic_tremor", magnitude=0.5)
         assert rows[0]["effective_magnitude"] == 0.4
         assert rows[0]["susceptibility"] == 0.8
         assert rows[0]["will_skip"] is False
@@ -134,9 +130,7 @@ class TestPreviewSusceptibility:
         # Die Vorschau kann keine Zeile einfuegen, um das zu erfahren — also
         # steht der Deckel hier, und dieser Test bindet ihn an die Zahl.
         client = self._client_with([{"id": "w1", "name": "A", "slug": "a"}], [2.0])
-        rows = await ResonanceService.preview_susceptibility(
-            client, signature="conflict_wave", magnitude=0.9
-        )
+        rows = await ResonanceService.preview_susceptibility(client, signature="conflict_wave", magnitude=0.9)
         assert rows[0]["effective_magnitude"] == 1.00
 
     @pytest.mark.asyncio
@@ -152,9 +146,7 @@ class TestPreviewSusceptibility:
             ],
             [0.08, 0.12],
         )
-        rows = await ResonanceService.preview_susceptibility(
-            client, signature="decay_bloom", magnitude=0.5
-        )
+        rows = await ResonanceService.preview_susceptibility(client, signature="decay_bloom", magnitude=0.5)
         assert rows[0]["will_skip"] is True
         assert rows[1]["will_skip"] is False
 

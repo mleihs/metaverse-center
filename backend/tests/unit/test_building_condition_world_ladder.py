@@ -115,16 +115,13 @@ class TestAWorldMayPlaceItsOwnRungs:
     def test_a_nonnumeric_rung_cannot_break_the_ladder(self, sql: str) -> None:
         body = _body(_code_only(sql), "CREATE OR REPLACE FUNCTION fn_building_condition_ladder(p_simulation_id")
         assert "~ '^-?" in body, (
-            "metadata ist Freitext-jsonb; ohne Prüfung reisst ein '::int' auf "
-            "einem Wort die ganze Leiter mit"
+            "metadata ist Freitext-jsonb; ohne Prüfung reisst ein '::int' auf einem Wort die ganze Leiter mit"
         )
 
     def test_the_world_ladder_only_contains_what_the_world_names(self, sql: str) -> None:
         body = _body(_code_only(sql), "CREATE OR REPLACE FUNCTION fn_building_condition_ladder(p_simulation_id")
         for wert in KERN:
-            assert f"'{wert}'" not in body, (
-                f"die Weltleiter zählt {wert} selbst auf, statt die Kernleiter zu lesen"
-            )
+            assert f"'{wert}'" not in body, f"die Weltleiter zählt {wert} selbst auf, statt die Kernleiter zu lesen"
 
 
 class TestNoWriterLeavesItsVocabulary:

@@ -191,10 +191,7 @@ class TestOperativeEpochCycleFallback:
         source = inspect.getsource(OperativeMissionService)
         # Count maybe_single occurrences related to game_epochs
         lines = source.split("\n")
-        [
-            line.strip() for line in lines
-            if "maybe_single" in line and "game_epochs" not in line
-        ]
+        [line.strip() for line in lines if "maybe_single" in line and "game_epochs" not in line]
         # At minimum, 2 epoch fetches should use maybe_single
         maybe_single_count = source.count("maybe_single")
         assert maybe_single_count >= 2, f"Expected >=2 maybe_single calls, found {maybe_single_count}"

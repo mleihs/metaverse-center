@@ -23,9 +23,7 @@ from supabase import create_async_client
 logger = logging.getLogger(__name__)
 
 # Platform admin — configurable via PLATFORM_ADMIN_EMAILS env var (comma-separated)
-PLATFORM_ADMIN_EMAILS: set[str] = {
-    e.strip() for e in settings.platform_admin_emails.split(",") if e.strip()
-}
+PLATFORM_ADMIN_EMAILS: set[str] = {e.strip() for e in settings.platform_admin_emails.split(",") if e.strip()}
 
 # Role hierarchy: higher index = more privileges
 ROLE_HIERARCHY: dict[str, int] = {
@@ -418,10 +416,7 @@ def require_epoch_creator():
         # maybe_single: `.single()` raises on 0 rows, which turned "no such
         # epoch" into a 500 before this guard could answer 404.
         response_data = await maybe_single_data(
-            supabase.table("game_epochs")
-            .select("created_by_id")
-            .eq("id", str(epoch_id))
-            .maybe_single()
+            supabase.table("game_epochs").select("created_by_id").eq("id", str(epoch_id)).maybe_single()
         )
         if not response_data:
             raise HTTPException(
@@ -445,11 +440,7 @@ _platform_admin_ids_expires = 0.0
 async def _refresh_platform_admin_ids(admin_supabase: "Client") -> None:
     """Refresh the in-memory cache of platform admin user IDs from DB."""
     global _platform_admin_ids, _platform_admin_ids_expires  # noqa: PLW0603
-    resp = await (
-        admin_supabase.table("platform_admins")
-        .select("user_id")
-        .execute()
-    )
+    resp = await admin_supabase.table("platform_admins").select("user_id").execute()
     _platform_admin_ids = {r["user_id"] for r in (resp.data or [])}
     _platform_admin_ids_expires = time.monotonic() + 300  # 5 min TTL
 
@@ -559,10 +550,7 @@ def require_architect():
             return user
 
         wallet_data = await maybe_single_data(
-            admin_supabase.table("user_wallets")
-            .select("is_architect")
-            .eq("user_id", str(user.id))
-            .maybe_single()
+            admin_supabase.table("user_wallets").select("is_architect").eq("user_id", str(user.id)).maybe_single()
         )
         if not wallet_data or not wallet_data.get("is_architect"):
             raise HTTPException(

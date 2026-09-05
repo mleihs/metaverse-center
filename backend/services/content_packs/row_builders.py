@@ -59,18 +59,20 @@ def build_banter_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
             # missing; an explicit `None` passes through. Coerce to 0 to
             # match the DB column (INTEGER NOT NULL DEFAULT 0).
             archetype_tier = (raw.get(tier_field) or 0) if tier_field else 0
-            rows.append({
-                "id": DollarQuoted(raw["id"]),
-                "archetype": DollarQuoted(archetype),
-                "trigger": DollarQuoted(raw["trigger"]),
-                "personality_filter": JsonbLiteral(raw.get("personality_filter") or {}),
-                "text_en": DollarQuoted(raw["text_en"]),
-                "text_de": DollarQuoted(raw["text_de"]),
-                "decay_tier": optional_numeric(raw.get("decay_tier")),
-                "attachment_tier": optional_numeric(raw.get("attachment_tier")),
-                "archetype_tier": Numeric(archetype_tier),
-                "sort_order": Numeric(idx),
-            })
+            rows.append(
+                {
+                    "id": DollarQuoted(raw["id"]),
+                    "archetype": DollarQuoted(archetype),
+                    "trigger": DollarQuoted(raw["trigger"]),
+                    "personality_filter": JsonbLiteral(raw.get("personality_filter") or {}),
+                    "text_en": DollarQuoted(raw["text_en"]),
+                    "text_de": DollarQuoted(raw["text_de"]),
+                    "decay_tier": optional_numeric(raw.get("decay_tier")),
+                    "attachment_tier": optional_numeric(raw.get("attachment_tier")),
+                    "archetype_tier": Numeric(archetype_tier),
+                    "sort_order": Numeric(idx),
+                }
+            )
     return rows
 
 
@@ -125,11 +127,13 @@ def build_spawn_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     # dungeon_spawn_configs, so the outer enumerate is dropped.
     for archetype in sorted(result.spawns):
         for spawn_id, entries in result.spawns[archetype].items():
-            rows.append({
-                "id": DollarQuoted(spawn_id),
-                "archetype": DollarQuoted(archetype),
-                "entries": JsonbLiteral(list(entries)),
-            })
+            rows.append(
+                {
+                    "id": DollarQuoted(spawn_id),
+                    "archetype": DollarQuoted(archetype),
+                    "entries": JsonbLiteral(list(entries)),
+                }
+            )
     return rows
 
 
@@ -255,12 +259,14 @@ def build_entrance_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     rows: list[dict[str, SqlValue]] = []
     for archetype in sorted(result.entrance_texts):
         for idx, entry in enumerate(result.entrance_texts[archetype]):
-            rows.append({
-                "archetype": DollarQuoted(archetype),
-                "text_en": DollarQuoted(entry["text_en"]),
-                "text_de": DollarQuoted(entry["text_de"]),
-                "sort_order": Numeric(idx),
-            })
+            rows.append(
+                {
+                    "archetype": DollarQuoted(archetype),
+                    "text_en": DollarQuoted(entry["text_en"]),
+                    "text_de": DollarQuoted(entry["text_de"]),
+                    "sort_order": Numeric(idx),
+                }
+            )
     return rows
 
 
@@ -271,12 +277,14 @@ def build_barometer_rows(result: PackLoadResult) -> list[dict[str, SqlValue]]:
     rows: list[dict[str, SqlValue]] = []
     for archetype in sorted(result.barometer_texts):
         for entry in result.barometer_texts[archetype]:
-            rows.append({
-                "archetype": DollarQuoted(archetype),
-                "tier": Numeric(entry["tier"]),
-                "text_en": DollarQuoted(entry["text_en"]),
-                "text_de": DollarQuoted(entry["text_de"]),
-            })
+            rows.append(
+                {
+                    "archetype": DollarQuoted(archetype),
+                    "tier": Numeric(entry["tier"]),
+                    "text_en": DollarQuoted(entry["text_en"]),
+                    "text_de": DollarQuoted(entry["text_de"]),
+                }
+            )
     return rows
 
 

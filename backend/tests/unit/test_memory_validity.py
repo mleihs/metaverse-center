@@ -136,9 +136,7 @@ class TestDasAufzeichnenKennntBeideFaelle:
     async def test_ein_fensterende_wird_geschrieben(self):
         klient, kette = _klient([{"id": str(uuid4())}])
         wann = datetime.now(UTC) + timedelta(days=30)
-        await M.record_observation(
-            klient, uuid4(), uuid4(), "Marie fuehrt das Archiv.", valid_until=wann
-        )
+        await M.record_observation(klient, uuid4(), uuid4(), "Marie fuehrt das Archiv.", valid_until=wann)
         assert kette.insert.call_args[0][0]["valid_until"] == wann.isoformat()
 
     async def test_die_abloesung_geschieht_nach_dem_einfuegen(self):
@@ -148,9 +146,7 @@ class TestDasAufzeichnenKennntBeideFaelle:
         neue_id = uuid4()
         klient, _ = _klient([{"id": str(neue_id)}])
         alt = uuid4()
-        await M.record_observation(
-            klient, uuid4(), uuid4(), "Marie fuehrt das Archiv nicht mehr.", supersedes=alt
-        )
+        await M.record_observation(klient, uuid4(), uuid4(), "Marie fuehrt das Archiv nicht mehr.", supersedes=alt)
         name, params = klient.rpc.call_args[0]
         assert name == "fn_supersede_memory"
         assert params["p_old_id"] == str(alt)
@@ -368,10 +364,7 @@ class TestEinRueckstandWirdAufgeholtStattVerloren:
         """195 Beobachtungen, eine Verdichtung, die bis Nummer 50 gelesen hat.
         Offen bleiben 145 — nicht null."""
         agent = str(uuid4())
-        beob = [
-            {"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"}
-            for i in range(195)
-        ]
+        beob = [{"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"} for i in range(195)]
         reflexionen = [{"agent_id": agent, "created_at": "2026-09-02T00:00:00", "source_id": "b049"}]
         faellig = await M._agents_due_for_reflection(self._klient(reflexionen, beob), uuid4(), 2)
         assert faellig, "die Figur ist nach EINER Verdichtung nicht mehr faellig — der Rest ist verloren"
@@ -383,10 +376,7 @@ class TestEinRueckstandWirdAufgeholtStattVerloren:
         weg. Genau das war der Zustand bis zum 05.09.2026 — dieser Test haelt
         fest, WORIN der Unterschied besteht, nicht nur DASS es einen gibt."""
         agent = str(uuid4())
-        beob = [
-            {"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"}
-            for i in range(195)
-        ]
+        beob = [{"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"} for i in range(195)]
         reflexionen = [{"agent_id": agent, "created_at": "2026-09-02T00:00:00", "source_id": None}]
         faellig = await M._agents_due_for_reflection(self._klient(reflexionen, beob), uuid4(), 2)
         assert faellig == []

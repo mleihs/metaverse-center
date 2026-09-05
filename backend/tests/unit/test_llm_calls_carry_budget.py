@@ -149,9 +149,7 @@ class TestEveryOpenRouterCallCarriesABudget:
             "Der Budget-Kontext wird an mehr als einer Stelle gebaut — genau so "
             "ist der Streampfad ohne einen davongekommen"
         )
-        assert source.count("_chat_budget()") >= 2, (
-            "beide Chat-Pfade müssen denselben Helfer benutzen"
-        )
+        assert source.count("_chat_budget()") >= 2, "beide Chat-Pfade müssen denselben Helfer benutzen"
 
 
 class TestABudgetBlockIsNotAnInternalError:
@@ -174,9 +172,7 @@ class TestTheRepairCallsAreRealCalls:
 
         signature = inspect.signature(output_repair.repair_json_output)
         required = {
-            name
-            for name, parameter in signature.parameters.items()
-            if parameter.default is inspect.Parameter.empty
+            name for name, parameter in signature.parameters.items() if parameter.default is inspect.Parameter.empty
         }
         assert required == {"openrouter", "model", "malformed_output", "pydantic_model"}, required
 
@@ -195,17 +191,14 @@ class TestTheRepairCallsAreRealCalls:
                 callee = getattr(node.func, "id", None) or getattr(node.func, "attr", None)
                 if callee != "repair_json_output":
                     continue
-                supplied = {kw.arg for kw in node.keywords if kw.arg} | set(
-                    list(required)[: len(node.args)]
-                )
+                supplied = {kw.arg for kw in node.keywords if kw.arg} | set(list(required)[: len(node.args)])
                 where = f"{path.relative_to(REPO)}:{node.lineno}"
                 if not required <= supplied:
                     offenders.append(f"{where}  fehlende Argumente: {sorted(required - supplied)}")
         assert not offenders, (
             "repair_json_output wird mit zu wenigen Argumenten gerufen. Python "
             "bindet auch bei `async def` sofort — das wirft TypeError am Aufruf, "
-            "und TypeError steht in den except-Klauseln daneben:\n  "
-            + "\n  ".join(offenders)
+            "und TypeError steht in den except-Klauseln daneben:\n  " + "\n  ".join(offenders)
         )
 
     def test_no_call_site_forgets_the_await(self) -> None:
@@ -218,11 +211,7 @@ class TestTheRepairCallsAreRealCalls:
                 tree = ast.parse(path.read_text(encoding="utf-8"))
             except SyntaxError:  # pragma: no cover
                 continue
-            awaited = {
-                id(node.value)
-                for node in ast.walk(tree)
-                if isinstance(node, ast.Await)
-            }
+            awaited = {id(node.value) for node in ast.walk(tree) if isinstance(node, ast.Await)}
             for node in ast.walk(tree):
                 if not isinstance(node, ast.Call):
                     continue
@@ -270,6 +259,5 @@ class TestTheRepairActuallyChecksTheShape:
 
         template = AutonomousEventService._template_narrative("stress_breakdown", "A, B", "Zone")
         assert set(AutonomousEventNarrative.model_fields) <= set(template), (
-            f"Vorlage liefert {sorted(template)}, Modell verlangt "
-            f"{sorted(AutonomousEventNarrative.model_fields)}"
+            f"Vorlage liefert {sorted(template)}, Modell verlangt {sorted(AutonomousEventNarrative.model_fields)}"
         )

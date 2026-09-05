@@ -65,9 +65,23 @@ def make_chain_mock(execute_data=None, execute_count=None):
     """
     c = MagicMock()
     for method in (
-        "select", "eq", "in_", "lt", "gt", "or_", "order",
-        "limit", "single", "maybe_single", "is_", "not_",
-        "range", "insert", "update", "delete", "upsert",
+        "select",
+        "eq",
+        "in_",
+        "lt",
+        "gt",
+        "or_",
+        "order",
+        "limit",
+        "single",
+        "maybe_single",
+        "is_",
+        "not_",
+        "range",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
     ):
         getattr(c, method).return_value = c
     resp = MagicMock()

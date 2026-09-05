@@ -51,9 +51,7 @@ def test_agent_without_rows_gets_a_full_marked_baseline() -> None:
 def test_assigned_rows_are_passed_through_unchanged() -> None:
     agent_id = uuid4()
     assigned = [_assigned_row(op, 9 if op == "spy" else 3) for op in OPERATIVE_TYPES]
-    rows = AptitudeService._effective_rows(
-        [{"id": str(agent_id), "agent_aptitudes": assigned}], SIM_ID
-    )
+    rows = AptitudeService._effective_rows([{"id": str(agent_id), "agent_aptitudes": assigned}], SIM_ID)
 
     by_type = {r["operative_type"]: r for r in rows}
     assert by_type["spy"]["aptitude_level"] == 9
@@ -92,9 +90,7 @@ def test_no_agents_yields_no_rows() -> None:
 
 
 def test_rows_validate_against_the_response_model() -> None:
-    rows = AptitudeService._effective_rows(
-        [{"id": str(uuid4()), "agent_aptitudes": [_assigned_row("spy", 9)]}], SIM_ID
-    )
+    rows = AptitudeService._effective_rows([{"id": str(uuid4()), "agent_aptitudes": [_assigned_row("spy", 9)]}], SIM_ID)
     models = [AptitudeResponse.model_validate(r) for r in rows]
     assert len(models) == len(OPERATIVE_TYPES)
     assert {m.simulation_id for m in models} == {SIM_ID}

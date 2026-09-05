@@ -75,9 +75,29 @@ def _make_chainable(execute_data=None):
     result.count = len(result.data) if isinstance(result.data, list) else 0
     chain.execute = AsyncMock(return_value=result)
     for m in (
-        "select", "eq", "neq", "gt", "lt", "gte", "lte", "or_", "order",
-        "range", "limit", "offset", "filter", "ilike", "in_", "is_", "not_",
-        "single", "maybe_single", "insert", "update", "upsert", "delete",
+        "select",
+        "eq",
+        "neq",
+        "gt",
+        "lt",
+        "gte",
+        "lte",
+        "or_",
+        "order",
+        "range",
+        "limit",
+        "offset",
+        "filter",
+        "ilike",
+        "in_",
+        "is_",
+        "not_",
+        "single",
+        "maybe_single",
+        "insert",
+        "update",
+        "upsert",
+        "delete",
     ):
         getattr(chain, m).return_value = chain
     return chain
@@ -207,7 +227,10 @@ class TestRoleHierarchyAdditions:
 
     @pytest.mark.parametrize("role", ["viewer", "editor", "admin"])
     def test_non_owner_cannot_delete_simulation(
-        self, client: TestClient, user_a, role: str,
+        self,
+        client: TestClient,
+        user_a,
+        role: str,
     ):
         """DELETE /simulations/{id} requires owner; all other roles → 403."""
         _setup_auth(user_a, role)
@@ -224,7 +247,10 @@ class TestRoleHierarchyAdditions:
         ],
     )
     def test_full_role_hierarchy_matrix(
-        self, user_a, role: str, expected_passes: list[str],
+        self,
+        user_a,
+        role: str,
+        expected_passes: list[str],
     ):
         """Each role must satisfy all requirements at its level or below."""
         import asyncio
@@ -279,9 +305,7 @@ class TestCrossSimulationIsolation:
         """A user who isn't a member of any simulation must get 403."""
         _setup_auth(user_a, None)  # None → not a member
         r = client.get(f"/api/v1/simulations/{SIM_B_ID}/agents")
-        assert r.status_code == 403, (
-            f"Non-member should get 403, got {r.status_code}"
-        )
+        assert r.status_code == 403, f"Non-member should get 403, got {r.status_code}"
 
     def test_non_member_cannot_write(self, client: TestClient, user_a):
         """Non-member cannot create agents in a simulation."""
@@ -458,7 +482,8 @@ class TestPlatformAdminBypass:
 
     @pytest.mark.asyncio
     async def test_effective_supabase_returns_admin_client_for_platform_admin(
-        self, admin_user,
+        self,
+        admin_user,
     ):
         """get_effective_supabase must return the service_role client for admins."""
         PLATFORM_ADMIN_EMAILS.add(ADMIN_EMAIL)
@@ -480,7 +505,8 @@ class TestPlatformAdminBypass:
 
     @pytest.mark.asyncio
     async def test_effective_supabase_returns_user_client_for_normal_user(
-        self, user_a,
+        self,
+        user_a,
     ):
         """get_effective_supabase must return the user-scoped client for non-admins."""
         user_sb = _mock_supabase()
@@ -509,12 +535,12 @@ class TestPlatformAdminBypass:
         ]
         for method, path in admin_endpoints:
             r = client.request(method, path)
-            assert r.status_code == 403, (
-                f"Non-admin {method} {path} returned {r.status_code}, expected 403"
-            )
+            assert r.status_code == 403, f"Non-admin {method} {path} returned {r.status_code}, expected 403"
 
     def test_platform_admin_can_access_admin_environment(
-        self, client: TestClient, admin_user,
+        self,
+        client: TestClient,
+        admin_user,
     ):
         """Platform admin should be able to read /admin/environment."""
         PLATFORM_ADMIN_EMAILS.add(ADMIN_EMAIL)
@@ -552,13 +578,15 @@ class TestJWTValidation:
 
     def test_expired_jwt_returns_401(self, client: TestClient):
         """An expired JWT should be rejected with 401."""
-        token = self._encode_hs256({
-            "sub": str(uuid4()),
-            "email": "expired@test.dev",
-            "aud": "authenticated",
-            "exp": int(time.time()) - 3600,  # 1 hour ago
-            "iat": int(time.time()) - 7200,
-        })
+        token = self._encode_hs256(
+            {
+                "sub": str(uuid4()),
+                "email": "expired@test.dev",
+                "aud": "authenticated",
+                "exp": int(time.time()) - 3600,  # 1 hour ago
+                "iat": int(time.time()) - 7200,
+            }
+        )
         r = client.get(
             "/api/v1/users/me",
             headers={"Authorization": f"Bearer {token}"},
@@ -567,13 +595,15 @@ class TestJWTValidation:
 
     def test_wrong_audience_returns_401(self, client: TestClient):
         """A JWT with the wrong audience should be rejected."""
-        token = self._encode_hs256({
-            "sub": str(uuid4()),
-            "email": "wrong-aud@test.dev",
-            "aud": "wrong_audience",
-            "exp": int(time.time()) + 3600,
-            "iat": int(time.time()),
-        })
+        token = self._encode_hs256(
+            {
+                "sub": str(uuid4()),
+                "email": "wrong-aud@test.dev",
+                "aud": "wrong_audience",
+                "exp": int(time.time()) + 3600,
+                "iat": int(time.time()),
+            }
+        )
         r = client.get(
             "/api/v1/users/me",
             headers={"Authorization": f"Bearer {token}"},
@@ -582,12 +612,14 @@ class TestJWTValidation:
 
     def test_missing_sub_claim_returns_401(self, client: TestClient):
         """A JWT without the 'sub' claim should be rejected."""
-        token = self._encode_hs256({
-            "email": "no-sub@test.dev",
-            "aud": "authenticated",
-            "exp": int(time.time()) + 3600,
-            "iat": int(time.time()),
-        })
+        token = self._encode_hs256(
+            {
+                "email": "no-sub@test.dev",
+                "aud": "authenticated",
+                "exp": int(time.time()) + 3600,
+                "iat": int(time.time()),
+            }
+        )
         r = client.get(
             "/api/v1/users/me",
             headers={"Authorization": f"Bearer {token}"},
@@ -613,7 +645,8 @@ class TestJWTValidation:
         assert r.status_code == 401
 
     def test_missing_authorization_header_returns_422_or_401(
-        self, client: TestClient,
+        self,
+        client: TestClient,
     ):
         """No Authorization header → 422 (missing required header) or 401."""
         r = client.get("/api/v1/users/me")
@@ -630,13 +663,15 @@ class TestJWTValidation:
     def test_valid_jwt_with_valid_sub_passes_auth(self, client: TestClient):
         """A properly signed JWT with all claims should pass get_current_user."""
         user_id = str(uuid4())
-        token = self._encode_hs256({
-            "sub": user_id,
-            "email": "valid@test.dev",
-            "aud": "authenticated",
-            "exp": int(time.time()) + 3600,
-            "iat": int(time.time()),
-        })
+        token = self._encode_hs256(
+            {
+                "sub": user_id,
+                "email": "valid@test.dev",
+                "aud": "authenticated",
+                "exp": int(time.time()) + 3600,
+                "iat": int(time.time()),
+            }
+        )
 
         # Override downstream dependencies so we don't need a real Supabase
         mock_sb = _mock_supabase_with_role("viewer")
@@ -710,12 +745,8 @@ class TestPublicEndpointIsolation:
     def test_public_get_without_auth_succeeds(self, client: TestClient, path: str):
         """Public GET endpoints must not require authentication."""
         r = client.get(path)
-        assert r.status_code != 401, (
-            f"GET {path} returned 401 — public endpoint should not require auth"
-        )
-        assert r.status_code != 403, (
-            f"GET {path} returned 403 — public endpoint must never return 403"
-        )
+        assert r.status_code != 401, f"GET {path} returned 401 — public endpoint should not require auth"
+        assert r.status_code != 403, f"GET {path} returned 403 — public endpoint must never return 403"
 
     PUBLIC_WRITE_ATTEMPTS = [
         ("POST", f"/api/v1/public/simulations/{SIM_A_ID}/agents"),
@@ -730,9 +761,7 @@ class TestPublicEndpointIsolation:
     def test_public_write_rejected(self, client: TestClient, method: str, path: str):
         """POST/PUT/DELETE on public endpoints → 405 Method Not Allowed."""
         r = client.request(method, path, json={})
-        assert r.status_code == 405, (
-            f"{method} {path} returned {r.status_code}, expected 405"
-        )
+        assert r.status_code == 405, f"{method} {path} returned {r.status_code}, expected 405"
 
 
 # SECURITY DEFINER RPC permission tests live in test_rls_matrix.py

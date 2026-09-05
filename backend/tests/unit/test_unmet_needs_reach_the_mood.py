@@ -131,8 +131,7 @@ class TestItIsWiredIntoTheTick:
         moodlets = source.index("AgentNeedsService.apply_need_moodlets(")
         mood = source.index("AgentMoodService.process_tick(")
         assert decay < moodlets < mood, (
-            "Die Bedürfnis-Moodlets müssen NACH dem Zerfall und VOR der "
-            "Stimmungsrechnung stehen"
+            "Die Bedürfnis-Moodlets müssen NACH dem Zerfall und VOR der Stimmungsrechnung stehen"
         )
 
     def test_the_tick_summary_carries_the_count(self) -> None:
@@ -180,8 +179,7 @@ class TestTheMigration:
         delete = body.index("DELETE FROM agent_moodlets")
         insert = body.index("INSERT INTO agent_moodlets")
         assert delete < insert, (
-            "Erst löschen, dann setzen. Andersherum wäre es das ungedeckelte "
-            "Stapeln, das D10-5 gerade beseitigt hat."
+            "Erst löschen, dann setzen. Andersherum wäre es das ungedeckelte Stapeln, das D10-5 gerade beseitigt hat."
         )
 
     def test_no_balance_number_lives_in_the_sql(self, sql: str) -> None:

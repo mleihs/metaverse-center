@@ -59,9 +59,7 @@ def get_prod_service_key() -> str:
     import subprocess
 
     try:
-        result = subprocess.check_output(
-            ["railway", "variables", "--json"], timeout=15
-        )
+        result = subprocess.check_output(["railway", "variables", "--json"], timeout=15)
         variables = json.loads(result)
         return variables["SUPABASE_SERVICE_ROLE_KEY"]
     except Exception as e:
@@ -296,9 +294,7 @@ async def sync_lore_images(
 
         for ext in [".avif", ".full.avif"]:
             file_path = f"{base_path}{ext}"
-            dl_resp = await client.get(
-                f"{LOCAL_URL}/storage/v1/object/public/{bucket}/{file_path}"
-            )
+            dl_resp = await client.get(f"{LOCAL_URL}/storage/v1/object/public/{bucket}/{file_path}")
             if dl_resp.status_code != 200:
                 continue
 
@@ -347,9 +343,7 @@ async def sync_banner(
         return 0
 
     for file_path in [path, full_path]:
-        dl_resp = await client.get(
-            f"{LOCAL_URL}/storage/v1/object/public/{bucket}/{file_path}"
-        )
+        dl_resp = await client.get(f"{LOCAL_URL}/storage/v1/object/public/{bucket}/{file_path}")
         if dl_resp.status_code != 200:
             continue
         up_resp = await client.post(

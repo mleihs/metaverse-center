@@ -12,6 +12,7 @@ import pytest
 # USGS Earthquake — Richter → Magnitude mapping
 # ---------------------------------------------------------------------------
 
+
 class TestUSGSMagnitudeMapping:
     """Tests for _richter_to_magnitude."""
 
@@ -83,6 +84,7 @@ class TestUSGSMagnitudeMapping:
 # NOAA — Severity → Magnitude mapping
 # ---------------------------------------------------------------------------
 
+
 class TestNOAAMagnitudeMapping:
     """Tests for _severity_to_magnitude."""
 
@@ -144,6 +146,7 @@ class TestNOAAMagnitudeMapping:
 # NASA EONET — Category mapping
 # ---------------------------------------------------------------------------
 
+
 class TestNASAEONETCategoryMapping:
     """Tests for NASA EONET category to resonance category mapping."""
 
@@ -175,6 +178,7 @@ class TestNASAEONETCategoryMapping:
 # GDACS — Alert level mapping
 # ---------------------------------------------------------------------------
 
+
 class TestGDACSMapping:
     """Tests for GDACS alert level to magnitude mapping."""
 
@@ -189,6 +193,7 @@ class TestGDACSMapping:
 # ---------------------------------------------------------------------------
 # Adapter class attributes
 # ---------------------------------------------------------------------------
+
 
 class TestAdapterAttributes:
     """Verify all adapter classes have required attributes."""
@@ -215,9 +220,14 @@ class TestAdapterAttributes:
         from backend.services.scanning.registry import _ADAPTERS
 
         valid_cats = {
-            "economic_crisis", "military_conflict", "pandemic",
-            "natural_disaster", "political_upheaval", "tech_breakthrough",
-            "cultural_shift", "environmental_disaster",
+            "economic_crisis",
+            "military_conflict",
+            "pandemic",
+            "natural_disaster",
+            "political_upheaval",
+            "tech_breakthrough",
+            "cultural_shift",
+            "environmental_disaster",
         }
         for name, cls in _ADAPTERS.items():
             assert hasattr(cls, "categories"), f"{name} missing categories"
@@ -260,6 +270,7 @@ class TestAdapterAttributes:
 # HackerNews — score filtering
 # ---------------------------------------------------------------------------
 
+
 class TestHackerNewsConstants:
     """Verify HN adapter constants."""
 
@@ -284,6 +295,7 @@ class TestHackerNewsConstants:
 # GDELT — keyword queries
 # ---------------------------------------------------------------------------
 
+
 class TestGDELTQueries:
     """Verify GDELT category keyword queries exist."""
 
@@ -291,9 +303,14 @@ class TestGDELTQueries:
         from backend.services.scanning.adapters.gdelt import GDELT_CATEGORY_QUERIES
 
         expected = {
-            "economic_crisis", "military_conflict", "pandemic",
-            "natural_disaster", "political_upheaval", "tech_breakthrough",
-            "cultural_shift", "environmental_disaster",
+            "economic_crisis",
+            "military_conflict",
+            "pandemic",
+            "natural_disaster",
+            "political_upheaval",
+            "tech_breakthrough",
+            "cultural_shift",
+            "environmental_disaster",
         }
         assert set(GDELT_CATEGORY_QUERIES.keys()) == expected
 

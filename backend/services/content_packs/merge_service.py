@@ -177,7 +177,10 @@ def merge_content(
             # Recurse: top-level dict like `metadata: {...}` with all three
             # sides present. Yields field-level conflicts (e.g. `.metadata.tier`).
             sub_merged, sub_conflicts, sub_auto = _merge_dict_fields(
-                f".{key}", b, o, t,
+                f".{key}",
+                b,
+                o,
+                t,
             )
             merged[key] = sub_merged
             conflicts.extend(sub_conflicts)
@@ -309,7 +312,11 @@ def _merge_one_entry(
         return merged, conflicts, auto
 
     value, conflict, auto = _three_way_resolve(
-        path, base, ours, theirs, missing=None,
+        path,
+        base,
+        ours,
+        theirs,
+        missing=None,
     )
     return value, ([conflict] if conflict is not None else []), auto
 
@@ -407,7 +414,10 @@ def _merge_dict_fields(
 
         if _all_three_dicts(b, o, t):
             sub_merged, sub_conflicts, sub_auto = _merge_dict_fields(
-                field_path, b, o, t,
+                field_path,
+                b,
+                o,
+                t,
             )
             merged[key] = sub_merged
             conflicts.extend(sub_conflicts)
@@ -415,7 +425,11 @@ def _merge_dict_fields(
             continue
 
         value, conflict, n = _three_way_resolve(
-            field_path, b, o, t, missing=_MISSING,
+            field_path,
+            b,
+            o,
+            t,
+            missing=_MISSING,
         )
         if value is not _MISSING:
             merged[key] = value

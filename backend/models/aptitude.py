@@ -6,13 +6,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, model_validator
 
-OperativeType = Literal[
-    "spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin"
-]
+OperativeType = Literal["spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin"]
 
-OPERATIVE_TYPES: list[str] = [
-    "spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin"
-]
+OPERATIVE_TYPES: list[str] = ["spy", "guardian", "saboteur", "propagandist", "infiltrator", "assassin"]
 
 APTITUDE_BUDGET = 36
 APTITUDE_MIN = 3
@@ -81,10 +77,7 @@ class AptitudeSet(BaseModel):
 
     @model_validator(mode="after")
     def validate_budget(self) -> "AptitudeSet":
-        total = (
-            self.spy + self.guardian + self.saboteur
-            + self.propagandist + self.infiltrator + self.assassin
-        )
+        total = self.spy + self.guardian + self.saboteur + self.propagandist + self.infiltrator + self.assassin
         if total != APTITUDE_BUDGET:
             msg = f"Aptitude budget must equal {APTITUDE_BUDGET}, got {total}."
             raise ValueError(msg)

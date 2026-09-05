@@ -116,7 +116,8 @@ async def test_auto_resolve_processes_afk_before_resolve_when_enabled() -> None:
         ),
     ):
         await EpochCycleScheduler._auto_resolve_cycle(
-            admin, _epoch(config={"afk_penalty_enabled": True}),
+            admin,
+            _epoch(config={"afk_penalty_enabled": True}),
         )
     # AFK flags must be set BEFORE resolve so the bot pipeline sees them.
     assert call_order == ["afk", "resolve"]

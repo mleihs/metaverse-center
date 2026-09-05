@@ -62,24 +62,13 @@ def _tuning(admin_client, key: str):
 
 
 def _profile(admin_client, user_id):
-    rows = (
-        admin_client.table("traveler_profiles")
-        .select("*")
-        .eq("user_id", str(user_id))
-        .execute()
-    )
+    rows = admin_client.table("traveler_profiles").select("*").eq("user_id", str(user_id)).execute()
     return rows.data[0] if rows.data else None
 
 
 def _chart(admin_client) -> tuple[int, dict[str, str]]:
     """(active chart_version, {stable_key: node_id}) for the broadcast homes."""
-    versions = (
-        admin_client.table("chart_versions")
-        .select("version")
-        .order("version", desc=True)
-        .limit(1)
-        .execute()
-    )
+    versions = admin_client.table("chart_versions").select("version").order("version", desc=True).limit(1).execute()
     version = versions.data[0]["version"]
     nodes = (
         admin_client.table("drift_chart_nodes")
@@ -117,10 +106,14 @@ def _seed_profile(admin_client, user_id, anchor_sim, **overrides) -> None:
 
 
 def _open_run(user_client, user_id, anchor_sim) -> dict:
-    return user_client.rpc(
-        "fn_travel_run_open",
-        {"p_user": str(user_id), "p_anchor_sim": str(anchor_sim)},
-    ).execute().data
+    return (
+        user_client.rpc(
+            "fn_travel_run_open",
+            {"p_user": str(user_id), "p_anchor_sim": str(anchor_sim)},
+        )
+        .execute()
+        .data
+    )
 
 
 def _force_run_state(admin_client, run_id, **fields) -> None:
@@ -147,18 +140,14 @@ class TestDeterministicDice:
         # Over a spread of takts the roll must actually move (a constant would be a bug that
         # a same-seed assertion alone would happily accept).
         rolls = {
-            admin_client.rpc(
-                "drift_rand_int", {"p_seed": f"{seed}-{i}", "p_lo": 8, "p_hi": 12}
-            ).execute().data
+            admin_client.rpc("drift_rand_int", {"p_seed": f"{seed}-{i}", "p_lo": 8, "p_hi": 12}).execute().data
             for i in range(12)
         }
         assert len(rolls) > 1, "the dice must vary across seeds"
 
     def test_roll_stays_inside_the_inclusive_range(self, admin_client):
         values = {
-            admin_client.rpc(
-                "drift_rand_int", {"p_seed": f"range-{i}", "p_lo": 8, "p_hi": 12}
-            ).execute().data
+            admin_client.rpc("drift_rand_int", {"p_seed": f"range-{i}", "p_lo": 8, "p_hi": 12}).execute().data
             for i in range(60)
         }
         assert values, "sanity"
@@ -190,18 +179,14 @@ class TestSeedSecrecy:
                 "every payout of the run with it"
             )
 
-            admin_client.table("travel_runs").update({"status": "abandoned"}).eq(
-                "id", run_a["id"]
-            ).execute()
+            admin_client.table("travel_runs").update({"status": "abandoned"}).eq("id", run_a["id"]).execute()
             run_b = _open_run(client, user, chart_home["simulation_id"])
             salt_b = admin_client.rpc("drift_run_salt", {"p_run": run_b["id"]}).execute().data
             assert salt_b != salt_a1, "a fresh run draws a fresh secret"
         finally:
             _reset_traveler(admin_client, user)
 
-    def test_the_traveller_cannot_read_their_own_salt(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_the_traveller_cannot_read_their_own_salt(self, admin_client, user_clients, test_user_ids, chart_home):
         """The owner is the adversary — which is why the salt is NOT a travel_runs column.
 
         travel_runs_owner_select (RLS, 246) lets a traveller read their own run row straight
@@ -236,11 +221,14 @@ class TestDriftAward:
         _reset_traveler(admin_client, user)
         _seed_profile(admin_client, user, chart_home["simulation_id"], vp=5, siegel=7)
         try:
-            out = admin_client.rpc(
-                "fn_drift_award",
-                {"p_user": str(user), "p_source": "dispatch", "p_siegel": 10, "p_vp": 3,
-                 "p_run": None},
-            ).execute().data
+            out = (
+                admin_client.rpc(
+                    "fn_drift_award",
+                    {"p_user": str(user), "p_source": "dispatch", "p_siegel": 10, "p_vp": 3, "p_run": None},
+                )
+                .execute()
+                .data
+            )
             assert out["siegel_earned"] == 10
             assert out["vp_earned"] == 3
             assert out["siegel_balance"] == 17, "siegel is an atomic increment on the existing balance"
@@ -277,11 +265,14 @@ class TestDriftAward:
                 .eq("user_id", str(user))
                 .execute()
             ).count
-            out = admin_client.rpc(
-                "fn_drift_award",
-                {"p_user": str(user), "p_source": "entladung", "p_siegel": 0, "p_vp": 0,
-                 "p_run": None},
-            ).execute().data
+            out = (
+                admin_client.rpc(
+                    "fn_drift_award",
+                    {"p_user": str(user), "p_source": "entladung", "p_siegel": 0, "p_vp": 0, "p_run": None},
+                )
+                .execute()
+                .data
+            )
             assert out["siegel_balance"] == 4 and out["vp_total"] == 4
             after = (
                 admin_client.table("audit_log")
@@ -304,8 +295,7 @@ class TestDriftAward:
             with pytest.raises(Exception) as exc:
                 admin_client.rpc(
                     "fn_drift_award",
-                    {"p_user": str(user), "p_source": "x", "p_siegel": -5, "p_vp": 0,
-                     "p_run": None},
+                    {"p_user": str(user), "p_source": "x", "p_siegel": -5, "p_vp": 0, "p_run": None},
                 ).execute()
             assert "credits only" in str(exc.value)
             assert _profile(admin_client, user)["siegel"] == 50, "the balance is untouched"
@@ -319,31 +309,45 @@ class TestDriftAward:
 class TestDispatchPayout:
     """fn_quest_advance: a delivered Depesche credits Siegel (seeded roll) + VP (flat)."""
 
-    def test_delivery_pays_the_seeded_roll(
-        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
-    ):
+    def test_delivery_pays_the_seeded_roll(self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign):
         user, client = test_user_ids[0], user_clients[0]
         _reset_traveler(admin_client, user)
         _set_gate(admin_client, True)
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             run = _open_run(client, user, chart_home["simulation_id"])
-            accepted = client.rpc(
-                "fn_quest_accept",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_template_key": "deliver_memory_parcel",
-                 "p_target_sim": chart_foreign["simulation_id"]},
-            ).execute().data
+            accepted = (
+                client.rpc(
+                    "fn_quest_accept",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_template_key": "deliver_memory_parcel",
+                        "p_target_sim": chart_foreign["simulation_id"],
+                    },
+                )
+                .execute()
+                .data
+            )
             run, instance = accepted["run"], accepted["instance"]
 
             # Stand on the target dock (no run_version bump — the CAS token stays valid).
             _force_run_state(admin_client, run["id"], position_node_id=chart_foreign["id"])
 
-            out = client.rpc(
-                "fn_quest_advance",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_instance": instance["id"]},
-            ).execute().data
+            out = (
+                client.rpc(
+                    "fn_quest_advance",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_instance": instance["id"],
+                    },
+                )
+                .execute()
+                .data
+            )
 
             reward = _tuning(admin_client, "reward_dispatch_tier1")
             # The seed carries a server-only salt (migration 264 §4b), so recomputing the
@@ -351,11 +355,18 @@ class TestDispatchPayout:
             # deterministic for the SERVER (replay, CI, bug reports) and unforgeable for the
             # client — the two properties the dice must hold at the same time.
             salt = admin_client.rpc("drift_run_salt", {"p_run": run["id"]}).execute().data
-            expected_siegel = admin_client.rpc(
-                "drift_rand_int",
-                {"p_seed": f"{salt}:{run['id']}:{instance['id']}:{run['takt_count']}",
-                 "p_lo": reward["siegel_min"], "p_hi": reward["siegel_max"]},
-            ).execute().data
+            expected_siegel = (
+                admin_client.rpc(
+                    "drift_rand_int",
+                    {
+                        "p_seed": f"{salt}:{run['id']}:{instance['id']}:{run['takt_count']}",
+                        "p_lo": reward["siegel_min"],
+                        "p_hi": reward["siegel_max"],
+                    },
+                )
+                .execute()
+                .data
+            )
 
             assert "earnings" in out, "a delivered Depesche must report what it paid"
             assert out["earnings"]["siegel_earned"] == expected_siegel, (
@@ -384,20 +395,36 @@ class TestDispatchPayout:
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             run = _open_run(client, user, chart_home["simulation_id"])
-            accepted = client.rpc(
-                "fn_quest_accept",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_template_key": "deliver_memory_parcel",
-                 "p_target_sim": chart_foreign["simulation_id"]},
-            ).execute().data
+            accepted = (
+                client.rpc(
+                    "fn_quest_accept",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_template_key": "deliver_memory_parcel",
+                        "p_target_sim": chart_foreign["simulation_id"],
+                    },
+                )
+                .execute()
+                .data
+            )
             run, instance = accepted["run"], accepted["instance"]
             _force_run_state(admin_client, run["id"], position_node_id=chart_foreign["id"])
 
-            out = client.rpc(
-                "fn_quest_advance",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_instance": instance["id"]},
-            ).execute().data
+            out = (
+                client.rpc(
+                    "fn_quest_advance",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_instance": instance["id"],
+                    },
+                )
+                .execute()
+                .data
+            )
 
             assert set(out.keys()) == {"run", "instance", "effects"}, (
                 "gate off → the exact migration-249 response shape, no additive key"
@@ -415,22 +442,26 @@ class TestDispatchPayout:
 class TestEntladungPayout:
     """fn_travel_complete: haul → VP 1:1 + Siegel at ratio, plus the Erstvermessung bonus."""
 
-    def _complete_with_haul(
-        self, admin_client, client, user, chart_home, haul: int, visited: list[str]
-    ) -> dict:
+    def _complete_with_haul(self, admin_client, client, user, chart_home, haul: int, visited: list[str]) -> dict:
         run = _open_run(client, user, chart_home["simulation_id"])
         # Since W2.6 the run's live state is COLUMNS, not keys in an untyped checkpoint.
         # `haul_survey` is the source of the loose haul that has no other ledger behind it
         # (the other two are the dig sites and the manifest), so forcing it here is exactly
         # "this run walked in with N points of un-lodged Vermessung".
         _force_run_state(
-            admin_client, run["id"],
-            haul_survey=haul, visited=visited,
+            admin_client,
+            run["id"],
+            haul_survey=haul,
+            visited=visited,
         )
-        return client.rpc(
-            "fn_travel_complete",
-            {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"]},
-        ).execute().data
+        return (
+            client.rpc(
+                "fn_travel_complete",
+                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"]},
+            )
+            .execute()
+            .data
+        )
 
     def test_haul_pays_vp_and_siegel_plus_erstvermessung_bonus(
         self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
@@ -440,14 +471,10 @@ class TestEntladungPayout:
         _set_gate(admin_client, True)
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         # The foreign home is an un-honored node for this traveller → the bank claims it.
-        admin_client.table("chart_honors").delete().eq(
-            "node_stable_key", chart_foreign["stable_key"]
-        ).execute()
+        admin_client.table("chart_honors").delete().eq("node_stable_key", chart_foreign["stable_key"]).execute()
         try:
             haul = 7
-            run = self._complete_with_haul(
-                admin_client, client, user, chart_home, haul, [chart_foreign["id"]]
-            )
+            run = self._complete_with_haul(admin_client, client, user, chart_home, haul, [chart_foreign["id"]])
 
             erstv = _tuning(admin_client, "reward_erstvermessung")
             ratio = float(_tuning(admin_client, "reward_survey_siegel_ratio"))
@@ -469,9 +496,7 @@ class TestEntladungPayout:
             assert row["siegel"] == earnings["siegel_earned"]
         finally:
             _set_gate(admin_client, False)
-            admin_client.table("chart_honors").delete().eq(
-                "node_stable_key", chart_foreign["stable_key"]
-            ).execute()
+            admin_client.table("chart_honors").delete().eq("node_stable_key", chart_foreign["stable_key"]).execute()
             _reset_traveler(admin_client, user)
 
     def test_second_bank_of_a_known_node_wins_no_second_bonus(
@@ -483,18 +508,12 @@ class TestEntladungPayout:
         _reset_traveler(admin_client, user)
         _set_gate(admin_client, True)
         _seed_profile(admin_client, user, chart_home["simulation_id"])
-        admin_client.table("chart_honors").delete().eq(
-            "node_stable_key", chart_foreign["stable_key"]
-        ).execute()
+        admin_client.table("chart_honors").delete().eq("node_stable_key", chart_foreign["stable_key"]).execute()
         try:
-            self._complete_with_haul(
-                admin_client, client, user, chart_home, 4, [chart_foreign["id"]]
-            )
+            self._complete_with_haul(admin_client, client, user, chart_home, 4, [chart_foreign["id"]])
             first = _profile(admin_client, user)
 
-            run2 = self._complete_with_haul(
-                admin_client, client, user, chart_home, 4, [chart_foreign["id"]]
-            )
+            run2 = self._complete_with_haul(admin_client, client, user, chart_home, 4, [chart_foreign["id"]])
             assert run2["checkpoint"]["closing"]["honors_won"] == 0, "the honor is already held"
 
             erstv = _tuning(admin_client, "reward_erstvermessung")
@@ -504,9 +523,7 @@ class TestEntladungPayout:
             assert second["siegel"] - first["siegel"] < erstv["siegel"]
         finally:
             _set_gate(admin_client, False)
-            admin_client.table("chart_honors").delete().eq(
-                "node_stable_key", chart_foreign["stable_key"]
-            ).execute()
+            admin_client.table("chart_honors").delete().eq("node_stable_key", chart_foreign["stable_key"]).execute()
             _reset_traveler(admin_client, user)
 
     def test_gate_off_bank_pays_nothing_and_leaves_no_fun_kern_residue(
@@ -526,25 +543,25 @@ class TestEntladungPayout:
         _set_gate(admin_client, False)
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
-            run = self._complete_with_haul(
-                admin_client, client, user, chart_home, 6, [chart_foreign["id"]]
-            )
+            run = self._complete_with_haul(admin_client, client, user, chart_home, 6, [chart_foreign["id"]])
             assert set(run["checkpoint"].keys()) == {"closing"}, (
                 "gate off → the closing receipt and nothing else (no earnings ceremony)"
             )
             closing = run["checkpoint"]["closing"]
             assert set(closing.keys()) == {
-                "reason", "haul_banked", "haul_lost", "surveys_delivered",
-                "honors_won", "honor_keys",
+                "reason",
+                "haul_banked",
+                "haul_lost",
+                "surveys_delivered",
+                "honors_won",
+                "honor_keys",
             }, "no `haul_transmitted` — a Fun-Kern fact must not appear behind a shut gate"
             assert closing["haul_banked"] == 6
             row = _profile(admin_client, user)
             assert row["vp"] == 0 and row["siegel"] == 0
             assert row["qualities"]["vermessung_lodged"] == 6, "the P0 stat still lodges"
         finally:
-            admin_client.table("chart_honors").delete().eq(
-                "node_stable_key", chart_foreign["stable_key"]
-            ).execute()
+            admin_client.table("chart_honors").delete().eq("node_stable_key", chart_foreign["stable_key"]).execute()
             _reset_traveler(admin_client, user)
 
 
@@ -562,9 +579,7 @@ class TestClearanceExam:
         _seed_profile(admin_client, user, chart_home["simulation_id"], vp=threshold - 1, siegel=999)
         try:
             with pytest.raises(Exception) as exc:
-                client.rpc(
-                    "fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}
-                ).execute()
+                client.rpc("fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}).execute()
             assert "VP_TOO_LOW" in str(exc.value)
             row = _profile(admin_client, user)
             assert row["clearance_rank"] == "aspirant"
@@ -582,9 +597,7 @@ class TestClearanceExam:
         _seed_profile(admin_client, user, chart_home["simulation_id"], vp=threshold, siegel=fee - 1)
         try:
             with pytest.raises(Exception) as exc:
-                client.rpc(
-                    "fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}
-                ).execute()
+                client.rpc("fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}).execute()
             assert "SIEGEL_TOO_LOW" in str(exc.value)
             assert _profile(admin_client, user)["clearance_rank"] == "aspirant"
         finally:
@@ -599,9 +612,7 @@ class TestClearanceExam:
         fee = _tuning(admin_client, "clearance_exam_fee")["feldkartograph"]
         _seed_profile(admin_client, user, chart_home["simulation_id"], vp=threshold, siegel=fee + 5)
         try:
-            out = client.rpc(
-                "fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}
-            ).execute().data
+            out = client.rpc("fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}).execute().data
             assert out["clearance_rank"] == "feldkartograph"
             assert out["fee_paid"] == fee
             assert out["siegel_balance"] == 5
@@ -613,9 +624,7 @@ class TestClearanceExam:
 
             # A second sitting must not charge again.
             with pytest.raises(Exception) as exc:
-                client.rpc(
-                    "fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}
-                ).execute()
+                client.rpc("fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}).execute()
             assert "RANK_ALREADY_HELD" in str(exc.value)
             assert _profile(admin_client, user)["siegel"] == 5, "no double charge"
         finally:
@@ -629,9 +638,7 @@ class TestClearanceExam:
         _seed_profile(admin_client, user, chart_home["simulation_id"], vp=999, siegel=999)
         try:
             with pytest.raises(Exception) as exc:
-                client.rpc(
-                    "fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}
-                ).execute()
+                client.rpc("fn_clearance_exam", {"p_user": str(user), "p_rank": "feldkartograph"}).execute()
             assert "GATE_CLOSED" in str(exc.value)
             assert _profile(admin_client, user)["clearance_rank"] == "aspirant"
         finally:
@@ -669,11 +676,19 @@ class TestZerfaserungCounter:
         """Force a Kohärenz-floor collapse: 1 KH, 0 BB → the move pays Notfrequenz and unravels."""
         run = _open_run(client, user, chart_home["simulation_id"])
         _force_run_state(admin_client, run["id"], kohaerenz=1, bandbreite=0)
-        return client.rpc(
-            "fn_travel_move",
-            {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-             "p_to_node": neighbor_id},
-        ).execute().data
+        return (
+            client.rpc(
+                "fn_travel_move",
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_to_node": neighbor_id,
+                },
+            )
+            .execute()
+            .data
+        )
 
     def test_gate_on_the_floor_is_a_havarie_not_a_scar(
         self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor

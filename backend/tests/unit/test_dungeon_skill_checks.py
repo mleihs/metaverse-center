@@ -131,8 +131,7 @@ class TestOmittingTheAgentIsNoLongerAFreePass:
             )
             assert result.check is not None, "Ohne Probe gäbe es gar kein Ergebnis"
             assert result.check["result"] == "fail", (
-                "Ohne handlungsfähigen Agenten muss die Probe FEHLSCHLAGEN, "
-                "nicht stumm gelingen"
+                "Ohne handlungsfähigen Agenten muss die Probe FEHLSCHLAGEN, nicht stumm gelingen"
             )
             assert result.check["breakdown"]["reason"] == "no_capable_agent"
         finally:

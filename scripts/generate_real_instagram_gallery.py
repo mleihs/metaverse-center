@@ -24,25 +24,73 @@ SIM = "50000000-0000-0000-0000-000000000001"  # Cite des Dames (production)
 BANNER = f"{BASE}/simulation.assets/{SIM}/banner.webp"
 
 AGENTS = [
-    ("Ada Lovelace", f"{BASE}/agent.portraits/{SIM}/af16f3b0-a00d-490c-91ff-f19f125a7bc0/2da926f2-539d-47e6-a875-bda32e31275b.avif"),
-    ("Christine de Pizan", f"{BASE}/agent.portraits/{SIM}/b0519084-f58b-4a2d-8139-226a768a2146/164a253b-35b2-452a-a3c6-6a6b981d2781.avif"),
-    ("Hildegard von Bingen", f"{BASE}/agent.portraits/{SIM}/380aea48-84f9-40c9-889c-16d746259d26/1bdc0b68-6d2b-41f0-a6df-2afdfe52dc38.avif"),
-    ("Mary Wollstonecraft", f"{BASE}/agent.portraits/{SIM}/5da68bc8-c5cb-41ad-8f1d-9e5d1e6ab1e8/3134461c-a6f7-47dd-81b6-c79a952a1c02.avif"),
-    ("Sojourner Truth", f"{BASE}/agent.portraits/{SIM}/b2622fd9-1021-463e-afad-6cbbb444e94b/06223817-7b21-4e7f-a9d1-c8a81f4692bb.avif"),
-    ("Sor Juana Ines de la Cruz", f"{BASE}/agent.portraits/{SIM}/cc93c810-99a4-419a-9d68-b312e6c512ec/edbe0197-2b46-4e90-a9bc-1a08e7588963.avif"),
+    (
+        "Ada Lovelace",
+        f"{BASE}/agent.portraits/{SIM}/af16f3b0-a00d-490c-91ff-f19f125a7bc0/2da926f2-539d-47e6-a875-bda32e31275b.avif",
+    ),
+    (
+        "Christine de Pizan",
+        f"{BASE}/agent.portraits/{SIM}/b0519084-f58b-4a2d-8139-226a768a2146/164a253b-35b2-452a-a3c6-6a6b981d2781.avif",
+    ),
+    (
+        "Hildegard von Bingen",
+        f"{BASE}/agent.portraits/{SIM}/380aea48-84f9-40c9-889c-16d746259d26/1bdc0b68-6d2b-41f0-a6df-2afdfe52dc38.avif",
+    ),
+    (
+        "Mary Wollstonecraft",
+        f"{BASE}/agent.portraits/{SIM}/5da68bc8-c5cb-41ad-8f1d-9e5d1e6ab1e8/3134461c-a6f7-47dd-81b6-c79a952a1c02.avif",
+    ),
+    (
+        "Sojourner Truth",
+        f"{BASE}/agent.portraits/{SIM}/b2622fd9-1021-463e-afad-6cbbb444e94b/06223817-7b21-4e7f-a9d1-c8a81f4692bb.avif",
+    ),
+    (
+        "Sor Juana Ines de la Cruz",
+        f"{BASE}/agent.portraits/{SIM}/cc93c810-99a4-419a-9d68-b312e6c512ec/edbe0197-2b46-4e90-a9bc-1a08e7588963.avif",
+    ),
 ]
 
 BUILDINGS = [
-    ("The College of Letters", f"{BASE}/building.images/{SIM}/471bf183-7a23-4641-9d1b-e07f811a050b/9f41847a-8f2f-43ff-aa78-23afe04b0640.avif"),
-    ("The Footnote Room", f"{BASE}/building.images/{SIM}/0529fa92-43de-4589-83f3-e693af6ee6ce/17ac5457-d10b-4c55-8ad6-0d9fcdb5c377.avif"),
-    ("The Garden of Remembered Names", f"{BASE}/building.images/{SIM}/23a06c32-e586-4946-afa3-31af31cd70a0/4e00a6d9-c2c6-454f-8d2a-de32b7f280a4.avif"),
-    ("The Gate of Justice", f"{BASE}/building.images/{SIM}/e7c4170c-ce2e-4939-95b8-4edb868368e4/8f6ea9de-c13d-4b60-a14a-53570fa35097.avif"),
-    ("The Hall of Declarations", f"{BASE}/building.images/{SIM}/b18b0805-2f9d-423c-9275-d6fead648961/3605f661-4c53-4307-ba58-c43d33a36459.avif"),
-    ("The Listening Wall", f"{BASE}/building.images/{SIM}/c6ad04e1-83e2-48e1-8a38-afc9b188b618/7f9f7f45-1f25-4c17-b899-b4316e4195bf.avif"),
-    ("The Observatory of the Blazing World", f"{BASE}/building.images/{SIM}/ce98b61d-783b-489c-9a34-4180cf64e97d/2625bda6-377b-461a-9277-5b350344fcc2.avif"),
-    ("The Salon of Reason", f"{BASE}/building.images/{SIM}/f1f689e7-5fd6-4742-ae81-d305faeb9e60/559bcdfd-9bc7-42e0-94dd-a546a9d4e429.avif"),
-    ("The Scriptorium", f"{BASE}/building.images/{SIM}/c471ae39-c984-462f-987b-c3acfa82f6f4/e3d171d9-b03a-4254-9cd9-625e99861b48.avif"),
-    ("The Unnamed Archive", f"{BASE}/building.images/{SIM}/bc825013-a000-4042-8b19-3c2b85f58d37/3c61af28-bfc5-4ff7-8d4a-f326d5cfcdc7.avif"),
+    (
+        "The College of Letters",
+        f"{BASE}/building.images/{SIM}/471bf183-7a23-4641-9d1b-e07f811a050b/9f41847a-8f2f-43ff-aa78-23afe04b0640.avif",
+    ),
+    (
+        "The Footnote Room",
+        f"{BASE}/building.images/{SIM}/0529fa92-43de-4589-83f3-e693af6ee6ce/17ac5457-d10b-4c55-8ad6-0d9fcdb5c377.avif",
+    ),
+    (
+        "The Garden of Remembered Names",
+        f"{BASE}/building.images/{SIM}/23a06c32-e586-4946-afa3-31af31cd70a0/4e00a6d9-c2c6-454f-8d2a-de32b7f280a4.avif",
+    ),
+    (
+        "The Gate of Justice",
+        f"{BASE}/building.images/{SIM}/e7c4170c-ce2e-4939-95b8-4edb868368e4/8f6ea9de-c13d-4b60-a14a-53570fa35097.avif",
+    ),
+    (
+        "The Hall of Declarations",
+        f"{BASE}/building.images/{SIM}/b18b0805-2f9d-423c-9275-d6fead648961/3605f661-4c53-4307-ba58-c43d33a36459.avif",
+    ),
+    (
+        "The Listening Wall",
+        f"{BASE}/building.images/{SIM}/c6ad04e1-83e2-48e1-8a38-afc9b188b618/7f9f7f45-1f25-4c17-b899-b4316e4195bf.avif",
+    ),
+    (
+        "The Observatory of the Blazing World",
+        f"{BASE}/building.images/{SIM}/ce98b61d-783b-489c-9a34-4180cf64e97d/2625bda6-377b-461a-9277-5b350344fcc2.avif",
+    ),
+    (
+        "The Salon of Reason",
+        f"{BASE}/building.images/{SIM}/f1f689e7-5fd6-4742-ae81-d305faeb9e60/559bcdfd-9bc7-42e0-94dd-a546a9d4e429.avif",
+    ),
+    (
+        "The Scriptorium",
+        f"{BASE}/building.images/{SIM}/c471ae39-c984-462f-987b-c3acfa82f6f4/e3d171d9-b03a-4254-9cd9-625e99861b48.avif",
+    ),
+    (
+        "The Unnamed Archive",
+        f"{BASE}/building.images/{SIM}/bc825013-a000-4042-8b19-3c2b85f58d37/3c61af28-bfc5-4ff7-8d4a-f326d5cfcdc7.avif",
+    ),
 ]
 
 CLASSIFICATIONS = ["PUBLIC", "AMBER", "RESTRICTED"]
@@ -63,7 +111,7 @@ async def main() -> None:
         n_total = len(AGENTS) + len(BUILDINGS) + 4 + 2  # agents + buildings + dispatches + stories
         # ── Agent Dossier Posts ──────────────────────────────────────
         for i, (name, url) in enumerate(AGENTS):
-            print(f"[{i+1:02d}/{n_total}] Agent: {name}")
+            print(f"[{i + 1:02d}/{n_total}] Agent: {name}")
             resp = await client.get(url)
             if resp.status_code != 200:
                 print(f"  SKIP (HTTP {resp.status_code})")
@@ -85,7 +133,7 @@ async def main() -> None:
         n_agents = len(AGENTS)
         # ── Building Surveillance Posts ──────────────────────────────
         for i, (name, url) in enumerate(BUILDINGS):
-            print(f"[{n_agents+i+1:02d}/{n_total}] Building: {name}")
+            print(f"[{n_agents + i + 1:02d}/{n_total}] Building: {name}")
             resp = await client.get(url)
             if resp.status_code != 200:
                 print(f"  SKIP (HTTP {resp.status_code})")
@@ -114,47 +162,71 @@ async def main() -> None:
             ("DISPATCH [0004] -- Archive Unsealed", "RE: Cite des Dames -- Declassified", "AMBER"),
         ]
         for i, (title, subtitle, classif) in enumerate(dispatches):
-            print(f"[{n_content+i+1:02d}/{n_total}] Dispatch: {title}")
+            print(f"[{n_content + i + 1:02d}/{n_total}] Dispatch: {title}")
             if banner_bytes:
                 jpeg = svc._compose_with_overlay(
                     image_bytes=banner_bytes,
-                    title=title, subtitle=subtitle,
-                    color_primary="#e2e8f0", color_background="#0f172a",
+                    title=title,
+                    subtitle=subtitle,
+                    color_primary="#e2e8f0",
+                    color_background="#0f172a",
                     classification=classif,
                     cipher_hint="CIPHER-BUREAU-4419" if i == 0 else None,
                 )
             else:
                 # Fallback solid
                 from backend.services.instagram_image_helpers import generate_solid_background
+
                 jpeg = svc._compose_with_overlay(
                     image_bytes=generate_solid_background("#0f172a"),
-                    title=title, subtitle=subtitle,
-                    color_primary="#e2e8f0", color_background="#0f172a",
+                    title=title,
+                    subtitle=subtitle,
+                    color_primary="#e2e8f0",
+                    color_background="#0f172a",
                     classification=classif,
                 )
-            results.append((f"dispatch_{i+1:02d}.jpg", jpeg, title, "Bureau Dispatch"))
+            results.append((f"dispatch_{i + 1:02d}.jpg", jpeg, title, "Bureau Dispatch"))
 
         # ── 2 Impact Stories with real banner ────────────────────────
         n_pre_stories = n_content + 4
         if banner_bytes:
-            print(f"[{n_pre_stories+1:02d}/{n_total}] Story: Impact with banner")
+            print(f"[{n_pre_stories + 1:02d}/{n_total}] Story: Impact with banner")
             jpeg = svc.compose_story_impact(
-                simulation_name="Cite des Dames", effective_magnitude=0.78,
+                simulation_name="Cite des Dames",
+                effective_magnitude=0.78,
                 events_spawned=["Cathedral Resonance Shift", "Market Panic", "Archive Breach"],
                 narrative_closing="The substrate remembers what the surface tries to forget.",
-                accent_hex="#e2e8f0", sim_color_hex="#64748b",
-                banner_bytes=banner_bytes, portraits=None,
-                reactions=[{"agent_name": "Christine de Pizan", "text": "The city remembers what its builders tried to erase.", "emotion": "quiet resolve"}],
+                accent_hex="#e2e8f0",
+                sim_color_hex="#64748b",
+                banner_bytes=banner_bytes,
+                portraits=None,
+                reactions=[
+                    {
+                        "agent_name": "Christine de Pizan",
+                        "text": "The city remembers what its builders tried to erase.",
+                        "emotion": "quiet resolve",
+                    }
+                ],
             )
             results.append(("story_impact_banner.jpg", jpeg, "Shard Impact: Cite des Dames", "Story: Impact"))
 
-            print(f"[{n_pre_stories+2:02d}/{n_total}] Story: Impact high magnitude")
+            print(f"[{n_pre_stories + 2:02d}/{n_total}] Story: Impact high magnitude")
             jpeg = svc.compose_story_impact(
-                simulation_name="Cite des Dames", effective_magnitude=0.95,
-                events_spawned=["Total Structural Collapse", "Mass Displacement", "Reality Breach", "Bureau Lockdown", "Emergency Dispatch"],
+                simulation_name="Cite des Dames",
+                effective_magnitude=0.95,
+                events_spawned=[
+                    "Total Structural Collapse",
+                    "Mass Displacement",
+                    "Reality Breach",
+                    "Bureau Lockdown",
+                    "Emergency Dispatch",
+                ],
                 narrative_closing="When certainty fractures, what spills through is not chaos but memory.",
-                accent_hex="#e74c3c", sim_color_hex="#c0392b",
-                banner_bytes=banner_bytes, portraits=None, reactions=None,
+                accent_hex="#e74c3c",
+                sim_color_hex="#c0392b",
+                banner_bytes=banner_bytes,
+                portraits=None,
+                reactions=None,
             )
             results.append(("story_impact_catastrophic.jpg", jpeg, "Shard Impact: Catastrophic", "Story: Impact"))
 
@@ -177,7 +249,7 @@ async def main() -> None:
             <div class="meta">
                 <span class="cat">{category}</span>
                 <span class="title">{title}</span>
-                <span class="size">{len(jpeg)/1024:.0f} KB</span>
+                <span class="size">{len(jpeg) / 1024:.0f} KB</span>
             </div>
         </div>""")
 
@@ -213,16 +285,16 @@ h1 {{ font-size: 20px; color: #f39c12; margin-bottom: 8px; letter-spacing: 2px; 
 <p class="subtitle">Instagram Feed Post Gallery -- {len(results)} images for visual QA review</p>
 <div class="filters">
     <button class="active" onclick="filter('all')">All ({len(results)})</button>
-    <button onclick="filter('Agent Dossier')">Agents ({sum(1 for _,_,_,c in results if c=='Agent Dossier')})</button>
-    <button onclick="filter('Building Surveillance')">Buildings ({sum(1 for _,_,_,c in results if c=='Building Surveillance')})</button>
-    <button onclick="filter('Bureau Dispatch')">Dispatches ({sum(1 for _,_,_,c in results if c=='Bureau Dispatch')})</button>
-    <button onclick="filter('Story: Impact')">Stories ({sum(1 for _,_,_,c in results if 'Story' in c)})</button>
+    <button onclick="filter('Agent Dossier')">Agents ({sum(1 for _, _, _, c in results if c == "Agent Dossier")})</button>
+    <button onclick="filter('Building Surveillance')">Buildings ({sum(1 for _, _, _, c in results if c == "Building Surveillance")})</button>
+    <button onclick="filter('Bureau Dispatch')">Dispatches ({sum(1 for _, _, _, c in results if c == "Bureau Dispatch")})</button>
+    <button onclick="filter('Story: Impact')">Stories ({sum(1 for _, _, _, c in results if "Story" in c)})</button>
 </div>
 <div class="grid">
 {"".join(cards)}
 </div>
 <div class="stats">
-    Total: {len(results)} images | {sum(len(j) for _,j,_,_ in results)/1024:.0f} KB |
+    Total: {len(results)} images | {sum(len(j) for _, j, _, _ in results) / 1024:.0f} KB |
     Generated from local Supabase ({SIM[:8]}...)
 </div>
 <script>
@@ -239,11 +311,11 @@ function filter(cat) {{
 
     (OUTPUT / "index.html").write_text(html)
     total_kb = sum(len(j) for _, j, _, _ in results) / 1024
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"  {len(results)} images saved to {OUTPUT}/")
     print(f"  Total: {total_kb:.0f} KB")
     print(f"  Gallery: {OUTPUT}/index.html")
-    print(f"{'='*60}")
+    print(f"{'=' * 60}")
     print(f"\n  open {OUTPUT}/index.html")
 
 

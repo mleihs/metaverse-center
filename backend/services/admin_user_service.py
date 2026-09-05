@@ -147,10 +147,7 @@ class AdminUserService:
         """Address, locale and world count — read BEFORE the account is gone."""
         try:
             profile = await maybe_single_data(
-                admin_supabase.table("user_profiles")
-                .select("email")
-                .eq("id", str(user_id))
-                .maybe_single()
+                admin_supabase.table("user_profiles").select("email").eq("id", str(user_id)).maybe_single()
             )
             email = (profile or {}).get("email")
             if not email:
@@ -177,15 +174,11 @@ class AdminUserService:
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             # A deletion must never fail because the confirmation could not be
             # prepared. The right to be forgotten outranks the receipt.
-            logger.exception(
-                "Could not gather the deletion contact", extra={"user_id": str(user_id)}
-            )
+            logger.exception("Could not gather the deletion contact", extra={"user_id": str(user_id)})
             return None
 
     @classmethod
-    async def _send_deletion_confirmation(
-        cls, admin_supabase: Client, user_id: UUID, contact: dict | None
-    ) -> None:
+    async def _send_deletion_confirmation(cls, admin_supabase: Client, user_id: UUID, contact: dict | None) -> None:
         """Best-effort: the account is already gone, the mail must not undo that."""
         if not contact:
             logger.warning(
@@ -204,9 +197,7 @@ class AdminUserService:
                 record=MailRecord(template="account_deleted", user_id=str(user_id)),
             )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-            logger.exception(
-                "Deletion confirmation could not be sent", extra={"user_id": str(user_id)}
-            )
+            logger.exception("Deletion confirmation could not be sent", extra={"user_id": str(user_id)})
             sentry_sdk.capture_exception()
 
     @classmethod

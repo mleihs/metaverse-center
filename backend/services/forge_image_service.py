@@ -246,8 +246,7 @@ class ForgeImageService:
             return params
         if image_model.family.reference == "list":
             params[feld] = [
-                await self._download_reference_image(u, name=f"reference-{i}.png")
-                for i, u in enumerate(params[feld])
+                await self._download_reference_image(u, name=f"reference-{i}.png") for i, u in enumerate(params[feld])
             ]
         else:
             params[feld] = await self._download_reference_image(params[feld])
@@ -698,9 +697,7 @@ class ForgeImageService:
                 # Was nach der Beschreibung noch frei ist, bekommt der Stil.
                 rest = wortbudget(grenze) - len(description.split())
                 style_prompt = (
-                    fit_to_token_budget(style_prompt, tokenbudget(rest), was="scene_style")
-                    if rest > 0
-                    else ""
+                    fit_to_token_budget(style_prompt, tokenbudget(rest), was="scene_style") if rest > 0 else ""
                 )
             if style_prompt:
                 description = f"{description}, {style_prompt}"

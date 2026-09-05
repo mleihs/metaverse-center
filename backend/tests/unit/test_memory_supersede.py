@@ -88,10 +88,19 @@ class TestDasTorIstFailClosed:
         ausser {false,0,no,""} das Tor GEOEFFNET."""
         klient = _klient(tor=False)
         klient.table.side_effect = lambda _n: MagicMock(
-            select=MagicMock(return_value=MagicMock(
-                eq=MagicMock(return_value=MagicMock(
-                    limit=MagicMock(return_value=MagicMock(
-                        execute=AsyncMock(return_value=MagicMock(data=[{"setting_value": "ture"}]))))))))
+            select=MagicMock(
+                return_value=MagicMock(
+                    eq=MagicMock(
+                        return_value=MagicMock(
+                            limit=MagicMock(
+                                return_value=MagicMock(
+                                    execute=AsyncMock(return_value=MagicMock(data=[{"setting_value": "ture"}]))
+                                )
+                            )
+                        )
+                    )
+                )
+            )
         )
         assert await M._gate_open(klient) is False
 
@@ -103,8 +112,7 @@ class TestImZweifelNein:
         klient = _klient(tor=True, kandidaten=[_paar()], namen=[{"id": "x", "name": "Marie Morgenrot"}])
         with (
             patch("backend.services.memory_supersede_service.GenerationService") as gen,
-            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede",
-                  AsyncMock()) as sup,
+            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede", AsyncMock()) as sup,
         ):
             gen.return_value.judge_memory_supersession = AsyncMock(
                 return_value=MemorySupersessionVerdict(supersedes=False, reason="nur eine Ergaenzung")
@@ -118,8 +126,7 @@ class TestImZweifelNein:
         klient = _klient(tor=True, kandidaten=[_paar()], namen=[{"id": "x", "name": "Marie Morgenrot"}])
         with (
             patch("backend.services.memory_supersede_service.GenerationService") as gen,
-            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede",
-                  AsyncMock()) as sup,
+            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede", AsyncMock()) as sup,
         ):
             gen.return_value.judge_memory_supersession = AsyncMock(
                 return_value=MemorySupersessionVerdict(supersedes=True, reason="Rolle abgegeben")
@@ -131,16 +138,13 @@ class TestImZweifelNein:
 
     async def test_ein_scheiterndes_urteil_reisst_die_uebrigen_nicht_mit(self):
         """Ein Paar, dessen Urteil scheitert, darf den Takt nicht toeten."""
-        klient = _klient(tor=True, kandidaten=[_paar(), _paar()],
-                         namen=[{"id": "x", "name": "Marie Morgenrot"}])
+        klient = _klient(tor=True, kandidaten=[_paar(), _paar()], namen=[{"id": "x", "name": "Marie Morgenrot"}])
         with (
             patch("backend.services.memory_supersede_service.GenerationService") as gen,
-            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede",
-                  AsyncMock()),
+            patch("backend.services.memory_supersede_service.AgentMemoryService.supersede", AsyncMock()),
         ):
             gen.return_value.judge_memory_supersession = AsyncMock(
-                side_effect=[RuntimeError("Modell weg"),
-                             MemorySupersessionVerdict(supersedes=True, reason="ok")]
+                side_effect=[RuntimeError("Modell weg"), MemorySupersessionVerdict(supersedes=True, reason="ok")]
             )
             erledigt = await M.run_for_simulation(klient, uuid4())
         assert len(erledigt) == 1, "das zweite Paar wurde nicht mehr beurteilt"

@@ -67,6 +67,7 @@ MAX_COMBAT_ATTEMPTS = 25
 
 # ── Terminal Colors ──────────────────────────────────────────────────────────
 
+
 def _ok(msg: str) -> None:
     print(f"  \033[32m[OK]\033[0m {msg}")
 
@@ -91,9 +92,11 @@ def _subheading(msg: str) -> None:
 
 # ── Data Classes ─────────────────────────────────────────────────────────────
 
+
 @dataclass
 class CombatStats:
     """Statistics for a single combat encounter."""
+
     rounds: int = 0
     victory: bool = False
     wipe: bool = False
@@ -106,6 +109,7 @@ class CombatStats:
 @dataclass
 class RunStats:
     """Statistics for a single dungeon run."""
+
     run_id: str = ""
     archetype: str = ""
     difficulty: int = 1
@@ -137,6 +141,7 @@ class RunStats:
 
 # ── API Client ───────────────────────────────────────────────────────────────
 
+
 class DungeonAPIClient:
     """HTTP client for the dungeon REST API with retry logic."""
 
@@ -144,10 +149,12 @@ class DungeonAPIClient:
         self.token = token
         self.verbose = verbose
         self.session = requests.Session()
-        self.session.headers.update({
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            }
+        )
 
     def _request(
         self,
@@ -292,6 +299,7 @@ class APIError(Exception):
 
 # ── Authentication ───────────────────────────────────────────────────────────
 
+
 def get_auth_token() -> str:
     """Authenticate via Supabase GoTrue and return a JWT access token."""
     url = f"{SUPABASE_URL}/auth/v1/token?grant_type=password"
@@ -314,6 +322,7 @@ def get_auth_token() -> str:
 
 
 # ── Combat AI ────────────────────────────────────────────────────────────────
+
 
 def _count_alive_enemies(combat: dict) -> int:
     """Count alive enemies in the current combat state."""
@@ -386,11 +395,13 @@ def choose_combat_actions(state: dict, force_attack: bool = False) -> list[dict]
                 else:
                     target_id = agent_id
             if chosen_ability:
-                actions.append({
-                    "agent_id": agent_id,
-                    "ability_id": chosen_ability["id"],
-                    "target_id": target_id,
-                })
+                actions.append(
+                    {
+                        "agent_id": agent_id,
+                        "ability_id": chosen_ability["id"],
+                        "target_id": target_id,
+                    }
+                )
             continue
 
         # ── Priority 1: Assassin DPS (highest damage) ───────────────
@@ -452,8 +463,11 @@ def choose_combat_actions(state: dict, force_attack: bool = False) -> list[dict]
             elif shield:
                 # Shield the most stressed non-self ally
                 most_stressed_ally = max(
-                    (a for a in party if a.get("condition") not in ("captured", "afflicted")
-                     and a["agent_id"] != agent_id),
+                    (
+                        a
+                        for a in party
+                        if a.get("condition") not in ("captured", "afflicted") and a["agent_id"] != agent_id
+                    ),
                     key=lambda a: a.get("stress", 0),
                     default=None,
                 )
@@ -501,8 +515,7 @@ def choose_combat_actions(state: dict, force_attack: bool = False) -> list[dict]
                 rally = ability_map.get("propagandist_rally")
                 inspire = ability_map.get("propagandist_inspire")
                 stressed_count = sum(
-                    1 for a in party
-                    if a.get("stress", 0) > 300 and a.get("condition") not in ("captured", "afflicted")
+                    1 for a in party if a.get("stress", 0) > 300 and a.get("condition") not in ("captured", "afflicted")
                 )
                 if rally and stressed_count >= 2:
                     chosen_ability = rally
@@ -530,16 +543,19 @@ def choose_combat_actions(state: dict, force_attack: bool = False) -> list[dict]
                 target_id = agent_id
 
         if chosen_ability:
-            actions.append({
-                "agent_id": agent_id,
-                "ability_id": chosen_ability["id"],
-                "target_id": target_id,
-            })
+            actions.append(
+                {
+                    "agent_id": agent_id,
+                    "ability_id": chosen_ability["id"],
+                    "target_id": target_id,
+                }
+            )
 
     return actions
 
 
 # ── Room Navigation AI ───────────────────────────────────────────────────────
+
 
 def choose_next_room(state: dict) -> int | None:
     """Choose the next room to move to, prioritizing forward progress.
@@ -586,10 +602,7 @@ def choose_next_room(state: dict) -> int | None:
     if alive_count > 0:
         avg_stress //= alive_count
 
-    critical_agents = sum(
-        1 for a in party
-        if a.get("condition") not in ("captured",) and a.get("stress", 0) > 600
-    )
+    critical_agents = sum(1 for a in party if a.get("condition") not in ("captured",) and a.get("stress", 0) > 600)
 
     # Score each candidate
     scored = []
@@ -647,10 +660,7 @@ def choose_encounter_action(state: dict, move_result: dict) -> dict | None:
         return None
 
     party = state.get("party", [])
-    operational_agents = [
-        a for a in party
-        if a.get("condition") not in ("captured", "afflicted")
-    ]
+    operational_agents = [a for a in party if a.get("condition") not in ("captured", "afflicted")]
     if not operational_agents:
         return None
 
@@ -694,6 +704,7 @@ def choose_encounter_action(state: dict, move_result: dict) -> dict | None:
 
 # ── Loot Distribution AI ────────────────────────────────────────────────────
 
+
 def handle_distribution(client: DungeonAPIClient, run_id: str, state: dict, verbose: bool = False) -> dict:
     """Handle the loot distribution phase by assigning all items and confirming."""
     pending_loot = state.get("pending_loot", [])
@@ -710,10 +721,7 @@ def handle_distribution(client: DungeonAPIClient, run_id: str, state: dict, verb
     auto_types = {"stress_heal", "event_modifier", "arc_modifier", "dungeon_buff"}
     distributable = [item for item in pending_loot if item.get("effect_type") not in auto_types]
 
-    operational_agents = [
-        a for a in party
-        if a.get("condition") not in ("captured",)
-    ]
+    operational_agents = [a for a in party if a.get("condition") not in ("captured",)]
     if not operational_agents:
         operational_agents = party[:1]
 
@@ -753,6 +761,7 @@ def handle_distribution(client: DungeonAPIClient, run_id: str, state: dict, verb
 
 # ── Single Run Execution ────────────────────────────────────────────────────
 
+
 def run_single_playthrough(
     client: DungeonAPIClient,
     archetype: str,
@@ -783,10 +792,10 @@ def run_single_playthrough(
         return stats
 
     # Pick 3 agents to match browser party size (min_party_size=2, max_party_size=3)
-    party_ids = [a["id"] for a in agents[:min(3, len(agents))]]
+    party_ids = [a["id"] for a in agents[: min(3, len(agents))]]
 
     if verbose:
-        party_names = [a.get("name", a["id"][:8]) for a in agents[:len(party_ids)]]
+        party_names = [a.get("name", a["id"][:8]) for a in agents[: len(party_ids)]]
         _info(f"Party ({len(party_ids)}): {', '.join(party_names)}")
 
     # ── Step 2: Create dungeon run ────────────────────────────────────────
@@ -803,7 +812,8 @@ def run_single_playthrough(
                     params={"simulation_id": SIMULATION_ID, "limit": 5},
                 )
                 active_runs = [
-                    r for r in history.get("data", [])
+                    r
+                    for r in history.get("data", [])
                     if r.get("status") in ("active", "combat", "exploring", "distributing")
                 ]
                 if active_runs:
@@ -890,8 +900,7 @@ def run_single_playthrough(
             combat = state.get("combat", {})
             combat_stats.enemies_faced = len([e for e in combat.get("enemies", []) if e.get("is_alive")])
             combat_stats.is_boss = any(
-                r.get("room_type") == "boss" and r.get("current")
-                for r in state.get("rooms", [])
+                r.get("room_type") == "boss" and r.get("current") for r in state.get("rooms", [])
             )
 
             combat_round = 0
@@ -947,8 +956,10 @@ def run_single_playthrough(
                         if evt.get("hit"):
                             dmg = evt.get("damage", 0)
                             stress = evt.get("stress", 0)
-                            _info(f"    {evt.get('actor', '?')} -> {evt.get('target', '?')}: "
-                                  f"{evt.get('action', '?')} (dmg={dmg}, stress={stress})")
+                            _info(
+                                f"    {evt.get('actor', '?')} -> {evt.get('target', '?')}: "
+                                f"{evt.get('action', '?')} (dmg={dmg}, stress={stress})"
+                            )
 
                 # Check combat outcome
                 if round_result.get("victory") or combat_result.get("victory"):
@@ -1019,10 +1030,7 @@ def run_single_playthrough(
 
         # ── Handle rest phase ─────────────────────────────────────────
         if phase == "rest":
-            alive_ids = [
-                a["agent_id"] for a in state.get("party", [])
-                if a.get("condition") not in ("captured",)
-            ]
+            alive_ids = [a["agent_id"] for a in state.get("party", []) if a.get("condition") not in ("captured",)]
             if alive_ids:
                 try:
                     rest_result = client.rest(run_id, alive_ids)
@@ -1121,8 +1129,9 @@ def run_single_playthrough(
                             action_result = client.submit_action(run_id, encounter_action)
                             check = action_result.get("check", {})
                             if verbose and check:
-                                _info(f"    Encounter: {check.get('aptitude', '?')} "
-                                      f"check -> {check.get('result', '?')}")
+                                _info(
+                                    f"    Encounter: {check.get('aptitude', '?')} check -> {check.get('result', '?')}"
+                                )
                             stats.events.append(f"encounter:{action_result.get('result', 'unknown')}")
                             state = action_result.get("state", state)
                         except APIError as e:
@@ -1180,18 +1189,14 @@ def run_single_playthrough(
     # Record final state
     try:
         final_state = client.get_state(run_id)
-        stats.rooms_cleared = sum(
-            1 for r in final_state.get("rooms", []) if r.get("cleared")
-        )
+        stats.rooms_cleared = sum(1 for r in final_state.get("rooms", []) if r.get("cleared"))
         stats.depth_reached = final_state.get("depth", 0)
 
         # Track condition changes
         for agent in final_state.get("party", []):
             condition = agent.get("condition", "operational")
             if condition != "operational":
-                stats.condition_changes.append(
-                    f"{agent.get('agent_name', '?')}: {condition}"
-                )
+                stats.condition_changes.append(f"{agent.get('agent_name', '?')}: {condition}")
 
         # Record final stability for Tower
         final_arch = final_state.get("archetype_state", {})
@@ -1212,14 +1217,17 @@ def run_single_playthrough(
             "abandoned": "\033[33m[RETREAT]\033[0m",
             "error": "\033[31m[ERROR]\033[0m",
         }.get(stats.outcome, "[?]")
-        print(f"\n  {icon} Run #{run_number}: {stats.outcome} "
-              f"({stats.rooms_cleared} rooms, {len(stats.combats)} combats, "
-              f"{stats.duration_seconds:.1f}s)")
+        print(
+            f"\n  {icon} Run #{run_number}: {stats.outcome} "
+            f"({stats.rooms_cleared} rooms, {len(stats.combats)} combats, "
+            f"{stats.duration_seconds:.1f}s)"
+        )
 
     return stats
 
 
 # ── Summary Report ───────────────────────────────────────────────────────────
+
 
 def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) -> None:
     """Print a comprehensive summary of all playthrough statistics."""
@@ -1239,11 +1247,11 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
 
     _subheading("Outcomes")
     print(f"  Total runs:     {total}")
-    print(f"  Wins:           {wins} ({wins/total*100:.0f}%)")
-    print(f"  Wipes:          {wipes} ({wipes/total*100:.0f}%)")
-    print(f"  Retreats:       {retreats} ({retreats/total*100:.0f}%)")
+    print(f"  Wins:           {wins} ({wins / total * 100:.0f}%)")
+    print(f"  Wipes:          {wipes} ({wipes / total * 100:.0f}%)")
+    print(f"  Retreats:       {retreats} ({retreats / total * 100:.0f}%)")
     if errors:
-        print(f"  Errors:         {errors} ({errors/total*100:.0f}%)")
+        print(f"  Errors:         {errors} ({errors / total * 100:.0f}%)")
 
     # Rooms
     successful = [s for s in all_stats if s.outcome != "error"]
@@ -1272,9 +1280,9 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
 
         _subheading("Combat")
         print(f"  Total combats:      {total_combats}")
-        print(f"  Combat wins:        {combat_wins} ({combat_wins/total_combats*100:.0f}%)")
-        print(f"  Combat wipes:       {combat_wipes} ({combat_wipes/total_combats*100:.0f}%)")
-        print(f"  Stalemates:         {combat_stalemates} ({combat_stalemates/total_combats*100:.0f}%)")
+        print(f"  Combat wins:        {combat_wins} ({combat_wins / total_combats * 100:.0f}%)")
+        print(f"  Combat wipes:       {combat_wipes} ({combat_wipes / total_combats * 100:.0f}%)")
+        print(f"  Stalemates:         {combat_stalemates} ({combat_stalemates / total_combats * 100:.0f}%)")
         print(f"  Avg rounds/combat:  {avg_rounds:.1f}")
         print(f"  Max rounds:         {max_rounds}")
         print(f"  Avg enemies faced:  {sum(c.enemies_faced for c in all_combats) / total_combats:.1f}")
@@ -1295,8 +1303,10 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
         _subheading("Stress")
         print(f"  Avg final stress:   {avg_final_stress:.0f}")
         print(f"  Max final stress:   {max_final_stress}")
-        print(f"  Agents >500 stress: {stressed_count}/{len(final_stresses)} "
-              f"({stressed_count/len(final_stresses)*100:.0f}%)")
+        print(
+            f"  Agents >500 stress: {stressed_count}/{len(final_stresses)} "
+            f"({stressed_count / len(final_stresses) * 100:.0f}%)"
+        )
 
     # Stability (Tower runs only)
     all_stability = [snap for s in all_stats for snap in s.stability_snapshots]
@@ -1315,8 +1325,10 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
             print(f"  Avg final stability:  {avg_final_stab:.0f}")
             print(f"  Min final stability:  {min_final_stab}")
             print(f"  Max final stability:  {max_final_stab}")
-            print(f"  Critical (<=20):      {critical_count}/{len(final_stabilities)} "
-                  f"({critical_count/len(final_stabilities)*100:.0f}%)")
+            print(
+                f"  Critical (<=20):      {critical_count}/{len(final_stabilities)} "
+                f"({critical_count / len(final_stabilities) * 100:.0f}%)"
+            )
 
     # Conditions
     all_conditions = []
@@ -1362,7 +1374,7 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
     durations = [s.duration_seconds for s in all_stats if s.duration_seconds > 0]
     if durations:
         _subheading("Timing")
-        print(f"  Avg run duration:   {sum(durations)/len(durations):.1f}s")
+        print(f"  Avg run duration:   {sum(durations) / len(durations):.1f}s")
         print(f"  Total time:         {sum(durations):.1f}s")
         print(f"  Fastest run:        {min(durations):.1f}s")
         print(f"  Slowest run:        {max(durations):.1f}s")
@@ -1380,6 +1392,7 @@ def print_summary(all_stats: list[RunStats], archetype: str, difficulty: int) ->
 
 # ── Main ─────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Automated Resonance Dungeon playtest runner",
@@ -1392,26 +1405,30 @@ Examples:
 """,
     )
     parser.add_argument(
-        "--archetype", "-a",
+        "--archetype",
+        "-a",
         choices=["shadow", "tower"],
         default="shadow",
         help="Dungeon archetype (default: shadow)",
     )
     parser.add_argument(
-        "--runs", "-n",
+        "--runs",
+        "-n",
         type=int,
         default=5,
         help="Number of playthroughs (default: 5)",
     )
     parser.add_argument(
-        "--difficulty", "-d",
+        "--difficulty",
+        "-d",
         type=int,
         choices=[1, 2, 3, 4, 5],
         default=None,
         help="Difficulty level 1-5 (default: use suggested from available dungeons)",
     )
     parser.add_argument(
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         action="store_true",
         help="Print detailed per-run output",
     )
@@ -1468,9 +1485,11 @@ Examples:
     difficulty = args.difficulty or dungeon_info.get("suggested_difficulty", 1)
 
     _ok(f"Dungeon available: {archetype_name}")
-    _info(f"Magnitude: {dungeon_info.get('effective_magnitude', '?')}, "
-          f"Difficulty: {difficulty}, "
-          f"Suggested depth: {dungeon_info.get('suggested_depth', '?')}")
+    _info(
+        f"Magnitude: {dungeon_info.get('effective_magnitude', '?')}, "
+        f"Difficulty: {difficulty}, "
+        f"Suggested depth: {dungeon_info.get('suggested_depth', '?')}"
+    )
 
     # ── Run playthroughs ──────────────────────────────────────────────────
     all_stats: list[RunStats] = []

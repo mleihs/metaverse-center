@@ -214,9 +214,7 @@ class CircuitBreakerService:
                 }
             cutoff = now - self._window_seconds
             active = sum(1 for t in counter.failures if t >= cutoff)
-            opens_until_s = (
-                max(0.0, counter.opens_until - now) if counter.state == "open" else 0.0
-            )
+            opens_until_s = max(0.0, counter.opens_until - now) if counter.state == "open" else 0.0
             return {
                 "state": counter.state,
                 "failures_in_window": active,
@@ -232,9 +230,7 @@ class CircuitBreakerService:
             cutoff = now - self._window_seconds
             for (scope, scope_key), counter in self._counters.items():
                 active = sum(1 for t in counter.failures if t >= cutoff)
-                opens_until_s = (
-                    max(0.0, counter.opens_until - now) if counter.state == "open" else 0.0
-                )
+                opens_until_s = max(0.0, counter.opens_until - now) if counter.state == "open" else 0.0
                 out.append(
                     {
                         "scope": scope,

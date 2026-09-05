@@ -260,9 +260,9 @@ class FragmentService:
     @classmethod
     async def _process_one(cls, admin: Client, req: dict) -> str:
         """Generate a single fragment. Returns one of:
-            'done'    — fragment inserted successfully
-            'failed'  — permanent failure (no prompt, budget blocked, DB error)
-            'retry'   — transient failure, will retry next tick up to _MAX_ATTEMPTS
+        'done'    — fragment inserted successfully
+        'failed'  — permanent failure (no prompt, budget blocked, DB error)
+        'retry'   — transient failure, will retry next tick up to _MAX_ATTEMPTS
         """
         fragment_type = req.get("fragment_type")
         if fragment_type not in _PROMPT_TABLE:
@@ -416,10 +416,7 @@ class FragmentService:
         """
         try:
             existing = await maybe_single_data(
-                admin.table("resonance_profiles")
-                .select("fragment_count")
-                .eq("user_id", user_id)
-                .maybe_single()
+                admin.table("resonance_profiles").select("fragment_count").eq("user_id", user_id).maybe_single()
             )
             current = existing["fragment_count"] if existing else 0
             new_count = current + 1
@@ -486,12 +483,7 @@ class FragmentService:
             update = {"status": status}
 
         try:
-            await (
-                admin.table("fragment_generation_requests")
-                .update(update)
-                .eq("id", request_id)
-                .execute()
-            )
+            await admin.table("fragment_generation_requests").update(update).eq("id", request_id).execute()
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.warning(
                 "Failed to mark request status",

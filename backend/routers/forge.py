@@ -665,9 +665,7 @@ async def resolve_byok_request(
         "resolve",
         {"approve": approve, "user_id": result.get("user_id")},
     )
-    return SuccessResponse(
-        data={"message": "Request approved." if approve else "Request rejected."}
-    )
+    return SuccessResponse(data={"message": "Request approved." if approve else "Request rejected."})
 
 
 # --- Feature Purchases ---

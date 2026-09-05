@@ -58,15 +58,9 @@ class TestResolveRecipients:
         admin_sb = MagicMock()
 
         chains = {
-            "epoch_participants": _make_chain(
-                execute=AsyncMock(return_value=MagicMock(data=participants))
-            ),
-            "notification_preferences": _make_chain(
-                execute=AsyncMock(return_value=MagicMock(data=prefs or []))
-            ),
-            "simulations": _make_chain(
-                execute=AsyncMock(return_value=MagicMock(data=templates or []))
-            ),
+            "epoch_participants": _make_chain(execute=AsyncMock(return_value=MagicMock(data=participants))),
+            "notification_preferences": _make_chain(execute=AsyncMock(return_value=MagicMock(data=prefs or []))),
+            "simulations": _make_chain(execute=AsyncMock(return_value=MagicMock(data=templates or []))),
         }
         admin_sb.table.side_effect = lambda name: chains.get(name, _make_chain())
 
@@ -80,16 +74,24 @@ class TestResolveRecipients:
     async def test_the_player_receives_the_post(self):
         admin_sb = self._client(
             participants=[
-                {"user_id": USER_A, "simulation_id": SIM_A,
-                 "simulations": {"name": "Velgarien (Epoch 15)", "slug": "velgarien-e15",
-                                 "source_template_id": TEMPLATE_A}},
+                {
+                    "user_id": USER_A,
+                    "simulation_id": SIM_A,
+                    "simulations": {
+                        "name": "Velgarien (Epoch 15)",
+                        "slug": "velgarien-e15",
+                        "source_template_id": TEMPLATE_A,
+                    },
+                },
             ],
             emails=[{"id": USER_A, "email": "player@test.com"}],
             templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
         )
 
         recipients = await CycleNotificationService._resolve_recipients(
-            admin_sb, EPOCH_ID, notification_type="cycle_resolved",
+            admin_sb,
+            EPOCH_ID,
+            notification_type="cycle_resolved",
         )
 
         assert len(recipients) == 1
@@ -109,9 +111,11 @@ class TestResolveRecipients:
         """
         admin_sb = self._client(
             participants=[
-                {"user_id": USER_A, "simulation_id": SIM_A,
-                 "simulations": {"name": "Velgarien", "slug": "velgarien",
-                                 "source_template_id": TEMPLATE_A}},
+                {
+                    "user_id": USER_A,
+                    "simulation_id": SIM_A,
+                    "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
+                },
             ],
             emails=[{"id": USER_A, "email": "player@test.com"}],
             templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
@@ -135,18 +139,29 @@ class TestResolveRecipients:
     async def test_respects_notification_preference_opt_out(self):
         admin_sb = self._client(
             participants=[
-                {"user_id": USER_A, "simulation_id": SIM_A,
-                 "simulations": {"name": "Velgarien", "slug": "velgarien",
-                                 "source_template_id": TEMPLATE_A}},
+                {
+                    "user_id": USER_A,
+                    "simulation_id": SIM_A,
+                    "simulations": {"name": "Velgarien", "slug": "velgarien", "source_template_id": TEMPLATE_A},
+                },
             ],
             emails=[{"id": USER_A, "email": "player@test.com"}],
-            prefs=[{"user_id": USER_A, "cycle_resolved": False, "phase_changed": True,
-                    "epoch_completed": True, "email_locale": "en"}],
+            prefs=[
+                {
+                    "user_id": USER_A,
+                    "cycle_resolved": False,
+                    "phase_changed": True,
+                    "epoch_completed": True,
+                    "email_locale": "en",
+                }
+            ],
             templates=[{"id": TEMPLATE_A, "slug": "velgarien", "name": "Velgarien"}],
         )
 
         optee = await CycleNotificationService._resolve_recipients(
-            admin_sb, EPOCH_ID, notification_type="cycle_resolved",
+            admin_sb,
+            EPOCH_ID,
+            notification_type="cycle_resolved",
         )
         assert optee == []
 
@@ -154,7 +169,9 @@ class TestResolveRecipients:
         # otherwise the test above would pass on a broken chain that drops
         # everybody.
         still = await CycleNotificationService._resolve_recipients(
-            admin_sb, EPOCH_ID, notification_type="epoch_completed",
+            admin_sb,
+            EPOCH_ID,
+            notification_type="epoch_completed",
         )
         assert len(still) == 1
         assert still[0]["email_locale"] == "en"
@@ -164,10 +181,16 @@ class TestResolveRecipients:
         """A deleted account leaves a participant row behind."""
         admin_sb = self._client(
             participants=[
-                {"user_id": USER_A, "simulation_id": SIM_A,
-                 "simulations": {"name": "A", "slug": "a", "source_template_id": TEMPLATE_A}},
-                {"user_id": USER_B, "simulation_id": SIM_B,
-                 "simulations": {"name": "B", "slug": "b", "source_template_id": TEMPLATE_B}},
+                {
+                    "user_id": USER_A,
+                    "simulation_id": SIM_A,
+                    "simulations": {"name": "A", "slug": "a", "source_template_id": TEMPLATE_A},
+                },
+                {
+                    "user_id": USER_B,
+                    "simulation_id": SIM_B,
+                    "simulations": {"name": "B", "slug": "b", "source_template_id": TEMPLATE_B},
+                },
             ],
             emails=[{"id": USER_B, "email": "b@test.com"}],
             templates=[
@@ -201,7 +224,6 @@ class TestAcademyDeliveryPolicy:
             for notification in ("cycle_resolved", "phase_changed", "epoch_completed"):
                 assert not CycleNotificationService._suppressed_for_epoch(kind, notification)
 
-
     @pytest.mark.asyncio
     async def test_empty_participants_returns_empty(self):
         """No participants → no recipients."""
@@ -213,7 +235,8 @@ class TestAcademyDeliveryPolicy:
         admin_sb.table.return_value = participants_chain
 
         recipients = await CycleNotificationService._resolve_recipients(
-            admin_sb, EPOCH_ID,
+            admin_sb,
+            EPOCH_ID,
         )
 
         assert recipients == []
@@ -230,17 +253,21 @@ class TestBuildPlayerBriefing:
 
         # Current scores
         current_chain = _make_chain()
-        current_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {
-                "simulation_id": SIM_A,
-                "composite_score": 72.3,
-                "stability_score": 60.0,
-                "influence_score": 45.0,
-                "sovereignty_score": 88.0,
-                "diplomatic_score": 55.0,
-                "military_score": 30.0,
-            },
-        ]))
+        current_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "simulation_id": SIM_A,
+                        "composite_score": 72.3,
+                        "stability_score": 60.0,
+                        "influence_score": 45.0,
+                        "sovereignty_score": 88.0,
+                        "diplomatic_score": 55.0,
+                        "military_score": 30.0,
+                    },
+                ]
+            )
+        )
 
         # Previous scores (cycle 0 → no previous)
         prev_chain = _make_chain()
@@ -248,17 +275,35 @@ class TestBuildPlayerBriefing:
 
         # Operatives
         ops_chain = _make_chain()
-        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"operative_type": "spy", "status": "active", "target_simulation_id": SIM_B, "resolves_at": None},
-            {"operative_type": "guardian", "status": "active", "target_simulation_id": None, "resolves_at": None},
-            {"operative_type": "saboteur", "status": "success", "target_simulation_id": SIM_B, "resolves_at": None},
-        ]))
+        ops_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"operative_type": "spy", "status": "active", "target_simulation_id": SIM_B, "resolves_at": None},
+                    {
+                        "operative_type": "guardian",
+                        "status": "active",
+                        "target_simulation_id": None,
+                        "resolves_at": None,
+                    },
+                    {
+                        "operative_type": "saboteur",
+                        "status": "success",
+                        "target_simulation_id": SIM_B,
+                        "resolves_at": None,
+                    },
+                ]
+            )
+        )
 
         # Target sim names
         names_chain = _make_chain()
-        names_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"id": SIM_B, "name": "The Gaslit Reach"},
-        ]))
+        names_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"id": SIM_B, "name": "The Gaslit Reach"},
+                ]
+            )
+        )
 
         # RP + team_id
         rp_chain = _make_chain()
@@ -274,15 +319,28 @@ class TestBuildPlayerBriefing:
 
         # Battle log
         log_chain = _make_chain()
-        log_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"narrative": "An operative was detected.", "event_type": "detection"},
-        ]))
+        log_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"narrative": "An operative was detected.", "event_type": "detection"},
+                ]
+            )
+        )
 
         # Participation counts (for _participation_counts query)
         participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"has_acted_this_cycle": True, "is_bot": False, "consecutive_afk_cycles": 0, "afk_replaced_by_ai": False},
-        ]))
+        participants_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "has_acted_this_cycle": True,
+                        "is_bot": False,
+                        "consecutive_afk_cycles": 0,
+                        "afk_replaced_by_ai": False,
+                    },
+                ]
+            )
+        )
 
         call_count = {"scores": 0, "operative_missions": 0, "simulations": 0, "battle_log": 0, "epoch_participants": 0}
 
@@ -316,7 +374,12 @@ class TestBuildPlayerBriefing:
         admin_sb.table.side_effect = table_side_effect
 
         briefing = await CycleNotificationService._build_player_briefing(
-            admin_sb, EPOCH_ID, SIM_A, 1, "Test Epoch", "competition",
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
+            1,
+            "Test Epoch",
+            "competition",
         )
 
         assert briefing["epoch_name"] == "Test Epoch"
@@ -346,36 +409,60 @@ class TestBuildPlayerBriefing:
         admin_sb = MagicMock()
 
         current_chain = _make_chain()
-        current_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {
-                "simulation_id": SIM_A,
-                "composite_score": 50.0,
-                "stability_score": 50.0,
-                "influence_score": 50.0,
-                "sovereignty_score": 50.0,
-                "diplomatic_score": 50.0,
-                "military_score": 50.0,
-            },
-        ]))
+        current_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "simulation_id": SIM_A,
+                        "composite_score": 50.0,
+                        "stability_score": 50.0,
+                        "influence_score": 50.0,
+                        "sovereignty_score": 50.0,
+                        "diplomatic_score": 50.0,
+                        "military_score": 50.0,
+                    },
+                ]
+            )
+        )
 
         ops_chain = _make_chain()
-        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"operative_type": "guardian", "status": "active", "target_simulation_id": None, "resolves_at": None},
-            {"operative_type": "spy", "status": "success", "target_simulation_id": SIM_B, "resolves_at": None},
-        ]))
+        ops_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "operative_type": "guardian",
+                        "status": "active",
+                        "target_simulation_id": None,
+                        "resolves_at": None,
+                    },
+                    {"operative_type": "spy", "status": "success", "target_simulation_id": SIM_B, "resolves_at": None},
+                ]
+            )
+        )
 
         names_chain = _make_chain()
         names_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": SIM_B, "name": "Target"}]))
 
         rp_chain = _make_chain()
-        rp_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"current_rp": 10, "team_id": None},
-        ))
+        rp_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data={"current_rp": 10, "team_id": None},
+            )
+        )
 
         participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"has_acted_this_cycle": True, "is_bot": False, "consecutive_afk_cycles": 0, "afk_replaced_by_ai": False},
-        ]))
+        participants_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "has_acted_this_cycle": True,
+                        "is_bot": False,
+                        "consecutive_afk_cycles": 0,
+                        "afk_replaced_by_ai": False,
+                    },
+                ]
+            )
+        )
 
         empty_chain = _make_chain()
         empty_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
@@ -405,7 +492,12 @@ class TestBuildPlayerBriefing:
         admin_sb.table.side_effect = table_side_effect
 
         briefing = await CycleNotificationService._build_player_briefing(
-            admin_sb, EPOCH_ID, SIM_A, 1, "Test", "competition",
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
+            1,
+            "Test",
+            "competition",
         )
 
         # Only spy should appear in missions, not guardian
@@ -423,15 +515,22 @@ class TestBuildStandingSnapshot:
         admin_sb = MagicMock()
 
         scores_chain = _make_chain()
-        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_A, "composite_score": 80.0},
-            {"simulation_id": SIM_B, "composite_score": 60.0},
-        ]))
+        scores_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_A, "composite_score": 80.0},
+                    {"simulation_id": SIM_B, "composite_score": 60.0},
+                ]
+            )
+        )
 
         admin_sb.table.return_value = scores_chain
 
         result = await CycleNotificationService._build_standing_snapshot(
-            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
+            scored_cycle=5,
         )
 
         assert result is not None
@@ -449,13 +548,20 @@ class TestBuildStandingSnapshot:
         admin_sb = MagicMock()
 
         scores_chain = _make_chain()
-        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_A, "composite_score": 80.0},
-        ]))
+        scores_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_A, "composite_score": 80.0},
+                ]
+            )
+        )
         admin_sb.table.return_value = scores_chain
 
         await CycleNotificationService._build_standing_snapshot(
-            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
+            scored_cycle=5,
         )
 
         eq_calls = {call.args[0]: call.args[1] for call in scores_chain.eq.call_args_list}
@@ -468,9 +574,13 @@ class TestBuildStandingSnapshot:
         admin_sb = MagicMock()
 
         scores_chain = _make_chain()
-        scores_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_A, "composite_score": 80.0},
-        ]))
+        scores_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_A, "composite_score": 80.0},
+                ]
+            )
+        )
         admin_sb.table.return_value = scores_chain
 
         with patch(
@@ -479,7 +589,9 @@ class TestBuildStandingSnapshot:
         ) as resolve:
             resolve.return_value = 7
             result = await CycleNotificationService._build_standing_snapshot(
-                admin_sb, EPOCH_ID, SIM_A,
+                admin_sb,
+                EPOCH_ID,
+                SIM_A,
             )
 
         resolve.assert_awaited_once()
@@ -497,7 +609,10 @@ class TestBuildStandingSnapshot:
         admin_sb.table.return_value = scores_chain
 
         result = await CycleNotificationService._build_standing_snapshot(
-            admin_sb, EPOCH_ID, SIM_A, scored_cycle=5,
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
+            scored_cycle=5,
         )
 
         assert result is None
@@ -513,17 +628,23 @@ class TestBuildCampaignStats:
         admin_sb = MagicMock()
 
         ops_chain = _make_chain()
-        ops_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"operative_type": "spy", "status": "success"},
-            {"operative_type": "spy", "status": "failed"},
-            {"operative_type": "saboteur", "status": "success"},
-            {"operative_type": "guardian", "status": "active"},
-        ]))
+        ops_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"operative_type": "spy", "status": "success"},
+                    {"operative_type": "spy", "status": "failed"},
+                    {"operative_type": "saboteur", "status": "success"},
+                    {"operative_type": "guardian", "status": "active"},
+                ]
+            )
+        )
 
         admin_sb.table.return_value = ops_chain
 
         stats = await CycleNotificationService._build_campaign_stats(
-            admin_sb, EPOCH_ID, SIM_A,
+            admin_sb,
+            EPOCH_ID,
+            SIM_A,
         )
 
         assert stats["total_ops"] == 4
@@ -549,9 +670,7 @@ class TestSendCycleNotifications:
 
             from backend.services.email_service import EmailService
 
-            result = await EmailService.send(
-                "test@example.com", "Test Subject", "<p>Test</p>"
-            )
+            result = await EmailService.send("test@example.com", "Test Subject", "<p>Test</p>")
 
             assert result is False
 
@@ -567,9 +686,7 @@ class TestSendCycleNotifications:
                 mock_settings.smtp_user = "user"
                 mock_settings.smtp_password = "pass"
 
-                result = await EmailService.send(
-                    "test@example.com", "Test Subject", "<p>Test</p>"
-                )
+                result = await EmailService.send("test@example.com", "Test Subject", "<p>Test</p>")
 
                 assert result is True
                 mock_sync.assert_called_once()

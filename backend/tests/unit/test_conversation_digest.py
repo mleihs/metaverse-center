@@ -303,9 +303,7 @@ class TestVerdichtungUndWortlautStehenNichtDoppelt:
 
     def test_was_im_fenster_steht_faellt_weg(self):
         """Das Fenster beginnt um 10:20 — Abschnitt 2 und 3 liegen darin."""
-        text = ConversationDigestService.render(
-            self._zeilen(), "de", verbatim_from="2026-09-05T10:20:00"
-        )
+        text = ConversationDigestService.render(self._zeilen(), "de", verbatim_from="2026-09-05T10:20:00")
         assert "Abschnitt 0" in text
         assert "Abschnitt 1" in text
         assert "Abschnitt 2" not in text
@@ -315,18 +313,14 @@ class TestVerdichtungUndWortlautStehenNichtDoppelt:
         """Verglichen wird `covers_to`. Ein Abschnitt, der nur zur Haelfte
         ins Fenster ragt, faellt weg — die weggelassene Haelfte steht
         woertlich da, waehrend ein doppelter Abschnitt beides kostet."""
-        text = ConversationDigestService.render(
-            self._zeilen(), "de", verbatim_from="2026-09-05T10:15:00"
-        )
+        text = ConversationDigestService.render(self._zeilen(), "de", verbatim_from="2026-09-05T10:15:00")
         assert "Abschnitt 1" not in text, "Abschnitt 1 endet 10:09:59 … prueft die Grenze"
         assert "Abschnitt 0" in text
 
     def test_liegt_alles_im_fenster_bleibt_die_verdichtung_leer(self):
         """Ein junger Faden braucht keinen Bericht ueber das, was ganz
         woertlich dasteht."""
-        text = ConversationDigestService.render(
-            self._zeilen(), "de", verbatim_from="2026-09-05T09:00:00"
-        )
+        text = ConversationDigestService.render(self._zeilen(), "de", verbatim_from="2026-09-05T09:00:00")
         assert text == ""
 
     def test_der_schnitt_wirkt_zusammen_mit_der_perspektivgrenze(self):

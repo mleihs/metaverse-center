@@ -91,8 +91,7 @@ class BudgetExceededError(Exception):
         self.current_usd = current_usd
         self.max_usd = max_usd
         super().__init__(
-            f"Budget exceeded for {scope}:{scope_key} "
-            f"({period}): ${current_usd:.4f} >= ${max_usd:.4f}",
+            f"Budget exceeded for {scope}:{scope_key} ({period}): ${current_usd:.4f} >= ${max_usd:.4f}",
         )
 
 
@@ -205,20 +204,13 @@ class BudgetEnforcementService:
         }
 
         if budget_id is not None:
-            resp = await (
-                admin_supabase.table("ai_budget")
-                .update(payload)
-                .eq("id", str(budget_id))
-                .execute()
-            )
+            resp = await admin_supabase.table("ai_budget").update(payload).eq("id", str(budget_id)).execute()
             row = extract_one(resp)
             if row is None:
                 raise not_found("Budget", budget_id)
         else:
             resp = await (
-                admin_supabase.table("ai_budget")
-                .upsert(payload, on_conflict="scope,scope_key,period")
-                .execute()
+                admin_supabase.table("ai_budget").upsert(payload, on_conflict="scope,scope_key,period").execute()
             )
             row = extract_one(resp)
             if row is None:
@@ -269,12 +261,7 @@ class BudgetEnforcementService:
             raise not_found("Budget", budget_id)
         row = rows[0]
 
-        await (
-            admin_supabase.table("ai_budget")
-            .delete()
-            .eq("id", str(budget_id))
-            .execute()
-        )
+        await admin_supabase.table("ai_budget").delete().eq("id", str(budget_id)).execute()
         invalidate_budget_cache()
 
         await OpsLedgerService.log_action(
@@ -316,10 +303,7 @@ def _validate_budget_invariants(body: BudgetUpsertRequest) -> None:
     not a 500.
     """
     if body.soft_warn_pct > body.hard_block_pct:
-        raise bad_request(
-            f"soft_warn_pct ({body.soft_warn_pct}) must be "
-            f"<= hard_block_pct ({body.hard_block_pct})"
-        )
+        raise bad_request(f"soft_warn_pct ({body.soft_warn_pct}) must be <= hard_block_pct ({body.hard_block_pct})")
 
 
 def _row_to_budget(row: dict[str, Any]) -> BudgetCap:

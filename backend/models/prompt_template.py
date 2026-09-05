@@ -60,10 +60,8 @@ class PromptTemplateResponse(BaseModel):
         """Accept both string and dict entries in variables."""
         if not isinstance(v, list):
             return []
-        return [
-            item if isinstance(item, dict) else {"name": item}
-            for item in v
-        ]
+        return [item if isinstance(item, dict) else {"name": item} for item in v]
+
     description: str | None = None
     default_model: str | None = None
     temperature: float = 0.7

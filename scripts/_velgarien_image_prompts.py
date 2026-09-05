@@ -24,7 +24,6 @@ References:
 # ═══════════════════════════════════════════════════════════════════════════
 
 AGENT_PROMPTS: dict[str, str] = {
-
     "Viktor Harken": (
         "Close portrait of a man in his late fifties, gaunt and precise as a surgical instrument. "
         "Deep-set steel-grey eyes that have never been surprised. Short iron-grey hair combed flat "
@@ -37,7 +36,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "Crewdson, bleach bypass color grading, desaturated palette with one point of warm light "
         "reflected in his eyes from a desk lamp outside the frame."
     ),
-
     "Elena Voss": (
         "Head-and-shoulders portrait of a woman in her early forties with the angular precision "
         "of an architect's drawing. Sharp cheekbones, pale skin that has not seen natural light "
@@ -51,7 +49,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "photography, bleach bypass desaturation, the portrait of a woman who has optimized empathy "
         "out of her operating parameters."
     ),
-
     "General Aldric Wolf": (
         "Portrait of a military officer in his mid-fifties whose face is a topographic map of "
         "discipline enforced upon flesh. Deep-set steely eyes under heavy brows, the gaze of a man "
@@ -65,7 +62,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "directive. In the style of Gregory Crewdson crossed with Nadav Kander, cold institutional "
         "palette, bleach bypass, the weight of obedience rendered in silver and shadow."
     ),
-
     "Doktor Fenn": (
         "Close portrait of a person in their late thirties with androgynous features that the state "
         "has catalogued but cannot classify. Sharp cheekbones, pale complexion, cold analytical "
@@ -80,7 +76,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "palette. The portrait of a mind that has solved the problem of being human by reclassifying "
         "it as a variable."
     ),
-
     "Inspektor Mueller": (
         "Portrait of a bureaucrat in his fifties with the face of a man who has documented the "
         "impossible and filed it correctly. Unremarkable features made remarkable by absolute "
@@ -95,7 +90,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "In the style of Gregory Crewdson, institutional photography, slight desaturation, the face "
         "of a man for whom reality is a clerical matter."
     ),
-
     "Lena Kray": (
         "Portrait of a woman in her late thirties whose intelligence is visible in the architecture "
         "of her face. Sharp features, cold calculating eyes that miss nothing and reveal less. "
@@ -110,7 +104,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "In the style of Gregory Crewdson, desaturated palette, bleach bypass, the portrait of "
         "ambition dressed as compliance."
     ),
-
     "Mira Steinfeld": (
         "Portrait of a woman in her late thirties whose face is a carefully curated act of "
         "self-preservation. High cheekbones, intelligent wary eyes carrying the fatigue of someone "
@@ -125,7 +118,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "bypass color grading, the portrait of a woman caught between what she broadcasts and what "
         "she remembers."
     ),
-
     "Pater Cornelius": (
         "Portrait of a clergyman in his sixties with the face of a man who has replaced faith with "
         "something more useful. Silver-white hair swept back from a high forehead, still thick, "
@@ -140,7 +132,6 @@ AGENT_PROMPTS: dict[str, str] = {
         "pale neon. In the style of Gregory Crewdson, a portrait where the lighting itself is "
         "dishonest, bleach bypass on the shadows only."
     ),
-
     "Schwester Irma": (
         "Portrait of a nun in her early fifties whose face is the most dangerous thing in Velgarien: "
         "honest. Strong features weathered by decades of institutional cooking steam and bureaucratic "
@@ -164,7 +155,6 @@ AGENT_PROMPTS: dict[str, str] = {
 # ═══════════════════════════════════════════════════════════════════════════
 
 BUILDING_PROMPTS: dict[str, str] = {
-
     "Kanzlerpalast": (
         "Monumental brutalist government palace rising like a concrete tomb against overcast grey "
         "sky. Massive board-marked beton brut facade composed of twenty-metre-thick concrete slabs "
@@ -177,7 +167,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "In the style of Frederic Chaubin CCCP, desaturated cold palette, bleach bypass color "
         "grading, the Palace of the Parliament Bucharest reimagined as pure brutalist threat."
     ),
-
     "Kathedrale des Lichts": (
         "Brutalist cathedral interior, a vast concrete nave stripped of divinity and repurposed for "
         "state worship. Massive raw beton brut walls rising to an angular crystalline ceiling where "
@@ -191,7 +180,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "institutional interior crossed with the Neviges Mariendom by Gottfried Böhm, desaturated "
         "palette, the architecture of faith converted to the architecture of compliance."
     ),
-
     "Militaerakademie Wolf": (
         "Brutalist military academy complex, three interlocking concrete volumes rising like gun "
         "turrets above a government district. Board-marked beton brut facade with deep rhythmically "
@@ -204,7 +192,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "crossed with the Barbican Centre London, monumental institutional scale, desaturated "
         "cold palette, bleach bypass, a building that trains obedience through architecture."
     ),
-
     "Room 441": (
         "Single image, interior only. Windowless government office, grey steel desk with an "
         "Olympia SM9 typewriter, three floor-to-ceiling grey metal filing cabinets against the "
@@ -215,7 +202,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "In the style of Candida Höfer crossed with Stasi Headquarters Normannenstrasse, "
         "desaturated palette, the banality of impossible bureaucracy."
     ),
-
     "Archive Sub-Level C": (
         "Underground archive vault twelve metres below street level. Low reinforced concrete ceiling "
         "pressing down on rows of steel shelving extending into darkness, holding grey cardboard "
@@ -229,7 +215,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "Moscow, underground institutional archive, desaturated except for the Italian documents, "
         "the architectural unconscious of a state built to forget."
     ),
-
     "The Static Room": (
         "Sealed concrete bunker room in a subbasement, exactly 4.41 by 4.41 metres. Reinforced "
         "concrete walls sixty centimetres thick lined with copper mesh shielding. Vintage 1960s "
@@ -243,7 +228,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "against cold fluorescent, the room where something that is not a radio signal continues "
         "to broadcast to something that is not an audience."
     ),
-
     "Steinfeld-Redaktion": (
         "Cramped upper-floor newspaper office in a brutalist residential block, the headquarters of "
         "dissent disguised as journalism. Crooked partition walls, desks drowning in yellowed "
@@ -256,7 +240,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "crossed with samizdat production spaces, the aesthetic of intellectual resistance under "
         "fluorescent surveillance, desaturated palette with warm amber from desk lamps."
     ),
-
     "Voss-Industriewerk": (
         "Monumental industrial complex, four concrete chimneys rising like clenched fingers against "
         "grey sky. A 200-metre production hall with exposed steel trusses and concrete ribbed vault, "
@@ -269,7 +252,6 @@ BUILDING_PROMPTS: dict[str, str] = {
         "Coal Mine Essen, Bauhaus-influenced industrial symmetry, the factory as ideological "
         "monument, desaturated palette with industrial orange accent."
     ),
-
     "Wohnhaus am Markt": (
         "Tall nine-floor prefabricated concrete panel tower in poor condition, all nine storey "
         "levels clearly visible from ground to roofline. Precast facade panels cracked with dark "
@@ -288,7 +270,6 @@ BUILDING_PROMPTS: dict[str, str] = {
 # ═══════════════════════════════════════════════════════════════════════════
 
 LORE_PROMPTS: dict[str, str] = {
-
     "directive-001": (
         "The Ministry of Information headquarters, a vast brutalist concrete monolith where truth "
         "is manufactured to specification. Frontal elevation of a building that is equal parts "
@@ -300,7 +281,6 @@ LORE_PROMPTS: dict[str, str] = {
         "of Andreas Gursky large-scale institutional photography, the building as panopticon, cold "
         "desaturated palette, bleach bypass, monumental anonymous architecture."
     ),
-
     "bureaux-guide": (
         "Interior of Bureau 7, Department of Categorical Certainty, Filing Division. A vast hall "
         "of identical grey metal filing cabinets stretching floor to ceiling and wall to wall until "
@@ -313,7 +293,6 @@ LORE_PROMPTS: dict[str, str] = {
         "Candida Höfer, the scale of bureaucracy made architectural, desaturated institutional "
         "palette, documentary photography of administrative infinity."
     ),
-
     "life-under-eye": (
         "Residential Block 7 at dawn, where every citizen is exactly where they should be. "
         "A brutalist housing block facade, nine storeys of identical concrete balconies and "

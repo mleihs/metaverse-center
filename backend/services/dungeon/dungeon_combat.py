@@ -101,9 +101,7 @@ def spawn_enemies(
                     # and the only one that still lands when no condition
                     # damage does. Conflating the two would leave `stress_mult`
                     # as inert as it was.
-                    stress_attack_power=max(
-                        1, round(template.stress_attack_power * diff_mult["stress_mult"])
-                    ),
+                    stress_attack_power=max(1, round(template.stress_attack_power * diff_mult["stress_mult"])),
                     image_path=template.image_path,
                 )
             )

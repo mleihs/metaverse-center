@@ -55,7 +55,9 @@ class TestEchoListForSimulation:
         mock, builder, _ = _mock_supabase(data=rows, count=1)
 
         data, total = await EchoService.list_for_simulation(
-            mock, SIM_A, direction="incoming",
+            mock,
+            SIM_A,
+            direction="incoming",
         )
         assert data == rows
         assert total == 1
@@ -74,7 +76,9 @@ class TestEchoListForSimulation:
         mock, builder, _ = _mock_supabase(data=[], count=0)
 
         await EchoService.list_for_simulation(
-            mock, SIM_A, status_filter="pending",
+            mock,
+            SIM_A,
+            status_filter="pending",
         )
         builder.eq.assert_any_call("status", "pending")
 
@@ -83,7 +87,10 @@ class TestEchoListForSimulation:
         mock, builder, _ = _mock_supabase(data=[], count=0)
 
         await EchoService.list_for_simulation(
-            mock, SIM_A, limit=10, offset=5,
+            mock,
+            SIM_A,
+            limit=10,
+            offset=5,
         )
         builder.range.assert_called_once_with(5, 14)
 
@@ -292,7 +299,8 @@ class TestEvaluateEchoCandidates:
             },
         ]
         mock = self._multi_table_supabase(
-            settings_data=settings, connections_data=connections,
+            settings_data=settings,
+            connections_data=connections,
         )
 
         result = await EchoService.evaluate_echo_candidates(mock, event, SIM_A)
@@ -321,7 +329,8 @@ class TestEvaluateEchoCandidates:
             },
         ]
         mock = self._multi_table_supabase(
-            settings_data=settings, connections_data=connections,
+            settings_data=settings,
+            connections_data=connections,
         )
 
         result = await EchoService.evaluate_echo_candidates(mock, event, SIM_A)
@@ -336,7 +345,9 @@ class TestComputeEchoStrength:
     def test_base_case(self):
         """Connection strength alone, no bonuses."""
         s = EchoService.compute_echo_strength(
-            connection_strength=0.5, echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         # 0.5 * 1.0 (no embassy) * 1.0 (no tags) * 0.6^1 * 1.0 (no instability)
         assert abs(s - 0.3) < 0.01
@@ -344,8 +355,10 @@ class TestComputeEchoStrength:
     def test_embassy_boost(self):
         """High embassy effectiveness increases strength."""
         s = EchoService.compute_echo_strength(
-            connection_strength=0.5, embassy_effectiveness=1.0,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            embassy_effectiveness=1.0,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         # 0.5 * 1.3 (embassy) * 1.0 * 0.6 * 1.0 = 0.39
         assert abs(s - 0.39) < 0.01
@@ -353,8 +366,10 @@ class TestComputeEchoStrength:
     def test_tag_resonance_boost(self):
         """Matching tags boost strength by 20% per tag (max 3)."""
         s = EchoService.compute_echo_strength(
-            connection_strength=0.5, tag_resonance_count=2,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            tag_resonance_count=2,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         # 0.5 * 1.0 * 1.4 (2 tags) * 0.6 * 1.0 = 0.42
         assert abs(s - 0.42) < 0.01
@@ -362,25 +377,35 @@ class TestComputeEchoStrength:
     def test_tag_resonance_capped_at_3(self):
         """More than 3 matching tags doesn't increase beyond cap."""
         s3 = EchoService.compute_echo_strength(
-            connection_strength=0.5, tag_resonance_count=3,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            tag_resonance_count=3,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         s5 = EchoService.compute_echo_strength(
-            connection_strength=0.5, tag_resonance_count=5,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            tag_resonance_count=5,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         assert s3 == s5
 
     def test_depth_decay(self):
         """Each depth level applies decay exponentially."""
         s1 = EchoService.compute_echo_strength(
-            connection_strength=1.0, echo_depth=1, strength_decay=0.6,
+            connection_strength=1.0,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         s2 = EchoService.compute_echo_strength(
-            connection_strength=1.0, echo_depth=2, strength_decay=0.6,
+            connection_strength=1.0,
+            echo_depth=2,
+            strength_decay=0.6,
         )
         s3 = EchoService.compute_echo_strength(
-            connection_strength=1.0, echo_depth=3, strength_decay=0.6,
+            connection_strength=1.0,
+            echo_depth=3,
+            strength_decay=0.6,
         )
         # Depth 1: 0.6, Depth 2: 0.36, Depth 3: 0.216
         assert abs(s1 - 0.6) < 0.01
@@ -390,20 +415,27 @@ class TestComputeEchoStrength:
     def test_instability_boost(self):
         """Unstable source zones bleed louder."""
         s_stable = EchoService.compute_echo_strength(
-            connection_strength=0.5, source_instability=0.0,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            source_instability=0.0,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         s_unstable = EchoService.compute_echo_strength(
-            connection_strength=0.5, source_instability=0.8,
-            echo_depth=1, strength_decay=0.6,
+            connection_strength=0.5,
+            source_instability=0.8,
+            echo_depth=1,
+            strength_decay=0.6,
         )
         assert s_unstable > s_stable
 
     def test_clamped_to_one(self):
         """Maximum strength is 1.0 even with all boosts."""
         s = EchoService.compute_echo_strength(
-            connection_strength=1.0, embassy_effectiveness=1.0,
-            tag_resonance_count=3, echo_depth=1, strength_decay=1.0,
+            connection_strength=1.0,
+            embassy_effectiveness=1.0,
+            tag_resonance_count=3,
+            echo_depth=1,
+            strength_decay=1.0,
             source_instability=1.0,
         )
         assert s == 1.0
@@ -428,9 +460,13 @@ class TestTagResonance:
         assert EchoService.count_tag_resonance(["trade"], "unknown_vector") == 0
 
     def test_dream_vector(self):
-        assert EchoService.count_tag_resonance(
-            ["vision", "mystical", "economic"], "dream",
-        ) == 2
+        assert (
+            EchoService.count_tag_resonance(
+                ["vision", "mystical", "economic"],
+                "dream",
+            )
+            == 2
+        )
 
 
 class TestCreateEcho:
@@ -445,8 +481,13 @@ class TestCreateEcho:
         mock, builder, _ = _mock_supabase(data=[created])
 
         result = await EchoService.create_echo(
-            mock, source_event, SIM_A, SIM_B,
-            echo_vector="resonance", echo_strength=0.8, echo_depth=1,
+            mock,
+            source_event,
+            SIM_A,
+            SIM_B,
+            echo_vector="resonance",
+            echo_strength=0.8,
+            echo_depth=1,
         )
         assert result["id"] == str(ECHO_ID)
         builder.insert.assert_called_once()
@@ -463,8 +504,13 @@ class TestCreateEcho:
         mock, builder, _ = _mock_supabase(data=[{"id": str(ECHO_ID)}])
 
         await EchoService.create_echo(
-            mock, source_event, SIM_A, SIM_B,
-            echo_vector="dream", echo_strength=0.5, echo_depth=2,
+            mock,
+            source_event,
+            SIM_A,
+            SIM_B,
+            echo_vector="dream",
+            echo_strength=0.5,
+            echo_depth=2,
             root_event_id=root_id,
         )
         insert_arg = builder.insert.call_args[0][0]
@@ -477,8 +523,13 @@ class TestCreateEcho:
 
         with pytest.raises(HTTPException) as exc:
             await EchoService.create_echo(
-                mock, source_event, SIM_A, SIM_B,
-                echo_vector="commerce", echo_strength=0.5, echo_depth=1,
+                mock,
+                source_event,
+                SIM_A,
+                SIM_B,
+                echo_vector="commerce",
+                echo_strength=0.5,
+                echo_depth=1,
             )
         assert exc.value.status_code == 500
 
@@ -499,7 +550,10 @@ class TestUpdateEchoStatus:
         mock, builder, _ = _mock_supabase(data=[updated])
 
         await EchoService.update_echo_status(
-            mock, ECHO_ID, "completed", target_event_id=target_event,
+            mock,
+            ECHO_ID,
+            "completed",
+            target_event_id=target_event,
         )
         update_arg = builder.update.call_args[0][0]
         assert update_arg["target_event_id"] == str(target_event)
@@ -695,7 +749,9 @@ class TestConnectionGetMapData:
         rpc_builder.execute = AsyncMock(return_value=rpc_response)
         mock.rpc.return_value = rpc_builder
 
-        with patch("backend.services.embassy_service.EmbassyService.list_all_active", new_callable=AsyncMock, return_value=[]):
+        with patch(
+            "backend.services.embassy_service.EmbassyService.list_all_active", new_callable=AsyncMock, return_value=[]
+        ):
             result = await ConnectionService.get_map_data(mock)
 
         assert "simulations" in result
@@ -711,7 +767,8 @@ class TestConnectionCreate:
         mock, builder, _ = _mock_supabase(data=[MOCK_CONN_ROW])
 
         result = await ConnectionService.create_connection(
-            mock, {"simulation_a_id": str(SIM_A), "simulation_b_id": str(SIM_B)},
+            mock,
+            {"simulation_a_id": str(SIM_A), "simulation_b_id": str(SIM_B)},
         )
         assert result.id == CONN_ID
         builder.insert.assert_called_once()
@@ -732,7 +789,9 @@ class TestConnectionUpdate:
         mock, builder, _ = _mock_supabase(data=[updated_row])
 
         result = await ConnectionService.update_connection(
-            mock, CONN_ID, {"strength": 0.8},
+            mock,
+            CONN_ID,
+            {"strength": 0.8},
         )
         assert result.strength == 0.8
 

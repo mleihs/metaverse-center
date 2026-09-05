@@ -21,8 +21,14 @@ from backend.services.dungeon.dungeon_archetypes import (
 
 class TestArchetypeConfigs:
     EXPECTED_ARCHETYPES = {
-        "The Shadow", "The Tower", "The Devouring Mother", "The Deluge",
-        "The Overthrow", "The Prometheus", "The Awakening", "The Entropy",
+        "The Shadow",
+        "The Tower",
+        "The Devouring Mother",
+        "The Deluge",
+        "The Overthrow",
+        "The Prometheus",
+        "The Awakening",
+        "The Entropy",
     }
 
     def test_eight_archetypes(self):

@@ -93,36 +93,56 @@ def main():
 
     # Building images
     buildings = [
-        ("f74b8388-d8cb-44eb-a69e-2d37ebe432a6", "The Drowned Library", {
-            "building_type": "special",
-            "building_condition": "fair",
-            "description": "A vast archive built into a flooded cavern. Bookshelves rise from dark water on stone pillars, connected by narrow bridges and rope pulleys. Bioluminescent algae provides a sickly green reading light.",
-            "zone_name": "Deepreach",
-        }),
-        ("a44e7b1b-3701-41a1-8d44-47e7174615eb", "The Great Sporocarp", {
-            "building_type": "religious",
-            "building_condition": "excellent",
-            "description": "The kingdom's cathedral — a colossal fungal growth that fills an entire cavern, pulsing with soft amber light. Pilgrims travel days through dangerous tunnels to kneel beneath its cap.",
-            "zone_name": "The Fungal Warrens",
-        }),
-        ("0e1e1c75-ff2f-4dae-9f1f-83b107cbb03e", "Rootwater Market", {
-            "building_type": "commercial",
-            "building_condition": "good",
-            "description": "A bustling subterranean marketplace built along an underground river. Stalls hang from stalactites and cling to cavern walls, connected by swaying rope bridges. Phosphorescent lanterns cast everything in amber and green.",
-            "zone_name": "The Undertide Docks",
-        }),
-        ("c03957ba-535c-46d7-9368-4646ccbff540", "The Admiralty Grotto", {
-            "building_type": "government",
-            "building_condition": "good",
-            "description": "Carved into a massive stalagmite, the Admiralty is where the kingdom's naval and political power converge. War rooms, cartography chambers, and a throne room that no one sits in anymore.",
-            "zone_name": "The Upper Caverns",
-        }),
-        ("908b3525-7de5-494b-a418-a73ea5c0a228", "The Soggy Paw Tavern", {
-            "building_type": "commercial",
-            "building_condition": "poor",
-            "description": "A beloved, ramshackle establishment wedged between two massive tree roots that have broken through the cavern ceiling. The floor is permanently damp. The ale is surprisingly good.",
-            "zone_name": "The Undertide Docks",
-        }),
+        (
+            "f74b8388-d8cb-44eb-a69e-2d37ebe432a6",
+            "The Drowned Library",
+            {
+                "building_type": "special",
+                "building_condition": "fair",
+                "description": "A vast archive built into a flooded cavern. Bookshelves rise from dark water on stone pillars, connected by narrow bridges and rope pulleys. Bioluminescent algae provides a sickly green reading light.",
+                "zone_name": "Deepreach",
+            },
+        ),
+        (
+            "a44e7b1b-3701-41a1-8d44-47e7174615eb",
+            "The Great Sporocarp",
+            {
+                "building_type": "religious",
+                "building_condition": "excellent",
+                "description": "The kingdom's cathedral — a colossal fungal growth that fills an entire cavern, pulsing with soft amber light. Pilgrims travel days through dangerous tunnels to kneel beneath its cap.",
+                "zone_name": "The Fungal Warrens",
+            },
+        ),
+        (
+            "0e1e1c75-ff2f-4dae-9f1f-83b107cbb03e",
+            "Rootwater Market",
+            {
+                "building_type": "commercial",
+                "building_condition": "good",
+                "description": "A bustling subterranean marketplace built along an underground river. Stalls hang from stalactites and cling to cavern walls, connected by swaying rope bridges. Phosphorescent lanterns cast everything in amber and green.",
+                "zone_name": "The Undertide Docks",
+            },
+        ),
+        (
+            "c03957ba-535c-46d7-9368-4646ccbff540",
+            "The Admiralty Grotto",
+            {
+                "building_type": "government",
+                "building_condition": "good",
+                "description": "Carved into a massive stalagmite, the Admiralty is where the kingdom's naval and political power converge. War rooms, cartography chambers, and a throne room that no one sits in anymore.",
+                "zone_name": "The Upper Caverns",
+            },
+        ),
+        (
+            "908b3525-7de5-494b-a418-a73ea5c0a228",
+            "The Soggy Paw Tavern",
+            {
+                "building_type": "commercial",
+                "building_condition": "poor",
+                "description": "A beloved, ramshackle establishment wedged between two massive tree roots that have broken through the cavern ceiling. The floor is permanently damp. The ale is surprisingly good.",
+                "zone_name": "The Undertide Docks",
+            },
+        ),
     ]
 
     print("\n--- Building Images (5) ---")

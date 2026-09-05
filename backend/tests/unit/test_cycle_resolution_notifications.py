@@ -32,8 +32,21 @@ EPOCH_ID = uuid4()
 
 def _mock_chain(**overrides):
     c = MagicMock()
-    for method in ("select", "eq", "in_", "neq", "lte", "or_", "single",
-                   "maybe_single", "limit", "order", "insert", "update", "delete"):
+    for method in (
+        "select",
+        "eq",
+        "in_",
+        "neq",
+        "lte",
+        "or_",
+        "single",
+        "maybe_single",
+        "limit",
+        "order",
+        "insert",
+        "update",
+        "delete",
+    ):
         setattr(c, method, MagicMock(return_value=c))
     for k, v in overrides.items():
         setattr(c, k, v)
@@ -79,16 +92,17 @@ class _Pipeline:
 
         resolve_cycle = AsyncMock(side_effect=_advance)
 
-        with patch("backend.services.alliance_service.AllianceService") as alliance, \
-             patch("backend.services.operative_service.OperativeService") as operative, \
-             patch("backend.services.scoring_service.ScoringService") as scoring, \
-             patch("backend.services.bot_service.BotService") as bot, \
-             patch("backend.services.cycle_notification_service.CycleNotificationService") as notif, \
-             patch("backend.services.cycle_resolution_service.BattleLogService") as battle, \
-             patch("backend.services.cycle_resolution_service.enqueue_epoch_signature", new=AsyncMock()), \
-             patch.object(CycleResolutionService, "resolve_cycle", new=resolve_cycle), \
-             patch("backend.services.cycle_resolution_service.sentry_sdk"):
-
+        with (
+            patch("backend.services.alliance_service.AllianceService") as alliance,
+            patch("backend.services.operative_service.OperativeService") as operative,
+            patch("backend.services.scoring_service.ScoringService") as scoring,
+            patch("backend.services.bot_service.BotService") as bot,
+            patch("backend.services.cycle_notification_service.CycleNotificationService") as notif,
+            patch("backend.services.cycle_resolution_service.BattleLogService") as battle,
+            patch("backend.services.cycle_resolution_service.enqueue_epoch_signature", new=AsyncMock()),
+            patch.object(CycleResolutionService, "resolve_cycle", new=resolve_cycle),
+            patch("backend.services.cycle_resolution_service.sentry_sdk"),
+        ):
             battle.log_phase_change = AsyncMock()
             alliance.deduct_upkeep = AsyncMock(return_value=[])
             alliance.expire_proposals = AsyncMock(return_value=0)
@@ -189,7 +203,8 @@ class TestParticipationIsCapturedBeforeTheFlagsAreCleared:
     async def test_a_failing_snapshot_does_not_abort_the_resolution(self):
         """The count decorates a briefing — it must never cost a resolved cycle."""
         with patch.object(
-            CycleResolutionService, "_snapshot_participation",
+            CycleResolutionService,
+            "_snapshot_participation",
             new=AsyncMock(return_value={"acted": 0, "total": 0}),
         ):
             pipeline = await _Pipeline(new_cycle=3).run()
@@ -206,23 +221,28 @@ class TestCompletionMailWaitsForTheScores:
             # Mimic fn_advance_epoch_cycle transitioning the epoch to 'completed'
             # inside the same call that advances the cycle.
             await CycleResolutionService._apply_phase_transition(
-                _mock_supabase(), epoch_id, 6, "reckoning", "completed",
+                _mock_supabase(),
+                epoch_id,
+                6,
+                "reckoning",
+                "completed",
                 admin_supabase=_mock_supabase(),
                 deferred_notifications=deferred_notifications,
             )
             return {"config": {}, "current_cycle": 6}
 
-        with patch("backend.services.alliance_service.AllianceService") as alliance, \
-             patch("backend.services.operative_service.OperativeService") as operative, \
-             patch("backend.services.scoring_service.ScoringService") as scoring, \
-             patch("backend.services.bot_service.BotService") as bot, \
-             patch("backend.services.cycle_notification_service.CycleNotificationService") as notif, \
-             patch("backend.services.cycle_resolution_service.BattleLogService") as battle, \
-             patch("backend.services.cycle_resolution_service.GameInstanceService") as instances, \
-             patch("backend.services.cycle_resolution_service.enqueue_epoch_signature", new=AsyncMock()), \
-             patch.object(CycleResolutionService, "resolve_cycle", new=AsyncMock(side_effect=_resolve)), \
-             patch("backend.services.cycle_resolution_service.sentry_sdk"):
-
+        with (
+            patch("backend.services.alliance_service.AllianceService") as alliance,
+            patch("backend.services.operative_service.OperativeService") as operative,
+            patch("backend.services.scoring_service.ScoringService") as scoring,
+            patch("backend.services.bot_service.BotService") as bot,
+            patch("backend.services.cycle_notification_service.CycleNotificationService") as notif,
+            patch("backend.services.cycle_resolution_service.BattleLogService") as battle,
+            patch("backend.services.cycle_resolution_service.GameInstanceService") as instances,
+            patch("backend.services.cycle_resolution_service.enqueue_epoch_signature", new=AsyncMock()),
+            patch.object(CycleResolutionService, "resolve_cycle", new=AsyncMock(side_effect=_resolve)),
+            patch("backend.services.cycle_resolution_service.sentry_sdk"),
+        ):
             battle.log_phase_change = AsyncMock()
             instances.archive_instances = AsyncMock()
 
@@ -265,10 +285,11 @@ class TestCompletionMailWaitsForTheScores:
         """Callers that do not defer keep the old behaviour — no silent mail loss."""
         sent: list[str] = []
 
-        with patch("backend.services.cycle_notification_service.CycleNotificationService") as notif, \
-             patch("backend.services.cycle_resolution_service.BattleLogService") as battle, \
-             patch("backend.services.cycle_resolution_service.GameInstanceService") as instances:
-
+        with (
+            patch("backend.services.cycle_notification_service.CycleNotificationService") as notif,
+            patch("backend.services.cycle_resolution_service.BattleLogService") as battle,
+            patch("backend.services.cycle_resolution_service.GameInstanceService") as instances,
+        ):
             battle.log_phase_change = AsyncMock()
             instances.archive_instances = AsyncMock()
 
@@ -279,7 +300,11 @@ class TestCompletionMailWaitsForTheScores:
             notif.send_phase_change_notifications = AsyncMock(side_effect=_phase)
 
             await CycleResolutionService._apply_phase_transition(
-                _mock_supabase(), EPOCH_ID, 3, "foundation", "competition",
+                _mock_supabase(),
+                EPOCH_ID,
+                3,
+                "foundation",
+                "competition",
             )
 
         assert sent == ["phase_mail"]

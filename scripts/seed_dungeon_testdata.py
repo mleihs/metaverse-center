@@ -58,10 +58,7 @@ from backend.models.resonance import (  # noqa: E402
 VALID_ARCHETYPES = list(ARCHETYPES)
 
 # Invert CATEGORY_ARCHETYPE_MAP: archetype → (source_category, signature)
-_ARCHETYPE_INVERSE = {
-    archetype: (source, sig)
-    for source, (sig, archetype) in CATEGORY_ARCHETYPE_MAP.items()
-}
+_ARCHETYPE_INVERSE = {archetype: (source, sig) for source, (sig, archetype) in CATEGORY_ARCHETYPE_MAP.items()}
 ARCHETYPE_SOURCES: dict[str, str] = {a: _ARCHETYPE_INVERSE[a][0] for a in ARCHETYPES}
 ARCHETYPE_SIGNATURES: dict[str, str] = {a: _ARCHETYPE_INVERSE[a][1] for a in ARCHETYPES}
 
@@ -72,10 +69,10 @@ _IMP_PREFIX = "a1000000-0000-0000-0000-00000000"
 # Diversified aptitude profiles for party balance.
 # Cycling through these gives: DPS, Tank, Support, Flex.
 AGENT_APTITUDE_PROFILES = [
-    {"assassin": 6, "spy": 4},         # DPS: Precision Strike, Exploit + Observe, Analyze
+    {"assassin": 6, "spy": 4},  # DPS: Precision Strike, Exploit + Observe, Analyze
     {"guardian": 6, "infiltrator": 3},  # Tank: Shield, Taunt, Fortify + Evade
-    {"propagandist": 5, "spy": 3},     # Support: Inspire, Demoralize + Observe
-    {"saboteur": 5, "assassin": 4},    # Flex: Trap, Disrupt + Precision Strike
+    {"propagandist": 5, "spy": 3},  # Support: Inspire, Demoralize + Observe
+    {"saboteur": 5, "assassin": 4},  # Flex: Trap, Disrupt + Precision Strike
 ]
 
 DEFAULT_SIM = "conventional-memory"
@@ -84,6 +81,7 @@ FRONTEND_URL = "http://localhost:5173"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def _ok(msg: str) -> None:
     print(f"  \033[32m[OK]\033[0m {msg}")
@@ -114,6 +112,7 @@ def get_supabase():
     """Create Supabase admin client from .env."""
     try:
         from dotenv import load_dotenv
+
         load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
     except ImportError:
         pass  # .env might be sourced already
@@ -126,6 +125,7 @@ def get_supabase():
         sys.exit(1)
 
     from supabase import create_client
+
     return create_client(url, key)
 
 
@@ -169,6 +169,7 @@ def api_call(method: str, path: str, token: str, body: dict | None = None) -> di
 
 # ── Core Operations ───────────────────────────────────────────────────────────
 
+
 def resolve_simulation(supabase, slug: str) -> str | None:
     """Resolve simulation slug to UUID."""
     resp = supabase.table("simulations").select("id").eq("slug", slug).execute()
@@ -177,13 +178,7 @@ def resolve_simulation(supabase, slug: str) -> str | None:
 
 def get_agents(supabase, simulation_id: str, limit: int = 10) -> list[dict]:
     """Get agents for a simulation."""
-    resp = (
-        supabase.table("agents")
-        .select("id, name")
-        .eq("simulation_id", simulation_id)
-        .limit(limit)
-        .execute()
-    )
+    resp = supabase.table("agents").select("id, name").eq("simulation_id", simulation_id).limit(limit).execute()
     return resp.data or []
 
 
@@ -250,11 +245,7 @@ def seed_aptitudes(supabase, simulation_id: str, agents: list[dict]) -> None:
                 "operative_type": operative_type,
                 "aptitude_level": level,
             }
-            resp = (
-                supabase.table("agent_aptitudes")
-                .upsert(data, on_conflict="agent_id,operative_type")
-                .execute()
-            )
+            resp = supabase.table("agent_aptitudes").upsert(data, on_conflict="agent_id,operative_type").execute()
             if resp.data:
                 _ok(f"  {agent_name}: {operative_type} = {level}")
             else:
@@ -273,27 +264,27 @@ def seed_aptitudes(supabase, simulation_id: str, agents: list[dict]) -> None:
 
 def verify(supabase, simulation_id: str, slug: str) -> list[dict]:
     """Check available_dungeons view and print results."""
-    resp = (
-        supabase.table("available_dungeons")
-        .select("*")
-        .eq("simulation_id", simulation_id)
-        .execute()
-    )
+    resp = supabase.table("available_dungeons").select("*").eq("simulation_id", simulation_id).execute()
     available = resp.data or []
     if available:
         _ok(f"{len(available)} archetype(s) available for {slug}:")
         for d in available:
-            print(f"       {d['archetype']} — mag {d['effective_magnitude']}, "
-                  f"diff {d['suggested_difficulty']}, depth {d['suggested_depth']}, "
-                  f"{'AVAILABLE' if d.get('available') else 'RUN ACTIVE'}")
+            print(
+                f"       {d['archetype']} — mag {d['effective_magnitude']}, "
+                f"diff {d['suggested_difficulty']}, depth {d['suggested_depth']}, "
+                f"{'AVAILABLE' if d.get('available') else 'RUN ACTIVE'}"
+            )
     else:
         _info(f"No archetypes available for {slug}")
     return available
 
 
 def start_run(
-    supabase, simulation_id: str, slug: str,
-    archetype: str, difficulty: int = 2,
+    supabase,
+    simulation_id: str,
+    slug: str,
+    archetype: str,
+    difficulty: int = 2,
 ) -> str | None:
     """Start a dungeon run via the backend API. Returns run_id or None."""
     _heading("Starting dungeon run via API...")
@@ -341,8 +332,7 @@ def start_run(
         state = api_call("GET", f"/api/v1/dungeons/runs/{run_id}/state", token)
         if state and state.get("data"):
             s = state["data"]
-            _ok(f"Phase: {s.get('phase')}, Rooms: {len(s.get('rooms', []))}, "
-                f"Party: {len(s.get('party', []))}")
+            _ok(f"Phase: {s.get('phase')}, Rooms: {len(s.get('rooms', []))}, Party: {len(s.get('party', []))}")
         return run_id
     else:
         _err(f"Unexpected response: {json.dumps(run_data)[:200]}")
@@ -376,31 +366,27 @@ def cleanup(supabase) -> None:
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Seed Resonance Dungeons test data for E2E testing",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="Examples:\n"
-               "  %(prog)s                          # Seed The Shadow for conventional-memory\n"
-               "  %(prog)s --start-run               # Seed + auto-start a dungeon run\n"
-               "  %(prog)s -s velgarien -a 'The Tower,The Shadow'\n"
-               "  %(prog)s --verify                  # Check current state\n"
-               "  %(prog)s --cleanup                 # Remove test data\n",
+        "  %(prog)s                          # Seed The Shadow for conventional-memory\n"
+        "  %(prog)s --start-run               # Seed + auto-start a dungeon run\n"
+        "  %(prog)s -s velgarien -a 'The Tower,The Shadow'\n"
+        "  %(prog)s --verify                  # Check current state\n"
+        "  %(prog)s --cleanup                 # Remove test data\n",
     )
-    parser.add_argument("-s", "--simulation", default=DEFAULT_SIM,
-                        help=f"Simulation slug (default: {DEFAULT_SIM})")
-    parser.add_argument("-a", "--archetypes", default="The Shadow",
-                        help='Comma-separated archetypes (default: "The Shadow")')
-    parser.add_argument("-d", "--difficulty", type=int, default=2,
-                        help="Difficulty for --start-run (1-5, default: 2)")
-    parser.add_argument("--start-run", action="store_true",
-                        help="Also start a dungeon run via API after seeding")
-    parser.add_argument("--verify", action="store_true",
-                        help="Just check current state, no mutations")
-    parser.add_argument("--cleanup", action="store_true",
-                        help="Remove all test-seeded data")
-    parser.add_argument("--list-agents", action="store_true",
-                        help="List agents for the simulation")
+    parser.add_argument("-s", "--simulation", default=DEFAULT_SIM, help=f"Simulation slug (default: {DEFAULT_SIM})")
+    parser.add_argument(
+        "-a", "--archetypes", default="The Shadow", help='Comma-separated archetypes (default: "The Shadow")'
+    )
+    parser.add_argument("-d", "--difficulty", type=int, default=2, help="Difficulty for --start-run (1-5, default: 2)")
+    parser.add_argument("--start-run", action="store_true", help="Also start a dungeon run via API after seeding")
+    parser.add_argument("--verify", action="store_true", help="Just check current state, no mutations")
+    parser.add_argument("--cleanup", action="store_true", help="Remove all test-seeded data")
+    parser.add_argument("--list-agents", action="store_true", help="List agents for the simulation")
     args = parser.parse_args()
 
     # Connect

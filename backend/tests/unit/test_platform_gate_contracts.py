@@ -122,10 +122,7 @@ def test_no_stale_exclusion():
     """Eine Ausnahme für einen Namen, den niemand mehr nennt, ist Ballast."""
     literals = _enabled_literals()
     stale = sorted(key for key in _NOT_A_PLATFORM_GATE if key not in literals)
-    assert not stale, (
-        f"Diese Ausnahmen nennen Schlüssel, die der Rücken nicht mehr kennt: {stale}. "
-        "Ausnahme entfernen."
-    )
+    assert not stale, f"Diese Ausnahmen nennen Schlüssel, die der Rücken nicht mehr kennt: {stale}. Ausnahme entfernen."
 
 
 def test_no_key_is_both_gate_and_exclusion():
@@ -196,11 +193,7 @@ _CONTRACT_FILE = "platform_gate_contracts.py"
 
 def _python_readers(key: str) -> set[str]:
     """Python-Dateien, die den Schlüssel nennen — ohne die Erklärung selbst."""
-    return {
-        path
-        for path in _enabled_literals().get(key, set())
-        if not path.endswith(_CONTRACT_FILE)
-    }
+    return {path for path in _enabled_literals().get(key, set()) if not path.endswith(_CONTRACT_FILE)}
 
 
 def _sql_readers(key: str) -> set[str]:
@@ -228,7 +221,9 @@ def test_wired_gates_are_actually_read(gate):
 
 
 @pytest.mark.parametrize(
-    "gate", [g for g in PLATFORM_GATES if not g.wired], ids=lambda g: g.key,
+    "gate",
+    [g for g in PLATFORM_GATES if not g.wired],
+    ids=lambda g: g.key,
 )
 def test_unwired_gates_are_really_dead(gate):
     """``wired=False`` ist eine Behauptung und muss falsifizierbar bleiben.
@@ -239,6 +234,5 @@ def test_unwired_gates_are_really_dead(gate):
     """
     readers = _python_readers(gate.key) | _sql_readers(gate.key)
     assert not readers, (
-        f"{gate.key} ist als unverdrahtet erklärt, wird aber gelesen: "
-        f"{sorted(readers)}. wired=True setzen."
+        f"{gate.key} ist als unverdrahtet erklärt, wird aber gelesen: {sorted(readers)}. wired=True setzen."
     )

@@ -217,8 +217,11 @@ class StoryComposer:
 
         # Detection uses gradient + heavier grain; scan lines applied after bokeh
         img, accent, w, h = self._init_story_canvas(
-            accent_hex, background="gradient", scan_alpha=0,
-            grain_sigma=20, grain_opacity=0.10,
+            accent_hex,
+            background="gradient",
+            scan_alpha=0,
+            grain_sigma=20,
+            grain_opacity=0.10,
         )
 
         # Large archetype symbol -- decorative watermark behind title zone
@@ -458,8 +461,11 @@ class StoryComposer:
 
         # Classification: dark base, heavier grain for paper texture, subtle scan lines
         img, accent, w, h = self._init_story_canvas(
-            accent_hex, background="dark", scan_alpha=15,
-            grain_sigma=25, grain_opacity=0.04,
+            accent_hex,
+            background="dark",
+            scan_alpha=15,
+            grain_sigma=25,
+            grain_opacity=0.04,
         )
 
         # Faded Bureau seal watermark (centered, very transparent)
@@ -656,8 +662,11 @@ class StoryComposer:
             )
             # Atmospheric filler below filing reference
             draw_atmospheric_filler(
-                img, filing_y + FONT_CAPTION * 3 + SPACING_SM,
-                STORY_FOOTER_Y - SPACING_SM, accent, archetype,
+                img,
+                filing_y + FONT_CAPTION * 3 + SPACING_SM,
+                STORY_FOOTER_Y - SPACING_SM,
+                accent,
+                archetype,
             )
 
         return self._finalize_story(img, accent, vignette_intensity=0.4)
@@ -928,7 +937,7 @@ class StoryComposer:
             wrapped = wrap_text(narrative_closing[:120], font_closing, w - MARGIN_PAGE * 2 - SPACING_SM)
             # Only render lines that fit above the footer
             max_closing_lines = max(0, (STORY_FOOTER_Y - closing_y - 40) // LINE_HEIGHT_H1)
-            visible_lines = wrapped[:min(2, max_closing_lines)]
+            visible_lines = wrapped[: min(2, max_closing_lines)]
             # Add ellipsis if text was truncated
             if len(wrapped) > len(visible_lines) and visible_lines:
                 last = visible_lines[-1].rstrip(".").rstrip(",").rstrip()
@@ -969,13 +978,16 @@ class StoryComposer:
 
         # Advisory: dark base, moderate scan lines, standard grain
         img, accent, w, h = self._init_story_canvas(
-            accent_hex, background="dark", scan_alpha=22,
-            grain_sigma=12, grain_opacity=0.05,
+            accent_hex,
+            background="dark",
+            scan_alpha=22,
+            grain_sigma=12,
+            grain_opacity=0.05,
         )
 
         font_md = load_monospace_font(FONT_H2)
         font_sm = load_monospace_font(FONT_BODY)
-        font_type = load_bold_font(FONT_H2)       # column headers: ALIGNED / OPPOSED
+        font_type = load_bold_font(FONT_H2)  # column headers: ALIGNED / OPPOSED
         font_item = load_monospace_font(FONT_BODY)  # operative names + symbols (subordinate)
 
         y = self._draw_story_title(img, "OPERATIVE ADVISORY", accent)
@@ -1157,8 +1169,11 @@ class StoryComposer:
             )
             # Atmospheric filler below status line
             draw_atmospheric_filler(
-                img, status_y + SPACING_LG,
-                STORY_FOOTER_Y - SPACING_SM, accent, archetype,
+                img,
+                status_y + SPACING_LG,
+                STORY_FOOTER_Y - SPACING_SM,
+                accent,
+                archetype,
             )
 
         return self._finalize_story(img, accent, vignette_intensity=0.4)
@@ -1181,8 +1196,11 @@ class StoryComposer:
 
         # Subsiding: faint gradient, barely-visible scan lines, minimal grain
         img, accent, w, h = self._init_story_canvas(
-            accent_hex, background="faint_gradient", scan_alpha=12,
-            grain_sigma=10, grain_opacity=0.03,
+            accent_hex,
+            background="faint_gradient",
+            scan_alpha=12,
+            grain_sigma=10,
+            grain_opacity=0.03,
         )
 
         # Subtle bokeh for atmospheric depth
@@ -1195,8 +1213,12 @@ class StoryComposer:
         )
 
         y = self._draw_story_title(
-            img, "SUBSTRATE STABILIZING", accent,
-            glow_radius=6, fill_alpha=200, glow_alpha=40,
+            img,
+            "SUBSTRATE STABILIZING",
+            accent,
+            glow_radius=6,
+            fill_alpha=200,
+            glow_alpha=40,
         )
 
         draw = ImageDraw.Draw(img)
@@ -1230,13 +1252,11 @@ class StoryComposer:
 
         # Stats content panel — asymmetric padding compensates font metrics:
         # FONT_STAT (140px) has ~15px internal ascent space, FONT_BODY (32px) has ~5px
-        _pad_top = SPACING_XS      # 12 — stat glyph adds ~15px visual space internally
-        _pad_bottom = SPACING_SM   # 24 — label text sits tighter to bottom edge
+        _pad_top = SPACING_XS  # 12 — stat glyph adds ~15px visual space internally
+        _pad_bottom = SPACING_SM  # 24 — label text sits tighter to bottom edge
         stats_panel_y = y
         _stat_advance = FONT_STAT + SPACING_SM + FONT_BODY + SPACING_SM  # 220 — matches render
-        stats_panel_h = (
-            _pad_top + _stat_advance + STATS_LABEL_OFFSET + FONT_BODY + _pad_bottom
-        )
+        stats_panel_h = _pad_top + _stat_advance + STATS_LABEL_OFFSET + FONT_BODY + _pad_bottom
         draw.rounded_rectangle(
             [(w // 2 - STATS_PANEL_WIDTH, stats_panel_y), (w // 2 + STATS_PANEL_WIDTH, stats_panel_y + stats_panel_h)],
             radius=PANEL_RADIUS,

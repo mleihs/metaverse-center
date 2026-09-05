@@ -190,8 +190,7 @@ class TestTheRuleIsClosureNotCompleteness:
         code = _code_only(sql)
         block = code[code.index("DO $$") :]
         assert "koennen ihren eigenen Verfall nicht benennen" in block, (
-            "der Abnahmeblock prüft die Abgeschlossenheit nicht — dann misst die "
-            "Migration nur ihren eigenen Text"
+            "der Abnahmeblock prüft die Abgeschlossenheit nicht — dann misst die Migration nur ihren eigenen Text"
         )
         assert "min(k.rung)" in block
 

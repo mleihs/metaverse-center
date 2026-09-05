@@ -38,12 +38,11 @@ class TestTemplatePathCostsNothing:
         """Two events, budget zero: both go through the template path."""
         with (
             patch.object(
-                AutonomousEventService, "_create_event_template",
+                AutonomousEventService,
+                "_create_event_template",
                 new=AsyncMock(return_value={"id": "e1", "title": "T"}),
             ) as template,
-            patch.object(
-                AutonomousEventService, "_create_event_with_narrative", new=AsyncMock()
-            ) as narrative,
+            patch.object(AutonomousEventService, "_create_event_with_narrative", new=AsyncMock()) as narrative,
             patch.object(AutonomousEventService, "_apply_trigger_effects", new=AsyncMock()),
             patch.object(AutonomousEventService, "_get_simulation_name", new=AsyncMock(return_value="V")),
         ):
@@ -57,11 +56,13 @@ class TestTemplatePathCostsNothing:
         """The template path is the floor, not a replacement."""
         with (
             patch.object(
-                AutonomousEventService, "_create_event_template",
+                AutonomousEventService,
+                "_create_event_template",
                 new=AsyncMock(return_value={"id": "e1", "title": "T"}),
             ) as template,
             patch.object(
-                AutonomousEventService, "_create_event_with_narrative",
+                AutonomousEventService,
+                "_create_event_with_narrative",
                 new=AsyncMock(return_value={"id": "e2", "title": "N"}),
             ) as narrative,
             patch.object(AutonomousEventService, "_apply_trigger_effects", new=AsyncMock()),
@@ -122,12 +123,10 @@ class TestHeartbeatAlwaysRunsThePhase:
         source = inspect.getsource(heartbeat_service)
         start = source.index("# 9f: Autonomous event generation")
         end = source.index('stats["byok_available"]', start)
-        block = "\n".join(
-            line for line in source[start:end].split("\n") if not line.lstrip().startswith("#")
-        )
+        block = "\n".join(line for line in source[start:end].split("\n") if not line.lstrip().startswith("#"))
 
         assert "owner_has_key" in block, "the key must still decide the BUDGET"
         assert "if owner_has_key:" not in block
         assert "AutonomousEventService.check_and_generate" in block
         # The budget is derived from the key, so the two cannot drift apart.
-        assert 'if owner_has_key else 0' in block
+        assert "if owner_has_key else 0" in block

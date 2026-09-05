@@ -123,7 +123,7 @@ class TestDieVorgabeIstGemessen:
         """Eine Zahl ohne ihre Messung ist eine Behauptung, und die naechste
         Person, die sie aendert, weiss dann nicht, wogegen sie argumentiert."""
         quelle = (BACKEND / "utils/settings.py").read_text(encoding="utf-8")
-        zuweisung = quelle.index('DEFAULT_CONTENT_LOCALE = ')
+        zuweisung = quelle.index("DEFAULT_CONTENT_LOCALE = ")
         davor = quelle[:zuweisung]
         assert "41 Welten" in davor, "die Messung, die den Wert traegt, ist verschwunden"
         assert "CIN" in davor, "was der Widerspruch angerichtet hat, steht nicht mehr dabei"

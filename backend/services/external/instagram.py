@@ -521,7 +521,7 @@ class InstagramService:
 
                 # Retry on transient server errors and rate limits
                 if resp.status_code in (429, 500, 502, 503) and attempt < max_retries - 1:
-                    wait = backoff_base * (2 ** attempt)
+                    wait = backoff_base * (2**attempt)
                     logger.warning(
                         "Instagram API retrying on transient error",
                         extra={
@@ -540,7 +540,7 @@ class InstagramService:
 
             except (httpx.ConnectError, httpx.ConnectTimeout) as exc:
                 if attempt < max_retries - 1:
-                    wait = backoff_base * (2 ** attempt)
+                    wait = backoff_base * (2**attempt)
                     logger.warning(
                         "Instagram connection error, retrying",
                         extra={

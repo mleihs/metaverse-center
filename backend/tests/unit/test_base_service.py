@@ -71,7 +71,10 @@ class TestBaseServiceCreate:
         mock_sb = _mock_supabase(return_data=[row])
 
         result = await _ServiceWithCreatedBy.create(
-            mock_sb, sim_id, user_id, {"name": "Agent X"},
+            mock_sb,
+            sim_id,
+            user_id,
+            {"name": "Agent X"},
         )
 
         # Verify insert was called with created_by_id
@@ -89,7 +92,10 @@ class TestBaseServiceCreate:
         mock_sb = _mock_supabase(return_data=[row])
 
         result = await _ServiceWithoutCreatedBy.create(
-            mock_sb, sim_id, user_id, {"title": "Event X"},
+            mock_sb,
+            sim_id,
+            user_id,
+            {"title": "Event X"},
         )
 
         # Verify insert was called WITHOUT created_by_id
@@ -108,7 +114,10 @@ class TestBaseServiceCreate:
         mock_sb = _mock_supabase(return_data=[row])
 
         await _ServiceWithCreatedBy.create(
-            mock_sb, sim_id, user_id, {"name": "X", "created_by_id": str(explicit_id)},
+            mock_sb,
+            sim_id,
+            user_id,
+            {"name": "X", "created_by_id": str(explicit_id)},
         )
 
         insert_data = mock_sb.table.return_value.insert.call_args[0][0]
@@ -122,7 +131,10 @@ class TestBaseServiceCreate:
         mock_sb = _mock_supabase(return_data=[row])
 
         await _ServiceWithoutCreatedBy.create(
-            mock_sb, sim_id, user_id, {"title": "Test"},
+            mock_sb,
+            sim_id,
+            user_id,
+            {"title": "Test"},
         )
 
         insert_data = mock_sb.table.return_value.insert.call_args[0][0]
@@ -134,7 +146,10 @@ class TestBaseServiceCreate:
 
         with pytest.raises(HTTPException) as exc_info:
             await _ServiceWithCreatedBy.create(
-                mock_sb, uuid4(), uuid4(), {"name": "Fail"},
+                mock_sb,
+                uuid4(),
+                uuid4(),
+                {"name": "Fail"},
             )
         assert exc_info.value.status_code == 403
 
@@ -192,7 +207,10 @@ class TestBaseServiceLogging:
         with caplog.at_level(logging.WARNING, logger="backend.services.base_service"):
             with pytest.raises(HTTPException) as exc_info:
                 await _ServiceWithCreatedBy.update(
-                    mock_sb, sim_id, entity_id, {"name": "Updated"},
+                    mock_sb,
+                    sim_id,
+                    entity_id,
+                    {"name": "Updated"},
                 )
             assert exc_info.value.status_code == 404
 

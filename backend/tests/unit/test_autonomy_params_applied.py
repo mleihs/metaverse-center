@@ -81,9 +81,7 @@ class TestTheMigrationSeparatesCreationFromTuning:
 class TestThePythonPathAppliesThem:
     def test_initialize_agent_autonomy_calls_both_rpcs(self):
         """Creating the rows is not enough — the second call is the whole fix."""
-        source = textwrap.dedent(
-            inspect.getsource(PersonalityExtractionService.initialize_agent_autonomy.__func__)
-        )
+        source = textwrap.dedent(inspect.getsource(PersonalityExtractionService.initialize_agent_autonomy.__func__))
         tree = ast.parse(source)
         rpcs = {
             node.args[0].value
@@ -104,8 +102,11 @@ class TestThePythonPathAppliesThem:
     @pytest.mark.asyncio
     async def test_the_applied_values_are_the_derived_ones(self):
         profile = {
-            "openness": 0.4, "conscientiousness": 0.9, "extraversion": 0.3,
-            "agreeableness": 0.6, "neuroticism": 0.1,
+            "openness": 0.4,
+            "conscientiousness": 0.9,
+            "extraversion": 0.3,
+            "agreeableness": 0.6,
+            "neuroticism": 0.1,
         }
         expected = _derive_autonomy_params(profile)
 
@@ -117,14 +118,13 @@ class TestThePythonPathAppliesThem:
 
         with pytest.MonkeyPatch.context() as patch:
             patch.setattr(
-                PersonalityExtractionService, "extract_personality",
+                PersonalityExtractionService,
+                "extract_personality",
                 AsyncMock(return_value=profile),
             )
             from uuid import uuid4
 
-            await PersonalityExtractionService.initialize_agent_autonomy(
-                supabase, uuid4(), uuid4()
-            )
+            await PersonalityExtractionService.initialize_agent_autonomy(supabase, uuid4(), uuid4())
 
         applied = next(p for name, p in calls if name == "fn_apply_agent_autonomy_params")
         assert applied["p_resilience"] == expected["resilience"]
@@ -138,12 +138,10 @@ class TestTheDerivationActuallyDiffers:
 
     def test_different_personalities_give_different_parameters(self):
         calm = _derive_autonomy_params(
-            {"openness": 0.4, "conscientiousness": 0.9, "extraversion": 0.3,
-             "agreeableness": 0.6, "neuroticism": 0.1}
+            {"openness": 0.4, "conscientiousness": 0.9, "extraversion": 0.3, "agreeableness": 0.6, "neuroticism": 0.1}
         )
         anxious = _derive_autonomy_params(
-            {"openness": 0.5, "conscientiousness": 0.5, "extraversion": 0.1,
-             "agreeableness": 0.4, "neuroticism": 0.9}
+            {"openness": 0.5, "conscientiousness": 0.5, "extraversion": 0.1, "agreeableness": 0.4, "neuroticism": 0.9}
         )
         assert calm["resilience"] != anxious["resilience"]
         assert calm["sociability"] != anxious["sociability"]
@@ -152,8 +150,7 @@ class TestTheDerivationActuallyDiffers:
     def test_the_spread_is_wide_enough_to_matter(self):
         values = [
             _derive_autonomy_params(
-                {"openness": v, "conscientiousness": v, "extraversion": v,
-                 "agreeableness": v, "neuroticism": 1 - v}
+                {"openness": v, "conscientiousness": v, "extraversion": v, "agreeableness": v, "neuroticism": 1 - v}
             )["resilience"]
             for v in (0.0, 0.5, 1.0)
         ]
@@ -169,8 +166,7 @@ class TestTheForgeCallsIt:
         # classmethods elsewhere in this file.
         source = inspect.getsource(ForgeOrchestratorService.materialize_shard)
         assert "initialize_simulation_agents" in source, (
-            "Die Schmiede ruft die Persönlichkeitsextraktion nicht — dann bleibt "
-            "jeder neue Agent beim leeren Profil"
+            "Die Schmiede ruft die Persönlichkeitsextraktion nicht — dann bleibt jeder neue Agent beim leeren Profil"
         )
         assert source.index("initialize_simulation_agents") < source.index("_seed_agent_aptitudes"), (
             "Eignungen werden aus der Persönlichkeit abgeleitet; laufen sie "

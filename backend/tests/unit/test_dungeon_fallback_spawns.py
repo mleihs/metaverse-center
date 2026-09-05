@@ -44,9 +44,7 @@ class TestScannerFindsSomething:
 class TestFallbackSpawnCoverage:
     def test_every_archetype_has_a_fallback(self):
         missing = sorted(set(ARCHETYPE_CONFIGS) - set(FALLBACK_SPAWNS))
-        assert not missing, (
-            f"Ohne Eintrag bekommen diese Archetypen die Gegner eines anderen: {missing}"
-        )
+        assert not missing, f"Ohne Eintrag bekommen diese Archetypen die Gegner eines anderen: {missing}"
 
     def test_no_fallback_for_an_unknown_archetype(self):
         stray = sorted(set(FALLBACK_SPAWNS) - set(ARCHETYPE_CONFIGS))
@@ -63,8 +61,7 @@ class TestFallbackSpawnCoverage:
         """A typo here is as invisible as a missing entry — same defect class."""
         for key, spawn_id in FALLBACK_SPAWNS[archetype].items():
             assert spawn_id in spawn_ids, (
-                f"{archetype}/{key} verweist auf '{spawn_id}', "
-                f"das kein Inhaltspaket definiert"
+                f"{archetype}/{key} verweist auf '{spawn_id}', das kein Inhaltspaket definiert"
             )
 
     @pytest.mark.parametrize("archetype", sorted(ARCHETYPE_CONFIGS))

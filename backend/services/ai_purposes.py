@@ -184,8 +184,8 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         reasoning="off",
         why=(
             "Ein Ja/Nein plus einen kurzen Grund, als JSON. 200 Token sind "
-            "reichlich: die Antwort ist `{\"supersedes\": true, \"reason\": "
-            "\"...\"}` und der Grund ist auf 300 Zeichen gekappt. Mehr Budget "
+            'reichlich: die Antwort ist `{"supersedes": true, "reason": '
+            '"..."}` und der Grund ist auf 300 Zeichen gekappt. Mehr Budget '
             "hiesse nur, dass ein schwatzhaftes Modell laenger schwatzt. "
             "60 s: der Lauf haengt am Herzschlag, nicht an einer Anfrage. "
             "reasoning=off aus demselben Grund wie bei `agent_continuation` – "

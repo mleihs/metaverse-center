@@ -100,12 +100,16 @@ async def _run(epoch, participants, recipients, already_sent=()):
 
 
 _ALICE = {
-    "user_id": "aaa", "email": "a@example.com",
-    "simulation_id": "sim-a", "email_locale": "de",
+    "user_id": "aaa",
+    "email": "a@example.com",
+    "simulation_id": "sim-a",
+    "email_locale": "de",
 }
 _BOB = {
-    "user_id": "bbb", "email": "b@example.com",
-    "simulation_id": "sim-b", "email_locale": "en",
+    "user_id": "bbb",
+    "email": "b@example.com",
+    "simulation_id": "sim-b",
+    "email_locale": "en",
 }
 
 
@@ -214,9 +218,7 @@ class TestItThreatensOnlyWhatTheEpochDoes:
 
 class TestTheSweepIsWiredAndCannotBlockResolution:
     def test_the_tick_runs_both_sweeps(self):
-        source = textwrap.dedent(
-            inspect.getsource(EpochCycleScheduler._process_tick.__func__)
-        )
+        source = textwrap.dedent(inspect.getsource(EpochCycleScheduler._process_tick.__func__))
         called = {
             node.func.attr
             for node in ast.walk(ast.parse(source))
@@ -227,9 +229,7 @@ class TestTheSweepIsWiredAndCannotBlockResolution:
 
     def test_a_failing_reminder_is_caught_per_epoch(self):
         """Missing a warning is bad; missing the resolution is worse."""
-        source = textwrap.dedent(
-            inspect.getsource(EpochCycleScheduler._sweep_deadline_reminders.__func__)
-        )
+        source = textwrap.dedent(inspect.getsource(EpochCycleScheduler._sweep_deadline_reminders.__func__))
         assert "except" in source and "capture_exception" in source
 
     def test_the_lead_time_is_named_once(self):

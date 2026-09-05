@@ -96,6 +96,7 @@ def rebuild_seo_caches() -> None:
     _sim_meta_cache = TTLCache(maxsize=64, ttl=ttl)
     _entity_cache = TTLCache(maxsize=128, ttl=ttl)
 
+
 # Human labels for crawler <title> / breadcrumbs. Public views pull the label from
 # the registry; unregistered paths that still match the URL regex (rare — would need
 # a malformed request) fall back to title-cased view key.
@@ -123,13 +124,7 @@ def get_crawler_redirect(url_path: str) -> str | None:
 
     try:
         client = _get_anon_client()
-        response = (
-            client.table("simulations")
-            .select("slug")
-            .eq("id", simulation_id)
-            .limit(1)
-            .execute()
-        )
+        response = client.table("simulations").select("slug").eq("id", simulation_id).limit(1).execute()
         if not response.data or not response.data[0].get("slug"):
             return None
 
@@ -194,8 +189,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
     "/epoch": {
         "title": "Epoch Command Center | metaverse.center",
         "description": (
-            "Join competitive PvP epochs – deploy operatives,"
-            " form alliances, and compete for multiverse dominance."
+            "Join competitive PvP epochs – deploy operatives, form alliances, and compete for multiverse dominance."
         ),
         "canonical": "https://metaverse.center/epoch",
     },
@@ -217,8 +211,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         ),
         "canonical": "https://metaverse.center/worlds",
         "og_image": (
-            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1"
-            "/object/public/simulation.assets/platform/og-image.jpg"
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg"
         ),
     },
     "/chronicles": {
@@ -230,8 +223,7 @@ _PLATFORM_META: dict[str, dict[str, str]] = {
         ),
         "canonical": "https://metaverse.center/chronicles",
         "og_image": (
-            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1"
-            "/object/public/simulation.assets/platform/og-image.jpg"
+            "https://bffjoupddfjaljqrwqck.supabase.co/storage/v1/object/public/simulation.assets/platform/og-image.jpg"
         ),
     },
     # --- Content pages: landing pages ---
@@ -374,10 +366,7 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     if sim_desc:
         description = sim_desc
     elif sim_name:
-        description = (
-            f"Explore {sim_name}{f', a {theme}' if theme else ''}"
-            f" simulation world on metaverse.center."
-        )
+        description = f"Explore {sim_name}{f', a {theme}' if theme else ''} simulation world on metaverse.center."
     else:
         description = "Build and explore simulated worlds on metaverse.center."
     canonical = f"https://metaverse.center/simulations/{slug}/{view}"
@@ -392,7 +381,11 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
     entity_meta: EntityMeta | None = None
     if entity_id_or_slug:
         detail = _fetch_entity_detail_cached(
-            view, sim.get("id", id_or_slug), sim_name, slug, entity_id_or_slug,
+            view,
+            sim.get("id", id_or_slug),
+            sim_name,
+            slug,
+            entity_id_or_slug,
         )
         entity_meta = detail.meta
 
@@ -412,14 +405,22 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
 
     enriched = _inject_meta(
         document,
-        title=title, description=description, canonical=canonical,
-        og_image=og_image, og_image_alt=og_image_alt, og_type=og_type,
+        title=title,
+        description=description,
+        canonical=canonical,
+        og_image=og_image,
+        og_image_alt=og_image_alt,
+        og_type=og_type,
         extra_jsonld=breadcrumb_json,
     )
 
     # Inject body/head content (HTML snippet + entity JSON-LD). Cache hits now.
     enriched = _inject_entity_content(
-        enriched, view, sim.get("id", id_or_slug), sim_name, slug,
+        enriched,
+        view,
+        sim.get("id", id_or_slug),
+        sim_name,
+        slug,
         entity_id=entity_id_or_slug,
     )
 
@@ -429,24 +430,37 @@ async def enrich_html_for_crawler(index_path: Path, url_path: str) -> str | None
 def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str) -> str:
     """Build BreadcrumbList JSON-LD for a simulation page."""
     import json
+
     items = [
         {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://metaverse.center/"},
         {"@type": "ListItem", "position": 2, "name": "Dashboard", "item": "https://metaverse.center/dashboard"},
     ]
     if sim_name:
-        items.append({
-            "@type": "ListItem", "position": 3, "name": sim_name,
-            "item": f"https://metaverse.center/simulations/{slug}/lore",
-        })
-        items.append({
-            "@type": "ListItem", "position": 4, "name": view_label,
-            "item": f"https://metaverse.center/simulations/{slug}/{view}",
-        })
+        items.append(
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": sim_name,
+                "item": f"https://metaverse.center/simulations/{slug}/lore",
+            }
+        )
+        items.append(
+            {
+                "@type": "ListItem",
+                "position": 4,
+                "name": view_label,
+                "item": f"https://metaverse.center/simulations/{slug}/{view}",
+            }
+        )
     else:
-        items.append({
-            "@type": "ListItem", "position": 3, "name": view_label,
-            "item": f"https://metaverse.center/simulations/{slug}/{view}",
-        })
+        items.append(
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": view_label,
+                "item": f"https://metaverse.center/simulations/{slug}/{view}",
+            }
+        )
     breadcrumb = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": items}
     raw = json.dumps(breadcrumb)
     # Escape < and > for safe embedding inside HTML <script> tags
@@ -454,7 +468,11 @@ def _build_breadcrumb_json(sim_name: str, slug: str, view: str, view_label: str)
 
 
 def _fetch_entity_detail_cached(
-    view: str, sim_id: str, sim_name: str, slug: str, entity_id: str,
+    view: str,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
+    entity_id: str,
 ) -> EntityDetailResult:
     """Fetch entity detail via the registry dispatcher, with TTL caching.
 
@@ -469,14 +487,22 @@ def _fetch_entity_detail_cached(
         return cached
     client = _get_anon_client()
     result = build_entity_detail_content(
-        client, sim_id, sim_name, slug, view, entity_id,
+        client,
+        sim_id,
+        sim_name,
+        slug,
+        view,
+        entity_id,
     )
     _entity_cache[cache_key] = result
     return result
 
 
 def _fetch_view_content_cached(
-    view: str, sim_id: str, sim_name: str, slug: str,
+    view: str,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     """Fetch list-view content via the registry dispatcher, with TTL caching."""
     cache_key = f"{slug}:{view}"
@@ -490,7 +516,11 @@ def _fetch_view_content_cached(
 
 
 def _inject_entity_content(
-    html_str: str, view: str, sim_id: str, sim_name: str, slug: str,
+    html_str: str,
+    view: str,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
     entity_id: str | None = None,
 ) -> str:
     """Inject entity HTML + JSON-LD into crawler response.
@@ -539,20 +569,20 @@ def _inject_meta(
         f'<meta name="description" content="{_escape(description)}"',
         html,
     )
-    html = _replace_meta(html, 'property', 'og:title', _escape(title))
-    html = _replace_meta(html, 'property', 'og:description', _escape(description))
-    html = _replace_meta(html, 'property', 'og:url', _escape(canonical))
+    html = _replace_meta(html, "property", "og:title", _escape(title))
+    html = _replace_meta(html, "property", "og:description", _escape(description))
+    html = _replace_meta(html, "property", "og:url", _escape(canonical))
     if og_type:
-        html = _replace_meta(html, 'property', 'og:type', _escape(og_type))
+        html = _replace_meta(html, "property", "og:type", _escape(og_type))
     if og_image:
-        html = _replace_meta(html, 'property', 'og:image', _escape(og_image))
+        html = _replace_meta(html, "property", "og:image", _escape(og_image))
     if og_image_alt:
-        html = _replace_meta(html, 'property', 'og:image:alt', _escape(og_image_alt))
-        html = _replace_meta(html, 'name', 'twitter:image:alt', _escape(og_image_alt))
-    html = _replace_meta(html, 'name', 'twitter:title', _escape(title))
-    html = _replace_meta(html, 'name', 'twitter:description', _escape(description))
+        html = _replace_meta(html, "property", "og:image:alt", _escape(og_image_alt))
+        html = _replace_meta(html, "name", "twitter:image:alt", _escape(og_image_alt))
+    html = _replace_meta(html, "name", "twitter:title", _escape(title))
+    html = _replace_meta(html, "name", "twitter:description", _escape(description))
     if og_image:
-        html = _replace_meta(html, 'name', 'twitter:image', _escape(og_image))
+        html = _replace_meta(html, "name", "twitter:image", _escape(og_image))
     html = _sub_literal(
         r'<link rel="canonical" href="[^"]*"',
         f'<link rel="canonical" href="{_escape(canonical)}"',
@@ -585,12 +615,6 @@ def _replace_meta(html: str, attr: str, key: str, value: str) -> str:
     return _sub_literal(pattern, replacement, html)
 
 
-
 def _escape(text: str) -> str:
     """Escape text for safe HTML attribute insertion."""
-    return (
-        text.replace("&", "&amp;")
-        .replace('"', "&quot;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
+    return text.replace("&", "&amp;").replace('"', "&quot;").replace("<", "&lt;").replace(">", "&gt;")

@@ -29,49 +29,59 @@ from backend.services.sentry_rule_cache import (
 def _seed_p0_equivalent_cache() -> None:
     """Load the 4 P0-equivalent rules from migration 230 into the cache."""
     reset_for_tests()
-    ignore_rule = CompiledRule.from_row({
-        "id": "seed-ignore",
-        "kind": "ignore",
-        "match_exception_type": None,
-        "match_message_regex": "(Key limit exceeded|insufficient_quota)",
-        "match_logger": None,
-        "fingerprint_template": None,
-        "downgrade_to": None,
-    })
-    fp_rate_limit = CompiledRule.from_row({
-        "id": "seed-fp-ratelimit",
-        "kind": "fingerprint",
-        "match_exception_type": "RateLimitError",
-        "match_message_regex": None,
-        "match_logger": None,
-        "fingerprint_template": "openrouter.{exc_type}.{model}",
-        "downgrade_to": None,
-    })
-    fp_unavailable = CompiledRule.from_row({
-        "id": "seed-fp-unavail",
-        "kind": "fingerprint",
-        "match_exception_type": "ModelUnavailableError",
-        "match_message_regex": None,
-        "match_logger": None,
-        "fingerprint_template": "openrouter.{exc_type}.{model}",
-        "downgrade_to": None,
-    })
-    downgrade_rule = CompiledRule.from_row({
-        "id": "seed-downgrade",
-        "kind": "downgrade",
-        "match_exception_type": "ModelHTTPError",
-        "match_message_regex": r"\b(402|403|503)\b",
-        "match_logger": None,
-        "fingerprint_template": None,
-        "downgrade_to": "warning",
-    })
+    ignore_rule = CompiledRule.from_row(
+        {
+            "id": "seed-ignore",
+            "kind": "ignore",
+            "match_exception_type": None,
+            "match_message_regex": "(Key limit exceeded|insufficient_quota)",
+            "match_logger": None,
+            "fingerprint_template": None,
+            "downgrade_to": None,
+        }
+    )
+    fp_rate_limit = CompiledRule.from_row(
+        {
+            "id": "seed-fp-ratelimit",
+            "kind": "fingerprint",
+            "match_exception_type": "RateLimitError",
+            "match_message_regex": None,
+            "match_logger": None,
+            "fingerprint_template": "openrouter.{exc_type}.{model}",
+            "downgrade_to": None,
+        }
+    )
+    fp_unavailable = CompiledRule.from_row(
+        {
+            "id": "seed-fp-unavail",
+            "kind": "fingerprint",
+            "match_exception_type": "ModelUnavailableError",
+            "match_message_regex": None,
+            "match_logger": None,
+            "fingerprint_template": "openrouter.{exc_type}.{model}",
+            "downgrade_to": None,
+        }
+    )
+    downgrade_rule = CompiledRule.from_row(
+        {
+            "id": "seed-downgrade",
+            "kind": "downgrade",
+            "match_exception_type": "ModelHTTPError",
+            "match_message_regex": r"\b(402|403|503)\b",
+            "match_logger": None,
+            "fingerprint_template": None,
+            "downgrade_to": "warning",
+        }
+    )
     assert ignore_rule and fp_rate_limit and fp_unavailable and downgrade_rule
-    seed_for_tests(Snapshot(
-        ignore=(ignore_rule,),
-        fingerprint=(fp_rate_limit, fp_unavailable),
-        downgrade=(downgrade_rule,),
-        loaded_at_monotonic=1.0,
-    ))
+    seed_for_tests(
+        Snapshot(
+            ignore=(ignore_rule,),
+            fingerprint=(fp_rate_limit, fp_unavailable),
+            downgrade=(downgrade_rule,),
+            loaded_at_monotonic=1.0,
+        )
+    )
     yield
     reset_for_tests()
 

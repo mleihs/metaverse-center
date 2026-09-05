@@ -54,12 +54,7 @@ class SentryRuleService:
     @staticmethod
     async def list_rules(admin_supabase: Client) -> list[SentryRule]:
         """All rows, ordered by created_at ASC (matches the cache order)."""
-        resp = await (
-            admin_supabase.table("sentry_rules")
-            .select("*")
-            .order("created_at", desc=False)
-            .execute()
-        )
+        resp = await admin_supabase.table("sentry_rules").select("*").order("created_at", desc=False).execute()
         return [_row_to_rule(row) for row in extract_list(resp)]
 
     @staticmethod
@@ -84,22 +79,13 @@ class SentryRuleService:
         }
 
         if rule_id is not None:
-            resp = await (
-                admin_supabase.table("sentry_rules")
-                .update(payload)
-                .eq("id", str(rule_id))
-                .execute()
-            )
+            resp = await admin_supabase.table("sentry_rules").update(payload).eq("id", str(rule_id)).execute()
             row = extract_one(resp)
             if row is None:
                 raise not_found("Sentry rule", rule_id)
             action = "sentry.rule.update"
         else:
-            resp = await (
-                admin_supabase.table("sentry_rules")
-                .insert(payload)
-                .execute()
-            )
+            resp = await admin_supabase.table("sentry_rules").insert(payload).execute()
             row = extract_one(resp)
             if row is None:
                 raise RuntimeError("Sentry rule insert returned no rows")
@@ -141,12 +127,7 @@ class SentryRuleService:
         reason: str,
     ) -> None:
         """Delete a rule row by id. Audit entry carries the operator reason."""
-        resp = await (
-            admin_supabase.table("sentry_rules")
-            .delete()
-            .eq("id", str(rule_id))
-            .execute()
-        )
+        resp = await admin_supabase.table("sentry_rules").delete().eq("id", str(rule_id)).execute()
         rows = extract_list(resp)
         if not rows:
             raise not_found("Sentry rule", rule_id)

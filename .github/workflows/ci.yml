@@ -251,6 +251,15 @@ jobs:
         run: bash frontend/scripts/lint-no-html-entities-in-locales.sh
         working-directory: .
 
+      # Ein Skin hat MEHRERE Gruende. Die Serienpalette war gegen EINEN getunt
+      # und fiel auf den anderen durch — zweimal unabhaengig, am 03.09. bei
+      # den vier Tinten und am 05.09. bei den fuenf Diagrammfarben. Beim
+      # ersten Lauf fand dieses Tor sofort vier Fundstellen mehr, als die
+      # Reparatur behoben hatte.
+      - name: Frontend lint (Serienfarben gegen JEDEN Grund)
+        run: node frontend/scripts/lint-series-palette-grounds.mjs
+        working-directory: .
+
       - name: Repo lint (Workflows parsen)
         run: bash scripts/lint-workflows-parse.sh
         working-directory: .
@@ -284,6 +293,18 @@ jobs:
 
       - name: Ruff (full ruleset, backend + scripts)
         run: ruff check backend/ scripts/ --output-format github
+
+      # Formatierung, seit 05.09.2026. Bis dahin erzwang CI nur `ruff check`,
+      # der Baum war nie formatierrein, und wer eine Datei anfasste und
+      # `ruff format` darauf laufen liess, zog fremde Zeilen in seinen Commit.
+      # Genau das ist an dem Tag passiert: ein Lauf ueber `backend/services/`
+      # hat 77 Dateien umformatiert, wo sieben gemeint waren.
+      #
+      # Der Umfang ist derselbe wie bei `check` — sonst waere die eine Haelfte
+      # des Baums erzwungen und die andere nicht, und das faellt genau dann
+      # auf, wenn jemand die ungeschuetzte Haelfte anfasst.
+      - name: Ruff format (backend + scripts)
+        run: ruff format --check --diff backend/ scripts/
 
   lock-backend:
     name: Backend Lock Divergence

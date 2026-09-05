@@ -148,7 +148,9 @@ def _walk_ability_rows() -> list[dict[str, Any]]:
 
 
 def _build_manifest_row(
-    yaml_file: Path, pack_slug: str, resource_path: str,
+    yaml_file: Path,
+    pack_slug: str,
+    resource_path: str,
 ) -> dict[str, Any]:
     """Read one YAML file + return its manifest row.
 
@@ -163,7 +165,9 @@ def _build_manifest_row(
             entry_count = _count_entries(content, pack_slug, resource_path)
     except yaml.YAMLError as err:
         logger.warning(
-            "Failed to parse %s for manifest: %s", yaml_file, err,
+            "Failed to parse %s for manifest: %s",
+            yaml_file,
+            err,
         )
         entry_count = -1
     return {
@@ -193,11 +197,7 @@ def get_pack_resource(pack_slug: str, resource_path: str) -> dict[str, Any]:
     """
     candidate = _resource_file_path(pack_slug, resource_path)
     if not candidate.is_file():
-        root_hint = (
-            "content/dungeon/abilities"
-            if pack_slug == ABILITY_PACK_SLUG
-            else "content/dungeon/archetypes"
-        )
+        root_hint = "content/dungeon/abilities" if pack_slug == ABILITY_PACK_SLUG else "content/dungeon/archetypes"
         raise not_found(
             "content_pack_resource",
             f"{pack_slug}/{resource_path}",
@@ -209,7 +209,9 @@ def get_pack_resource(pack_slug: str, resource_path: str) -> dict[str, Any]:
     except yaml.YAMLError as err:
         logger.exception(
             "YAML parse error while reading %s (pack=%s, resource=%s)",
-            candidate, pack_slug, resource_path,
+            candidate,
+            pack_slug,
+            resource_path,
         )
         raise bad_request(
             f"YAML parse error in {pack_slug}/{resource_path}.yaml: {err}",

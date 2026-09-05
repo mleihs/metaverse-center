@@ -44,13 +44,9 @@ class NotificationPreferencesResponse(BaseModel):
 #:
 #: `backend/tests/unit/test_notification_preference_columns.py` holds both call
 #: sites to this constant.
-NOTIFICATION_PREFERENCE_COLUMNS: tuple[str, ...] = tuple(
-    NotificationPreferencesUpdate.model_fields
-)
+NOTIFICATION_PREFERENCE_COLUMNS: tuple[str, ...] = tuple(NotificationPreferencesUpdate.model_fields)
 
 #: The boolean switches alone — the ones `notification_type` may name.
 NOTIFICATION_TOGGLE_COLUMNS: tuple[str, ...] = tuple(
-    name
-    for name, field in NotificationPreferencesUpdate.model_fields.items()
-    if field.annotation is bool
+    name for name, field in NotificationPreferencesUpdate.model_fields.items() if field.annotation is bool
 )

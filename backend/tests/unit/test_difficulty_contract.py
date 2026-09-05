@@ -95,8 +95,7 @@ class TestEveryFactorIsActuallyRead:
     @pytest.mark.parametrize("factor", sorted(DIFFICULTY_FACTORS))
     def test_the_reason_is_written_down(self, factor):
         assert DIFFICULTY_FACTORS[factor].why_here.strip(), (
-            f"'{factor}' hat keine Begründung — dann ist die Zuordnung zum Kanal "
-            f"eine Meinung und kein Beschluss"
+            f"'{factor}' hat keine Begründung — dann ist die Zuordnung zum Kanal eine Meinung und kein Beschluss"
         )
 
 
@@ -111,9 +110,7 @@ class TestTheColumnsAreAScale:
     def test_enemy_condition_has_no_flat_step(self):
         """Levels 1 and 2 both carried 1.0 — choosing 2 changed nothing."""
         values = [DIFFICULTY_MULTIPLIERS[level]["enemy_condition"] for level in sorted(DIFFICULTY_MULTIPLIERS)]
-        assert len(set(values)) == len(values), (
-            f"Zwei Stufen mit gleichem enemy_condition: {values}"
-        )
+        assert len(set(values)) == len(values), f"Zwei Stufen mit gleichem enemy_condition: {values}"
 
     def test_the_hardest_level_is_meaningfully_harder(self):
         """Measured with scripts/simulate_dungeon_combat.py: the old top value

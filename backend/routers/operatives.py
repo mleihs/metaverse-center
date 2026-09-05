@@ -119,8 +119,12 @@ async def resolve_missions(
     for mission in results:
         await BattleLogService.log_mission_result(supabase, epoch_id, cycle, mission)
         await AuditService.safe_log(
-            supabase, None, user.id,
-            "operative_missions", mission.get("id"), "update",
+            supabase,
+            None,
+            user.id,
+            "operative_missions",
+            mission.get("id"),
+            "update",
             details={"action": "resolve", "outcome": mission.get("mission_result", {}).get("outcome")},
         )
 

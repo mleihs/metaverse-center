@@ -243,8 +243,7 @@ async def classify_batch(
             # is a different repair than "the model returned nonsense".
             cut_off = bool(raw) and not raw.rstrip().endswith("]")
             logger.warning(
-                "LLM classification returned non-list (%d headlines, budget %d tokens, "
-                "answer %s): %s",
+                "LLM classification returned non-list (%d headlines, budget %d tokens, answer %s): %s",
                 len(headlines),
                 answer_budget,
                 "looks cut off" if cut_off else "complete",

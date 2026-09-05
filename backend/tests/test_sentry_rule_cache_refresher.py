@@ -23,7 +23,8 @@ async def test_tick_delegates_to_sentry_rule_cache_reload() -> None:
         new_callable=AsyncMock,
     ) as reload_mock:
         await SentryRuleCacheRefresher._process_tick(
-            admin, {"enabled": True, "interval": 60},
+            admin,
+            {"enabled": True, "interval": 60},
         )
     reload_mock.assert_awaited_once_with(admin)
 

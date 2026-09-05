@@ -27,6 +27,7 @@ os.environ.setdefault("ENVIRONMENT", "development")
 
 # Load .env (REPLICATE_API_TOKEN, OPENROUTER_API_KEY, etc.)
 from dotenv import load_dotenv
+
 load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 logging.basicConfig(
@@ -81,9 +82,7 @@ async def build_world_context(supabase) -> str:
         .execute()
     )
     sections = lore_resp.data or []
-    return "\n".join(
-        f"{s['title']}: {(s.get('body') or '')[:300]}" for s in sections
-    )
+    return "\n".join(f"{s['title']}: {(s.get('body') or '')[:300]}" for s in sections)
 
 
 async def main() -> None:
@@ -108,7 +107,8 @@ async def main() -> None:
         return
 
     image_service = ForgeImageService(
-        supabase, SIM_ID,
+        supabase,
+        SIM_ID,
         replicate_api_key=replicate_key,
         openrouter_api_key=openrouter_key,
         world_context=world_context,
@@ -140,7 +140,8 @@ async def main() -> None:
 
     # ── Agents (alternating pro/max) ─────────────────────────────────────
     agents_resp = await (
-        supabase.table("agents").select("*")
+        supabase.table("agents")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .is_("deleted_at", "null")
         .order("name")
@@ -182,7 +183,8 @@ async def main() -> None:
 
     # ── Buildings (alternating pro/max) ──────────────────────────────────
     buildings_resp = await (
-        supabase.table("buildings").select("*")
+        supabase.table("buildings")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .is_("deleted_at", "null")
         .order("name")
@@ -226,7 +228,8 @@ async def main() -> None:
 
     # ── Lore (flux-2-pro only) ───────────────────────────────────────────
     lore_resp = await (
-        supabase.table("simulation_lore").select("*")
+        supabase.table("simulation_lore")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .neq("image_slug", "")
         .order("sort_order")

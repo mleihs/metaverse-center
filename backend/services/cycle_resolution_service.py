@@ -247,9 +247,7 @@ class CycleResolutionService:
                 "total": len(humans),
             }
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
-            logger.warning(
-                "Participation snapshot failed", extra={"epoch_id": str(epoch_id)}, exc_info=True
-            )
+            logger.warning("Participation snapshot failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
             sentry_sdk.capture_exception()
             return {"acted": 0, "total": 0}
 
@@ -298,7 +296,8 @@ class CycleResolutionService:
         pending_transitions: list[dict] = []
 
         data = await cls.resolve_cycle(
-            supabase, epoch_id,
+            supabase,
+            epoch_id,
             admin_supabase=admin_supabase,
             deferred_notifications=pending_transitions,
         )
@@ -526,11 +525,15 @@ class CycleResolutionService:
             try:
                 if new_status == "completed":
                     await CycleNotificationService.send_epoch_completed_notifications(
-                        effective_admin, str(epoch_id),
+                        effective_admin,
+                        str(epoch_id),
                     )
                 else:
                     await CycleNotificationService.send_phase_change_notifications(
-                        effective_admin, str(epoch_id), old_status, new_status,
+                        effective_admin,
+                        str(epoch_id),
+                        old_status,
+                        new_status,
                     )
             except (PostgrestAPIError, httpx.HTTPError, OSError, KeyError, ValueError):
                 logger.warning("Auto-phase notification failed", extra={"epoch_id": str(epoch_id)}, exc_info=True)
@@ -619,7 +622,11 @@ class CycleResolutionService:
                 },
             )
             await cls._apply_phase_transition(
-                db, epoch_id, new_cycle_num, old_status, new_status,
+                db,
+                epoch_id,
+                new_cycle_num,
+                old_status,
+                new_status,
                 admin_supabase=admin_supabase,
                 deferred_notifications=deferred_notifications,
             )

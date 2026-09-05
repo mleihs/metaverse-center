@@ -177,7 +177,9 @@ class TestCreate:
         sb.table.return_value = chain
 
         result = await BotPlayerService.create(
-            sb, USER_ID, {"name": "Sentinel Prime", "personality": "sentinel", "difficulty": "medium"},
+            sb,
+            USER_ID,
+            {"name": "Sentinel Prime", "personality": "sentinel", "difficulty": "medium"},
         )
 
         assert result["name"] == "Sentinel Prime"
@@ -194,7 +196,9 @@ class TestCreate:
 
         with pytest.raises(HTTPException) as exc:
             await BotPlayerService.create(
-                sb, USER_ID, {"name": "Fail", "personality": "sentinel"},
+                sb,
+                USER_ID,
+                {"name": "Fail", "personality": "sentinel"},
             )
         assert exc.value.status_code == 500
 
@@ -232,7 +236,10 @@ class TestUpdate:
         sb.table.return_value = chain
 
         result = await BotPlayerService.update(
-            sb, BOT_ID, USER_ID, {"name": "Updated Name"},
+            sb,
+            BOT_ID,
+            USER_ID,
+            {"name": "Updated Name"},
         )
 
         assert result["name"] == "Updated Name"
@@ -247,7 +254,10 @@ class TestUpdate:
 
         with pytest.raises(HTTPException) as exc:
             await BotPlayerService.update(
-                sb, BOT_ID, OTHER_USER_ID, {"name": "Hijack"},
+                sb,
+                BOT_ID,
+                OTHER_USER_ID,
+                {"name": "Hijack"},
             )
         assert exc.value.status_code == 404
         assert "not owned" in exc.value.detail.lower()

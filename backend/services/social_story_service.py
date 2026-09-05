@@ -620,11 +620,7 @@ class SocialStoryService:
 
         # subsiding-story path only needs archetype.
         res_resp = await (
-            admin.table("substrate_resonances")
-            .select("id, archetype")
-            .eq("id", str(resonance_id))
-            .limit(1)
-            .execute()
+            admin.table("substrate_resonances").select("id, archetype").eq("id", str(resonance_id)).limit(1).execute()
         )
         if not res_resp.data:
             return None
@@ -1296,5 +1292,3 @@ class SocialStoryService:
                 },
             )
             return None
-
-

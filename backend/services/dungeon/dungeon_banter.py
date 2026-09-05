@@ -32,35 +32,67 @@ from backend.services.dungeon_content_service import get_banter_registry
 #: `backend/tests/unit/test_dungeon_banter_triggers.py` binds this list to the
 #: code by AST, so a trigger emitted but not declared — or declared but no
 #: longer emitted — turns red.
-BANTER_TRIGGERS: frozenset[str] = frozenset({
-    # Movement and exploration
-    "room_entered", "depth_change", "deja_vu", "boss_approach",
-    "elite_spotted", "loot_found", "combat_start",
-    # Combat outcomes
-    "combat_won", "party_wipe", "agent_downed",
-    "agent_afflicted", "agent_virtue", "agent_stressed",
-    # Rest
-    "rest_start", "rest_ambush",
-    # Run outcomes
-    "dungeon_completed", "retreat",
-    # The Shadow
-    "visibility_zero", "whispers",
-    # The Tower
-    "stability_critical", "stability_collapse", "total_fracture",
-    # The Entropy
-    "decay_degraded", "decay_critical", "dissolution",
-    # The Devouring Mother
-    "attachment_dependent", "attachment_critical", "incorporation",
-    # The Prometheus
-    "insight_inspired", "insight_feverish", "insight_breakthrough", "insight_cold",
-    # The Deluge
-    "ankle_threshold", "waist_threshold", "flood_imminent", "submerged",
-    "tidal_recession", "tidal_surge",
-    # The Awakening
-    "stirring", "liminal", "lucid", "awakened",
-    # The Overthrow
-    "schism", "revolution", "new_regime",
-})
+BANTER_TRIGGERS: frozenset[str] = frozenset(
+    {
+        # Movement and exploration
+        "room_entered",
+        "depth_change",
+        "deja_vu",
+        "boss_approach",
+        "elite_spotted",
+        "loot_found",
+        "combat_start",
+        # Combat outcomes
+        "combat_won",
+        "party_wipe",
+        "agent_downed",
+        "agent_afflicted",
+        "agent_virtue",
+        "agent_stressed",
+        # Rest
+        "rest_start",
+        "rest_ambush",
+        # Run outcomes
+        "dungeon_completed",
+        "retreat",
+        # The Shadow
+        "visibility_zero",
+        "whispers",
+        # The Tower
+        "stability_critical",
+        "stability_collapse",
+        "total_fracture",
+        # The Entropy
+        "decay_degraded",
+        "decay_critical",
+        "dissolution",
+        # The Devouring Mother
+        "attachment_dependent",
+        "attachment_critical",
+        "incorporation",
+        # The Prometheus
+        "insight_inspired",
+        "insight_feverish",
+        "insight_breakthrough",
+        "insight_cold",
+        # The Deluge
+        "ankle_threshold",
+        "waist_threshold",
+        "flood_imminent",
+        "submerged",
+        "tidal_recession",
+        "tidal_surge",
+        # The Awakening
+        "stirring",
+        "liminal",
+        "lucid",
+        "awakened",
+        # The Overthrow
+        "schism",
+        "revolution",
+        "new_regime",
+    }
+)
 
 
 def _entropy_decay_tier(archetype_state: dict) -> int:
@@ -195,10 +227,7 @@ def select_banter(
     """
     banter_pool = get_banter_registry().get(archetype, [])
     candidates = [
-        b for b in banter_pool
-        if b["trigger"] == trigger
-        and b["id"] not in used_ids
-        and depth >= b.get("min_depth", 0)
+        b for b in banter_pool if b["trigger"] == trigger and b["id"] not in used_ids and depth >= b.get("min_depth", 0)
     ]
     if not candidates:
         return None
@@ -282,8 +311,6 @@ async def emit_banter(
             for key in ("text_en", "text_de"):
                 if key in banter:
                     banter[key] = (
-                        banter[key]
-                        .replace("{agent_a}", pair[0].agent_name)
-                        .replace("{agent_b}", pair[1].agent_name)
+                        banter[key].replace("{agent_a}", pair[0].agent_name).replace("{agent_b}", pair[1].agent_name)
                     )
     return banter

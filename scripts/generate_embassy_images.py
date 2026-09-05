@@ -67,8 +67,16 @@ def psql_json(query: str) -> list:
     wrapped = f"SELECT json_agg(t) FROM ({query}) t;"
     result = subprocess.run(
         [
-            "docker", "exec", "supabase_db_velgarien-rebuild",
-            "psql", "-U", "postgres", "-t", "-A", "-c", wrapped,
+            "docker",
+            "exec",
+            "supabase_db_velgarien-rebuild",
+            "psql",
+            "-U",
+            "postgres",
+            "-t",
+            "-A",
+            "-c",
+            wrapped,
         ],
         capture_output=True,
         text=True,
@@ -87,10 +95,7 @@ def get_embassy_buildings() -> list[tuple[str, str, str, str]]:
         "WHERE b.special_type = 'embassy' AND b.deleted_at IS NULL "
         "ORDER BY b.simulation_id, b.name"
     )
-    return [
-        (row["id"], row["name"], row["simulation_id"], row["building_type"])
-        for row in rows
-    ]
+    return [(row["id"], row["name"], row["simulation_id"], row["building_type"]) for row in rows]
 
 
 def get_ambassador_agents() -> list[tuple[str, str, str, dict]]:

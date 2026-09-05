@@ -150,11 +150,7 @@ class ConstellationService:
         if not fragment_ids:
             return {}
         resp = await (
-            supabase.table(cls._FRAGMENTS)
-            .select("*")
-            .in_("id", fragment_ids)
-            .eq("user_id", str(user_id))
-            .execute()
+            supabase.table(cls._FRAGMENTS).select("*").in_("id", fragment_ids).eq("user_id", str(user_id)).execute()
         )
         fragments = [_fragment_from_row(r) for r in extract_list(resp)]
         return {str(f.id): f for f in fragments}
@@ -195,12 +191,7 @@ class ConstellationService:
         an O(n) fan-out. Three queries total regardless of the number
         of constellations or fragments referenced.
         """
-        query = (
-            supabase.table(cls._TABLE)
-            .select("*")
-            .eq("user_id", str(user_id))
-            .order("created_at", desc=True)
-        )
+        query = supabase.table(cls._TABLE).select("*").eq("user_id", str(user_id)).order("created_at", desc=True)
         if status is not None:
             query = query.eq("status", status)
         resp = await query.execute()
@@ -210,11 +201,7 @@ class ConstellationService:
 
         ids = [r["id"] for r in rows]
         junction_resp = await (
-            supabase.table(cls._JUNCTION)
-            .select("*")
-            .in_("constellation_id", ids)
-            .order("placed_at")
-            .execute()
+            supabase.table(cls._JUNCTION).select("*").in_("constellation_id", ids).order("placed_at").execute()
         )
         junctions = extract_list(junction_resp)
         placements_by_id: dict[str, list[dict]] = {}
@@ -223,9 +210,7 @@ class ConstellationService:
             placements_by_id.setdefault(str(jrow["constellation_id"]), []).append(jrow)
             all_fragment_ids.add(str(jrow["fragment_id"]))
 
-        fragments_by_id = await cls._load_fragments_by_id(
-            supabase, user_id, list(all_fragment_ids)
-        )
+        fragments_by_id = await cls._load_fragments_by_id(supabase, user_id, list(all_fragment_ids))
 
         result: list[ConstellationResponse] = []
         for r in rows:
@@ -271,9 +256,7 @@ class ConstellationService:
         )
         placements = extract_list(junction_resp)
         fragment_ids = [str(p["fragment_id"]) for p in placements]
-        fragments_by_id = await cls._load_fragments_by_id(
-            supabase, user_id, fragment_ids
-        )
+        fragments_by_id = await cls._load_fragments_by_id(supabase, user_id, fragment_ids)
         fragments = cls._placements_to_fragments(placements, fragments_by_id)
         pairs = detect_all_pairs(fragments)
         return _constellation_from_row(row, placements, pair_matches=pairs)
@@ -421,9 +404,7 @@ class ConstellationService:
 
         is_already_placed = any(p.fragment_id == fragment_id for p in constellation.fragments)
         if not is_already_placed and len(constellation.fragments) >= _MAX_FRAGMENTS_PER_CONSTELLATION:
-            raise conflict(
-                f"constellation already at capacity ({_MAX_FRAGMENTS_PER_CONSTELLATION})"
-            )
+            raise conflict(f"constellation already at capacity ({_MAX_FRAGMENTS_PER_CONSTELLATION})")
 
         x = _clamp_coord(position_x)
         y = _clamp_coord(position_y)
@@ -490,21 +471,14 @@ class ConstellationService:
         DTO objects (the junction carries only IDs + positions; the
         detector and Insight prompt need content + tags)."""
         junction_resp = await (
-            supabase.table(cls._JUNCTION)
-            .select("fragment_id")
-            .eq("constellation_id", str(constellation_id))
-            .execute()
+            supabase.table(cls._JUNCTION).select("fragment_id").eq("constellation_id", str(constellation_id)).execute()
         )
         fragment_ids = [j["fragment_id"] for j in extract_list(junction_resp)]
         if not fragment_ids:
             return []
 
         frag_resp = await (
-            supabase.table(cls._FRAGMENTS)
-            .select("*")
-            .in_("id", fragment_ids)
-            .eq("user_id", str(user_id))
-            .execute()
+            supabase.table(cls._FRAGMENTS).select("*").in_("id", fragment_ids).eq("user_id", str(user_id)).execute()
         )
         return [_fragment_from_row(r) for r in extract_list(frag_resp)]
 

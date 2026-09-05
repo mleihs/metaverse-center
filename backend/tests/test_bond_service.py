@@ -67,7 +67,11 @@ class TestTrackAttention:
         admin = _mock_supabase(rpc_data=[bond_row])
 
         result = await BondService.track_attention(
-            sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+            sb,
+            MOCK_USER,
+            MOCK_AGENT,
+            MOCK_SIM,
+            admin_supabase=admin,
         )
 
         assert result["id"] == str(MOCK_BOND)
@@ -89,7 +93,11 @@ class TestTrackAttention:
         admin = _mock_supabase(rpc_data=[bond_row])
 
         await BondService.track_attention(
-            sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+            sb,
+            MOCK_USER,
+            MOCK_AGENT,
+            MOCK_SIM,
+            admin_supabase=admin,
         )
 
         sb.rpc.assert_not_called()
@@ -102,7 +110,11 @@ class TestTrackAttention:
 
         with pytest.raises(HTTPException) as exc_info:
             await BondService.track_attention(
-                sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+                sb,
+                MOCK_USER,
+                MOCK_AGENT,
+                MOCK_SIM,
+                admin_supabase=admin,
             )
         assert exc_info.value.status_code == 404
 
@@ -117,7 +129,11 @@ class TestTrackAttention:
 
         with pytest.raises(HTTPException) as exc_info:
             await BondService.track_attention(
-                sb, MOCK_USER, MOCK_AGENT, MOCK_SIM, admin_supabase=admin,
+                sb,
+                MOCK_USER,
+                MOCK_AGENT,
+                MOCK_SIM,
+                admin_supabase=admin,
             )
         assert exc_info.value.status_code == 400
         assert "does not belong" in exc_info.value.detail
@@ -128,14 +144,16 @@ class TestTrackAttention:
 
 class TestRecognitionCandidates:
     async def test_returns_candidates_with_agent_enrichment(self):
-        sb = _mock_supabase(table_data=[
-            {
-                "agent_id": str(MOCK_AGENT),
-                "attention_score": 12,
-                "simulation_id": str(MOCK_SIM),
-                "agents": {"name": "Maren", "portrait_image_url": "https://example.com/maren.jpg"},
-            },
-        ])
+        sb = _mock_supabase(
+            table_data=[
+                {
+                    "agent_id": str(MOCK_AGENT),
+                    "attention_score": 12,
+                    "simulation_id": str(MOCK_SIM),
+                    "agents": {"name": "Maren", "portrait_image_url": "https://example.com/maren.jpg"},
+                },
+            ]
+        )
 
         result = await BondService.get_recognition_candidates(sb, MOCK_USER, MOCK_SIM)
 
@@ -205,10 +223,12 @@ class TestMarkWhisperRead:
         chain = _make_bond_chain()
         sb.table.return_value = chain
         # First call: update (void), second call: maybe_single refetch
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data=[]),        # update (we ignore the result)
-            MagicMock(data=whisper),   # maybe_single refetch
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data=[]),  # update (we ignore the result)
+                MagicMock(data=whisper),  # maybe_single refetch
+            ]
+        )
 
         result = await BondService.mark_whisper_read(sb, MOCK_USER, MOCK_BOND, uuid4())
         assert result["id"] == whisper["id"]
@@ -223,10 +243,12 @@ class TestMarkWhisperRead:
         sb.table.return_value = chain
 
         # First call (update) returns empty, second (select) returns existing
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data=[]),       # update returns empty
-            MagicMock(data=existing),  # maybe_single returns existing
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data=[]),  # update returns empty
+                MagicMock(data=existing),  # maybe_single returns existing
+            ]
+        )
 
         result = await BondService.mark_whisper_read(sb, MOCK_USER, MOCK_BOND, whisper_id)
         assert result["id"] == str(whisper_id)
@@ -235,10 +257,12 @@ class TestMarkWhisperRead:
         sb = MagicMock()
         chain = make_chain_mock(execute_data=[])
         sb.table.return_value = chain
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data=[]),    # update empty
-            MagicMock(data=None),  # maybe_single empty
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data=[]),  # update empty
+                MagicMock(data=None),  # maybe_single empty
+            ]
+        )
 
         with pytest.raises(HTTPException) as exc_info:
             await BondService.mark_whisper_read(sb, MOCK_USER, MOCK_BOND, uuid4())
@@ -270,7 +294,9 @@ class TestDepthProgression:
     async def test_returns_none_when_time_gate_not_met(self):
         too_recent = datetime.now(UTC).isoformat()
         bond = {
-            "id": str(MOCK_BOND), "depth": 1, "status": "active",
+            "id": str(MOCK_BOND),
+            "depth": 1,
+            "status": "active",
             "formed_at": too_recent,
         }
         sb = _mock_supabase()
@@ -351,7 +377,9 @@ class TestWhisperTemplateService:
 
     def test_select_with_mood_filter(self):
         t = WhisperTemplateService.select_template(
-            "state", 1, agent_state={"mood_score": -80, "stress_level": 200},
+            "state",
+            1,
+            agent_state={"mood_score": -80, "stress_level": 200},
         )
         assert t is not None
 
@@ -360,7 +388,9 @@ class TestWhisperTemplateService:
         first = WhisperTemplateService.select_template("state", 1)
         assert first is not None
         second = WhisperTemplateService.select_template(
-            "state", 1, recent_whisper_tags=list(first.tags),
+            "state",
+            1,
+            recent_whisper_tags=list(first.tags),
         )
         # Second should be different (or None if all are excluded, but with 12 templates unlikely)
         if second is not None:
@@ -369,13 +399,16 @@ class TestWhisperTemplateService:
     def test_fill_template_replaces_slots(self):
         t = WhisperTemplateService.select_template("event", 1)
         assert t is not None
-        de, en = WhisperTemplateService.fill_template(t, {
-            "zone_name": "Nordviertel",
-            "agent_name": "Maren",
-            "other_agent": "Lena",
-            "building_name": "Alte Schmiede",
-            "days_count": "7",
-        })
+        de, en = WhisperTemplateService.fill_template(
+            t,
+            {
+                "zone_name": "Nordviertel",
+                "agent_name": "Maren",
+                "other_agent": "Lena",
+                "building_name": "Alte Schmiede",
+                "days_count": "7",
+            },
+        )
         assert isinstance(de, str) and len(de) > 0
         assert isinstance(en, str) and len(en) > 0
 
@@ -391,7 +424,9 @@ class TestWhisperTemplateService:
         from backend.services.bond.whisper_template_service import _TEMPLATES_BY_TYPE
 
         for wtype in ("state", "event", "memory", "question", "reflection"):
-            assert len(_TEMPLATES_BY_TYPE[wtype]) == 12, f"{wtype} has {len(_TEMPLATES_BY_TYPE[wtype])} templates, expected 12"
+            assert len(_TEMPLATES_BY_TYPE[wtype]) == 12, (
+                f"{wtype} has {len(_TEMPLATES_BY_TYPE[wtype])} templates, expected 12"
+            )
 
     def test_no_em_dashes_in_templates(self):
         from backend.services.bond.whisper_template_service import _TEMPLATES

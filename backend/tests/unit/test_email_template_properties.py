@@ -65,9 +65,7 @@ class TestTheRegisterIsComplete:
         import backend.services.email_templates as templates
 
         renderers = {
-            name
-            for name in dir(templates)
-            if name.startswith("render_") and callable(getattr(templates, name))
+            name for name in dir(templates) if name.startswith("render_") and callable(getattr(templates, name))
         }
         # Each fixture names its renderer through the closure; compare on the
         # source of the lambda rather than guessing from the key, so a renamed
@@ -169,7 +167,7 @@ class TestUnsubscribeBothWays:
         html = rendered[(key, locale)]
         assert "unsubscribe?token" not in html.lower(), (
             f"{key}/{locale} bietet eine Abmeldung an, obwohl es eine Sicherheits- "
-            "oder Kontomail ist. „Melde dich von Kontowarnungen ab\" ist keine Wahl, "
+            'oder Kontomail ist. „Melde dich von Kontowarnungen ab" ist keine Wahl, '
             "die man anbieten darf."
         )
 
@@ -202,9 +200,7 @@ class TestAccentContrast:
     def test_every_world_accent_clears_wcag_aa(self, slug: str) -> None:
         accent = get_sim_accent(slug)
         ratio = contrast_ratio(accent, _BG)
-        assert ratio >= _CONTRAST_FLOOR, (
-            f"{slug}: {accent} auf {_BG} = {ratio:.2f}:1, unter {_CONTRAST_FLOOR}:1"
-        )
+        assert ratio >= _CONTRAST_FLOOR, f"{slug}: {accent} auf {_BG} = {ratio:.2f}:1, unter {_CONTRAST_FLOOR}:1"
 
     def test_the_default_accent_clears_it_too(self) -> None:
         assert contrast_ratio(get_sim_accent(None), _BG) >= _CONTRAST_FLOOR
@@ -219,8 +215,7 @@ class TestAccentContrast:
         untested by the assertions above and this test says so.
         """
         raw_failures = [
-            slug for slug, hex_color in _SIM_EMAIL_COLORS.items()
-            if contrast_ratio(hex_color, _BG) < _CONTRAST_FLOOR
+            slug for slug, hex_color in _SIM_EMAIL_COLORS.items() if contrast_ratio(hex_color, _BG) < _CONTRAST_FLOOR
         ]
         assert raw_failures, (
             "Keine gespeicherte Weltfarbe liegt mehr unter AA — dann prüft dieser "

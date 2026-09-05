@@ -52,6 +52,34 @@ include = ["backend*"]
 target-version = "py313"
 line-length = 120
 
+[tool.ruff.format]
+# Umgestellt am 05.09.2026. Vorher erzwang CI nur `ruff check`; der Baum war
+# nie formatierrein, und jede Aenderung an einer Datei riskierte, fremde Zeilen
+# mitzuformatieren — genau das ist an dem Tag passiert und hat 77 fremde
+# Dateien in einen Commit gezogen, der sieben aendern sollte.
+#
+# Am eigentlichen Lauf gemessen, nicht an einer Probe:
+#   349 von 799 Dateien umformatiert (backend/ + scripts/)
+#   6498 von 6499 Python-Dateien des Baums mit BITGLEICHEM Syntaxbaum
+#   die eine Ausnahme ist Leerraum in einem Docstring
+#   (backend/services/journal/fragment_service.py)
+#   ruff check: gruen vorher wie nachher
+#   null Aenderungen an nutzersichtbaren Zeichenketten
+#
+# Der Preis: netto +2924 Zeilen (10447 hinzu, 7523 fort), weil gepackte
+# Literale auseinandergezogen werden, und handausgerichtete Kommentarspalten,
+# die zu einem Leerzeichen zusammenfallen.
+#
+# Wo die Ausrichtung BEDEUTUNG traegt, steht `# fmt: off` — drei Stellen, alle
+# in `backend/models/`: die Klimamatrix (zwoelf Monatswerte je Zone auf zwei
+# Zeilen statt zwoelf), und zwei Kommentarspalten, die als Spalte gelesen
+# werden. Die Marke muss ALLEIN auf ihrer Zeile stehen; mit Zusatzschrift
+# dahinter erkennt ruff sie nicht — sie steht dann da und tut nichts, ohne
+# jede Meldung.
+#
+# `line-length = 120` steht oben in [tool.ruff] und gilt fuer beide.
+docstring-code-format = false
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T20", "ICN", "FAST"]
 

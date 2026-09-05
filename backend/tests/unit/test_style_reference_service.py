@@ -203,9 +203,7 @@ class TestFetchFromUrlSsrf:
             (2, 1, 6, "", ("93.184.216.34", 0)),
         ]
         with pytest.raises((httpx.ConnectError, httpx.ConnectTimeout)):
-            await StyleReferenceService.fetch_from_url(
-                "https://public-images.example.com/ref.png"
-            )
+            await StyleReferenceService.fetch_from_url("https://public-images.example.com/ref.png")
 
 
 # ---------------------------------------------------------------------------
@@ -244,7 +242,10 @@ class TestResolveReference:
         mock_sb.table.side_effect = table_side_effect
 
         result = await StyleReferenceService.resolve_reference(
-            mock_sb, MOCK_SIM_ID, "portrait", entity_id=MOCK_ENTITY_ID,
+            mock_sb,
+            MOCK_SIM_ID,
+            "portrait",
+            entity_id=MOCK_ENTITY_ID,
         )
 
         assert result is not None
@@ -274,7 +275,10 @@ class TestResolveReference:
         mock_sb.table.side_effect = table_side_effect
 
         result = await StyleReferenceService.resolve_reference(
-            mock_sb, MOCK_SIM_ID, "portrait", entity_id=MOCK_ENTITY_ID,
+            mock_sb,
+            MOCK_SIM_ID,
+            "portrait",
+            entity_id=MOCK_ENTITY_ID,
         )
 
         assert result is not None
@@ -288,7 +292,9 @@ class TestResolveReference:
         mock_sb.table.return_value = make_chain_mock(execute_data=[])
 
         result = await StyleReferenceService.resolve_reference(
-            mock_sb, MOCK_SIM_ID, "building",
+            mock_sb,
+            MOCK_SIM_ID,
+            "building",
         )
 
         assert result is None
@@ -304,7 +310,9 @@ class TestResolveReference:
         )
 
         result = await StyleReferenceService.resolve_reference(
-            mock_sb, MOCK_SIM_ID, "building",
+            mock_sb,
+            MOCK_SIM_ID,
+            "building",
         )
 
         assert result is not None
@@ -322,7 +330,9 @@ class TestResolveReference:
         )
 
         result = await StyleReferenceService.resolve_reference(
-            mock_sb, MOCK_SIM_ID, "portrait",
+            mock_sb,
+            MOCK_SIM_ID,
+            "portrait",
         )
 
         assert result is not None
@@ -343,7 +353,9 @@ class TestDeleteReference:
 
         # First call: select to find old URL for storage cleanup
         select_chain = make_chain_mock(
-            execute_data=[{"setting_value": "https://storage.example.com/simulation.assets/object/public/sim/ref.avif"}],
+            execute_data=[
+                {"setting_value": "https://storage.example.com/simulation.assets/object/public/sim/ref.avif"}
+            ],
         )
         # Second call: delete settings
         delete_chain = make_chain_mock(execute_data=[])
@@ -361,7 +373,10 @@ class TestDeleteReference:
         mock_sb.storage.from_.return_value.remove = AsyncMock(return_value=None)
 
         await StyleReferenceService.delete_reference(
-            mock_sb, MOCK_SIM_ID, "portrait", "global",
+            mock_sb,
+            MOCK_SIM_ID,
+            "portrait",
+            "global",
         )
 
         # Should have called table at least twice (select + delete)
@@ -391,7 +406,10 @@ class TestDeleteReference:
         mock_sb.storage.from_.return_value.remove = AsyncMock(return_value=None)
 
         await StyleReferenceService.delete_reference(
-            mock_sb, MOCK_SIM_ID, "building", "entity",
+            mock_sb,
+            MOCK_SIM_ID,
+            "building",
+            "entity",
             entity_id=MOCK_ENTITY_ID,
         )
 
@@ -402,7 +420,10 @@ class TestDeleteReference:
         mock_sb = MagicMock()
         with pytest.raises(ValueError, match="entity_id is required"):
             await StyleReferenceService.delete_reference(
-                mock_sb, MOCK_SIM_ID, "portrait", "entity",
+                mock_sb,
+                MOCK_SIM_ID,
+                "portrait",
+                "entity",
                 entity_id=None,
             )
 
@@ -452,7 +473,9 @@ class TestListReferences:
         mock_sb.table.side_effect = table_side_effect
 
         results = await StyleReferenceService.list_references(
-            mock_sb, MOCK_SIM_ID, "portrait",
+            mock_sb,
+            MOCK_SIM_ID,
+            "portrait",
         )
 
         assert len(results) == 2
@@ -475,7 +498,9 @@ class TestListReferences:
         mock_sb.table.return_value = chain
 
         results = await StyleReferenceService.list_references(
-            mock_sb, MOCK_SIM_ID, "building",
+            mock_sb,
+            MOCK_SIM_ID,
+            "building",
         )
 
         assert results == []

@@ -74,8 +74,7 @@ class TestStructuralInvariants:
         for room in rooms:
             for conn in room.connections:
                 assert room_map[conn].depth > room.depth, (
-                    f"Room {room.index} (depth {room.depth}) connects to "
-                    f"room {conn} (depth {room_map[conn].depth})"
+                    f"Room {room.index} (depth {room.depth}) connects to room {conn} (depth {room_map[conn].depth})"
                 )
 
     @pytest.mark.parametrize("seed", range(10))
@@ -127,9 +126,9 @@ class TestRestRoomGuarantee:
         mid_depth = max(1, int(depth * 0.6))  # = 3
         rest_rooms = [r for r in rooms if r.room_type == "rest"]
         # At least one rest room should be within ±1 of mid_depth
-        assert any(
-            abs(r.depth - mid_depth) <= 1 for r in rest_rooms
-        ), f"No rest room near depth {mid_depth} (found at depths {[r.depth for r in rest_rooms]})"
+        assert any(abs(r.depth - mid_depth) <= 1 for r in rest_rooms), (
+            f"No rest room near depth {mid_depth} (found at depths {[r.depth for r in rest_rooms]})"
+        )
 
 
 # ── Review #8: Exit room constraints ─────────────────────────────────────

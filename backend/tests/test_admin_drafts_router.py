@@ -85,9 +85,18 @@ def _draft_row(
 def _summary_row(**kwargs) -> dict:
     full = _draft_row(**kwargs)
     keep = {
-        "id", "author_id", "pack_slug", "resource_path", "status", "version",
-        "pr_number", "pr_url", "created_at", "updated_at",
-        "published_at", "merged_at",
+        "id",
+        "author_id",
+        "pack_slug",
+        "resource_path",
+        "status",
+        "version",
+        "pr_number",
+        "pr_url",
+        "created_at",
+        "updated_at",
+        "published_at",
+        "merged_at",
     }
     return {k: v for k, v in full.items() if k in keep}
 
@@ -103,8 +112,16 @@ def _mock_supabase(execute_results: list[MagicMock]) -> MagicMock:
     mock = MagicMock()
     chain = MagicMock()
     for method in (
-        "select", "insert", "update", "delete",
-        "eq", "in_", "is_", "order", "range", "limit",
+        "select",
+        "insert",
+        "update",
+        "delete",
+        "eq",
+        "in_",
+        "is_",
+        "order",
+        "range",
+        "limit",
     ):
         getattr(chain, method).return_value = chain
     chain.execute = AsyncMock(side_effect=execute_results)
@@ -162,10 +179,9 @@ class TestListDrafts:
         chain = supabase.table.return_value
         # Service forwards status_filter to in_('status', [...]).
         in_calls = chain.in_.call_args_list
-        assert any(
-            c.args[0] == "status" and set(c.args[1]) == {"draft", "conflict"}
-            for c in in_calls
-        ), f"Expected in_('status', ['draft','conflict']) in {in_calls}"
+        assert any(c.args[0] == "status" and set(c.args[1]) == {"draft", "conflict"} for c in in_calls), (
+            f"Expected in_('status', ['draft','conflict']) in {in_calls}"
+        )
 
     def test_filter_by_author(self, client):
         author = uuid4()
@@ -177,9 +193,9 @@ class TestListDrafts:
         assert r.status_code == 200
         chain = supabase.table.return_value
         eq_calls = chain.eq.call_args_list
-        assert any(
-            c.args == ("author_id", str(author)) for c in eq_calls
-        ), f"Expected eq('author_id', '{author}') in {eq_calls}"
+        assert any(c.args == ("author_id", str(author)) for c in eq_calls), (
+            f"Expected eq('author_id', '{author}') in {eq_calls}"
+        )
 
 
 # ── List by PR ────────────────────────────────────────────────────────────
@@ -205,9 +221,9 @@ class TestListByPr:
         assert body["data"][0]["base_content"]
         # Service was queried with eq("pr_number", 42).
         chain = supabase.table.return_value
-        assert any(
-            c.args == ("pr_number", 42) for c in chain.eq.call_args_list
-        ), f"Expected eq('pr_number', 42) in {chain.eq.call_args_list}"
+        assert any(c.args == ("pr_number", 42) for c in chain.eq.call_args_list), (
+            f"Expected eq('pr_number', 42) in {chain.eq.call_args_list}"
+        )
 
     def test_empty_when_no_matches(self, client):
         supabase = _mock_supabase([_exec_result(data=[])])
@@ -234,10 +250,7 @@ class TestListOpenForResource:
         supabase = _mock_supabase([_exec_result(data=rows)])
         _override_admin(supabase)
 
-        r = client.get(
-            "/api/v1/admin/content-drafts/open-for-resource"
-            "?pack_slug=shadow&resource_path=banter"
-        )
+        r = client.get("/api/v1/admin/content-drafts/open-for-resource?pack_slug=shadow&resource_path=banter")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
@@ -249,19 +262,15 @@ class TestListOpenForResource:
         # Service filtered to open states via in_('status', ['draft','conflict']).
         chain = supabase.table.return_value
         in_calls = chain.in_.call_args_list
-        assert any(
-            c.args[0] == "status" and set(c.args[1]) == {"draft", "conflict"}
-            for c in in_calls
-        ), f"Expected in_('status', ['draft','conflict']) in {in_calls}"
+        assert any(c.args[0] == "status" and set(c.args[1]) == {"draft", "conflict"} for c in in_calls), (
+            f"Expected in_('status', ['draft','conflict']) in {in_calls}"
+        )
 
     def test_empty_when_no_open_drafts(self, client):
         supabase = _mock_supabase([_exec_result(data=[])])
         _override_admin(supabase)
 
-        r = client.get(
-            "/api/v1/admin/content-drafts/open-for-resource"
-            "?pack_slug=shadow&resource_path=banter"
-        )
+        r = client.get("/api/v1/admin/content-drafts/open-for-resource?pack_slug=shadow&resource_path=banter")
         assert r.status_code == 200
         assert r.json()["data"] == []
 
@@ -277,10 +286,7 @@ class TestListOpenForResource:
         supabase = _mock_supabase([])
         _override_admin(supabase)
 
-        r = client.get(
-            "/api/v1/admin/content-drafts/open-for-resource"
-            "?pack_slug=Bad-Slug&resource_path=banter"
-        )
+        r = client.get("/api/v1/admin/content-drafts/open-for-resource?pack_slug=Bad-Slug&resource_path=banter")
         assert r.status_code == 422
 
     def test_path_traversal_pack_slug_rejected(self, client):
@@ -288,10 +294,7 @@ class TestListOpenForResource:
         supabase = _mock_supabase([])
         _override_admin(supabase)
 
-        r = client.get(
-            "/api/v1/admin/content-drafts/open-for-resource"
-            "?pack_slug=../secret&resource_path=banter"
-        )
+        r = client.get("/api/v1/admin/content-drafts/open-for-resource?pack_slug=../secret&resource_path=banter")
         assert r.status_code == 422
 
 
@@ -329,9 +332,7 @@ class TestCreateDraft:
     def test_success_returns_201_and_audits(self, client):
         row = _draft_row()
         # 1 INSERT (service.create), 1 INSERT (audit_log).
-        supabase = _mock_supabase(
-            [_exec_result(data=[row]), _exec_result(data=[])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[row]), _exec_result(data=[])])
         _override_admin(supabase)
 
         r = client.post(
@@ -376,9 +377,7 @@ class TestUpdateDraft:
         d_id = uuid4()
         updated = _draft_row(draft_id=d_id, version=2)
         # 1 UPDATE (service.update_working), 1 INSERT (audit_log).
-        supabase = _mock_supabase(
-            [_exec_result(data=[updated]), _exec_result(data=[])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[updated]), _exec_result(data=[])])
         _override_admin(supabase)
 
         r = client.patch(
@@ -396,8 +395,8 @@ class TestUpdateDraft:
         # 1 UPDATE returns 0 rows; 2 SELECT disambiguation finds the row.
         supabase = _mock_supabase(
             [
-                _exec_result(data=[]),                     # UPDATE
-                _exec_result(data=[{"id": str(d_id)}]),    # SELECT
+                _exec_result(data=[]),  # UPDATE
+                _exec_result(data=[{"id": str(d_id)}]),  # SELECT
             ]
         )
         _override_admin(supabase)
@@ -496,9 +495,7 @@ class TestPublishDrafts:
             pr_url="https://github.com/x/y/pull/42",
             branch_name="content/drafts-batch-test",
             draft_count=1,
-            drafts=[
-                ContentDraftSummary.model_validate(_summary_row(draft_id=d_id))
-            ],
+            drafts=[ContentDraftSummary.model_validate(_summary_row(draft_id=d_id))],
         )
 
         with patch(
@@ -608,13 +605,11 @@ class TestResolveConflict:
             status=ContentDraftStatus.DRAFT,
             version=4,
         )
-        updated_row["working_content"] = {
-            "banter": [{"id": "a", "text": "merged"}]
-        }
+        updated_row["working_content"] = {"banter": [{"id": "a", "text": "merged"}]}
         supabase = _mock_supabase(
             [
                 _exec_result(data=[updated_row]),  # resolve UPDATE
-                _exec_result(data=[]),              # audit insert
+                _exec_result(data=[]),  # audit insert
             ]
         )
         _override_admin(supabase)
@@ -622,9 +617,7 @@ class TestResolveConflict:
         r = client.post(
             f"/api/v1/admin/content-drafts/{d_id}/resolve",
             json={
-                "merged_working_content": {
-                    "banter": [{"id": "a", "text": "merged"}]
-                },
+                "merged_working_content": {"banter": [{"id": "a", "text": "merged"}]},
                 "version": 3,
                 "acknowledged_conflict_paths": [".banter[id=a]"],
             },
@@ -648,10 +641,8 @@ class TestResolveConflict:
         # the error message specifies version-mismatch, not status-mismatch.
         supabase = _mock_supabase(
             [
-                _exec_result(data=[]),             # resolve UPDATE misses
-                _exec_result(
-                    data=[{"status": "conflict", "version": 7}]
-                ),  # re-read
+                _exec_result(data=[]),  # resolve UPDATE misses
+                _exec_result(data=[{"status": "conflict", "version": 7}]),  # re-read
             ]
         )
         _override_admin(supabase)
@@ -672,10 +663,8 @@ class TestResolveConflict:
         # Draft raced to 'published' after the admin opened the preview.
         supabase = _mock_supabase(
             [
-                _exec_result(data=[]),            # UPDATE misses
-                _exec_result(
-                    data=[{"status": "published", "version": 7}]
-                ),  # re-read
+                _exec_result(data=[]),  # UPDATE misses
+                _exec_result(data=[{"status": "published", "version": 7}]),  # re-read
             ]
         )
         _override_admin(supabase)
@@ -922,7 +911,10 @@ class TestOrphanSweeperRunNow:
     shared classmethod so the next scheduled tick starts a fresh interval."""
 
     def _fake_result(
-        self, *, deleted: int = 0, errors: int = 0,
+        self,
+        *,
+        deleted: int = 0,
+        errors: int = 0,
     ) -> SweepOrphansResult:
         branches = [
             OrphanBranchClassification(
@@ -982,7 +974,8 @@ class TestOrphanSweeperRunNow:
             "backend.routers.admin_drafts.OrphanSweeperScheduler.run_sweep_and_persist",
             new=AsyncMock(
                 side_effect=HTTPException(
-                    status_code=400, detail="GITHUB_REPO_OWNER not set",
+                    status_code=400,
+                    detail="GITHUB_REPO_OWNER not set",
                 ),
             ),
         ):

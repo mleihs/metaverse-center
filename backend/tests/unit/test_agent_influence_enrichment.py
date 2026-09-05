@@ -108,9 +108,7 @@ class TestEveryReadPathIsCovered:
             if not isinstance(node, ast.AsyncFunctionDef):
                 continue
             calls = {
-                n.func.attr
-                for n in ast.walk(node)
-                if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                n.func.attr for n in ast.walk(node) if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
             }
             if "_enrich_influence" in calls:
                 enriched.add(node.name)

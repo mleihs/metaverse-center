@@ -88,10 +88,7 @@ ARCHETYPES_BY_ID: dict[str, ArchetypeSeo] = {a.id: a for a in ARCHETYPES}
 
 def archetype_image_url(archetype_id: str) -> str:
     """Storage URL for the archetype's preview image (matches the frontend)."""
-    return (
-        f"{settings.supabase_url}/storage/v1/object/public"
-        f"/simulation.assets/showcase/dungeon-{archetype_id}.avif"
-    )
+    return f"{settings.supabase_url}/storage/v1/object/public/simulation.assets/showcase/dungeon-{archetype_id}.avif"
 
 
 def _build_creative_work_jsonld(a: ArchetypeSeo) -> str:

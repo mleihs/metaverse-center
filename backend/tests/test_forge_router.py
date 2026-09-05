@@ -64,9 +64,25 @@ def _mock_supabase() -> MagicMock:
     result.count = 0
     chain.execute = AsyncMock(return_value=result)
     for m in (
-        "select", "eq", "insert", "update", "delete", "upsert",
-        "limit", "single", "maybe_single", "order", "range",
-        "filter", "in_", "is_", "not_", "or_", "ilike", "lt", "gt",
+        "select",
+        "eq",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
+        "limit",
+        "single",
+        "maybe_single",
+        "order",
+        "range",
+        "filter",
+        "in_",
+        "is_",
+        "not_",
+        "or_",
+        "ilike",
+        "lt",
+        "gt",
     ):
         getattr(chain, m).return_value = chain
     mock.table.return_value = chain
@@ -344,9 +360,7 @@ class TestForgeBYOK:
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-secret-value"})
         assert resp.status_code == 200
 
-        params = next(
-            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_set_user_api_key"
-        )
+        params = next(call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_set_user_api_key")
         assert params["p_provider"] == "openrouter"
         stored = params["p_encrypted_key"]
         assert stored != "sk-or-secret-value"
@@ -415,9 +429,7 @@ class TestForgeBYOK:
         resp = client.delete("/api/v1/forge/wallet/keys/openrouter")
 
         assert resp.status_code == 200
-        params = next(
-            call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_clear_user_api_key"
-        )
+        params = next(call.args[1] for call in user_sb.rpc.call_args_list if call.args[0] == "fn_clear_user_api_key")
         assert params["p_provider"] == "openrouter"
 
     @pytest.mark.integration
@@ -496,14 +508,16 @@ class TestForgeBYOK:
         admin_sb.rpc_data["fn_user_byok_allowed"] = False
         chain = user_sb.table.return_value
         result = MagicMock()
-        result.data = [{
-            "id": "11111111-1111-1111-1111-111111111111",
-            "user_id": str(USER_ID),
-            "reason": "I pay for my own calls.",
-            "status": "pending",
-            "created_at": "2026-09-02T12:00:00+00:00",
-            "reviewed_at": None,
-        }]
+        result.data = [
+            {
+                "id": "11111111-1111-1111-1111-111111111111",
+                "user_id": str(USER_ID),
+                "reason": "I pay for my own calls.",
+                "status": "pending",
+                "created_at": "2026-09-02T12:00:00+00:00",
+                "reviewed_at": None,
+            }
+        ]
         chain.execute = AsyncMock(return_value=result)
 
         resp = client.post("/api/v1/forge/byok/request", json={"reason": "I pay for my own calls."})

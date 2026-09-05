@@ -127,7 +127,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "deep purple luminescence against infinite black void"
         ),
     },
-
     # ── II. THE TOWER ────────────────────────────────────────────────────────
     # Literary DNA: Kafka (The Trial), Danielewski (House of Leaves), Ballard
     # Mechanic: Load-bearing collapse — structural integrity degrades as you ascend
@@ -167,7 +166,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "Kafkaesque grandeur, the building as judge"
         ),
     },
-
     # ── III. THE DEVOURING MOTHER ────────────────────────────────────────────
     # Literary DNA: Octavia Butler (Bloodchild), VanderMeer, Shirley Jackson
     # Mechanic: Embrace — healing that creates dependency, abundance that suffocates
@@ -207,7 +205,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "Jungian devouring mother archetype made spatial, sublime and terrible"
         ),
     },
-
     # ── IV. THE ENTROPY ──────────────────────────────────────────────────────
     # Literary DNA: Beckett (Godot, Endgame), Pynchon, Calvino (Mr. Palomar)
     # Mechanic: Degradation — abilities lose distinction, meaning dissolves
@@ -247,7 +244,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "deep oxidized bronze at center fading to grey at edges"
         ),
     },
-
     # ── V. THE PROMETHEUS ────────────────────────────────────────────────────
     # Literary DNA: Mary Shelley (Frankenstein), Bruno Schulz, E.T.A. Hoffmann
     # Mechanic: Forging — combine items to create; failures become autonomous
@@ -287,7 +283,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "Shelley's creature perfected and terrible, deep orange glow"
         ),
     },
-
     # ── VI. THE DELUGE ───────────────────────────────────────────────────────
     # Literary DNA: J.G. Ballard (Drowned World), Bachelard, Coleridge
     # Mechanic: Rising Tide — water level increases each floor, rooms transform
@@ -327,7 +322,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "deep cyan luminescence, vortex composition, sublime terror"
         ),
     },
-
     # ── VII. THE AWAKENING ───────────────────────────────────────────────────
     # Literary DNA: Carl Jung (Red Book), Marcel Proust, Philip K. Dick (Ubik)
     # Mechanic: Awareness — perception expands but destabilizes, memory distorts
@@ -367,7 +361,6 @@ ARCHETYPE_PROMPTS: dict[str, dict[str, str]] = {
             "pure lavender-white luminescence at center fading to deep purple void"
         ),
     },
-
     # ── VIII. THE OVERTHROW ──────────────────────────────────────────────────
     # Literary DNA: Orwell, Milton (Paradise Lost), Machiavelli, Dostoevsky
     # Mechanic: Authority Fracture — political order disintegrates with depth

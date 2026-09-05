@@ -216,7 +216,12 @@ async def set_profession_requirement(
         },
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id, "buildings", building_id, "set_profession_requirement",
+        supabase,
+        simulation_id,
+        user.id,
+        "buildings",
+        building_id,
+        "set_profession_requirement",
     )
     return SuccessResponse(data=req)
 

@@ -46,14 +46,14 @@ ARCHETYPES = (
 
 # Maps source_category → (resonance_signature, archetype)
 CATEGORY_ARCHETYPE_MAP: dict[str, tuple[str, str]] = {
-    "economic_crisis":        ("economic_tremor",     "The Tower"),
-    "military_conflict":      ("conflict_wave",       "The Shadow"),
-    "pandemic":               ("biological_tide",     "The Devouring Mother"),
-    "natural_disaster":       ("elemental_surge",     "The Deluge"),
-    "political_upheaval":     ("authority_fracture",  "The Overthrow"),
-    "tech_breakthrough":      ("innovation_spark",    "The Prometheus"),
-    "cultural_shift":         ("consciousness_drift", "The Awakening"),
-    "environmental_disaster": ("decay_bloom",         "The Entropy"),
+    "economic_crisis": ("economic_tremor", "The Tower"),
+    "military_conflict": ("conflict_wave", "The Shadow"),
+    "pandemic": ("biological_tide", "The Devouring Mother"),
+    "natural_disaster": ("elemental_surge", "The Deluge"),
+    "political_upheaval": ("authority_fracture", "The Overthrow"),
+    "tech_breakthrough": ("innovation_spark", "The Prometheus"),
+    "cultural_shift": ("consciousness_drift", "The Awakening"),
+    "environmental_disaster": ("decay_bloom", "The Entropy"),
 }
 
 # Secondary event types per signature (weight 1 in weighted selection).
@@ -61,48 +61,31 @@ CATEGORY_ARCHETYPE_MAP: dict[str, tuple[str, str]] = {
 # and are configurable per simulation via resonance_event_type_map setting.
 # These secondary types add variance — lower probability but thematic fit.
 SECONDARY_EVENT_TYPE_MAP: dict[str, list[str]] = {
-    "economic_tremor":     ["intrigue", "discovery"],
-    "conflict_wave":       ["crisis", "eldritch"],
-    "biological_tide":     ["discovery", "religious"],
-    "elemental_surge":     ["social", "trade"],
-    "authority_fracture":  ["crisis", "religious"],
-    "innovation_spark":    ["social", "military"],
+    "economic_tremor": ["intrigue", "discovery"],
+    "conflict_wave": ["crisis", "eldritch"],
+    "biological_tide": ["discovery", "religious"],
+    "elemental_surge": ["social", "trade"],
+    "authority_fracture": ["crisis", "religious"],
+    "innovation_spark": ["social", "military"],
     "consciousness_drift": ["eldritch", "intrigue"],
-    "decay_bloom":         ["trade", "nautical"],
+    "decay_bloom": ["trade", "nautical"],
 }
 
 # Archetype descriptions — used on Detection story cards (italic, 2-3 lines)
 # and as AI prompt context. Each description mirrors its archetype's literary grammar.
 ARCHETYPE_DESCRIPTIONS: dict[str, str] = {
-    "The Tower": (
-        "The foundation was a consensus. The consensus has left the building."
-    ),
-    "The Shadow": (
-        "Something that was practicing stillness decides to stop practicing."
-    ),
-    "The Devouring Mother": (
-        "The warmth is perfect. One stops questioning perfect warmth. This is the mechanism."
-    ),
-    "The Deluge": (
-        "The water table has a longer memory than the city charter. "
-        "It is waiting for the lease to expire."
-    ),
-    "The Overthrow": (
-        "The throne is occupied. It was occupied yesterday. "
-        "These are not the same sentence."
-    ),
+    "The Tower": ("The foundation was a consensus. The consensus has left the building."),
+    "The Shadow": ("Something that was practicing stillness decides to stop practicing."),
+    "The Devouring Mother": ("The warmth is perfect. One stops questioning perfect warmth. This is the mechanism."),
+    "The Deluge": ("The water table has a longer memory than the city charter. It is waiting for the lease to expire."),
+    "The Overthrow": ("The throne is occupied. It was occupied yesterday. These are not the same sentence."),
     "The Prometheus": (
-        "The instrument reads perfectly. What it measures has not been named. "
-        "This is either progress or evidence."
+        "The instrument reads perfectly. What it measures has not been named. This is either progress or evidence."
     ),
     "The Awakening": (
-        "A thought arrives without being sent for. "
-        "It has the weight of memory and the texture of premonition."
+        "A thought arrives without being sent for. It has the weight of memory and the texture of premonition."
     ),
-    "The Entropy": (
-        "The room still contains distinctions. Walls, floor, ceiling. "
-        "The categories are losing interest."
-    ),
+    "The Entropy": ("The room still contains distinctions. Walls, floor, ceiling. The categories are losing interest."),
 }
 
 

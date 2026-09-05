@@ -74,9 +74,9 @@ async def _main() -> int:
     admin = await get_admin_supabase_client()
 
     # Resolve user by email via auth.users (service_role can read).
-    users_resp = await admin.schema("auth").table("users").select(
-        "id, email"
-    ).eq("email", args.email).limit(1).execute()
+    users_resp = (
+        await admin.schema("auth").table("users").select("id, email").eq("email", args.email).limit(1).execute()
+    )
     if not users_resp.data:
         log.error("No user found for email %s", args.email)
         return 1
@@ -87,29 +87,40 @@ async def _main() -> int:
         # Archive every seeded row (identified by the exact SEED_NAME_EN)
         # owned by this user. We archive rather than delete to preserve
         # FK-reachable state for any past QA screenshots or bug reports.
-        rows = await admin.table("journal_constellations").select(
-            "id"
-        ).eq("user_id", user_id).eq("name_en", SEED_NAME_EN).execute()
+        rows = (
+            await admin.table("journal_constellations")
+            .select("id")
+            .eq("user_id", user_id)
+            .eq("name_en", SEED_NAME_EN)
+            .execute()
+        )
         ids = [r["id"] for r in (rows.data or [])]
         if not ids:
             log.info("No seeded constellations to archive.")
             return 0
         for cid in ids:
-            await admin.table("journal_constellations").update(
-                {"status": "archived", "archived_at": datetime.now(UTC).isoformat()}
-            ).eq("id", cid).execute()
+            await (
+                admin.table("journal_constellations")
+                .update({"status": "archived", "archived_at": datetime.now(UTC).isoformat()})
+                .eq("id", cid)
+                .execute()
+            )
         log.info("Archived %d constellation(s).", len(ids))
         return 0
 
     # Fetch ≥2 fragments owned by this user, newest-first.
-    frags_resp = await admin.table("journal_fragments").select("*").eq(
-        "user_id", user_id
-    ).order("created_at", desc=True).limit(6).execute()
+    frags_resp = (
+        await admin.table("journal_fragments")
+        .select("*")
+        .eq("user_id", user_id)
+        .order("created_at", desc=True)
+        .limit(6)
+        .execute()
+    )
     fragments = frags_resp.data or []
     if len(fragments) < 2:
         log.error(
-            "User has only %d fragment(s); need ≥ 2. Play a dungeon run "
-            "or trigger fragment generation first.",
+            "User has only %d fragment(s); need ≥ 2. Play a dungeon run or trigger fragment generation first.",
             len(fragments),
         )
         return 1
@@ -132,22 +143,24 @@ async def _main() -> int:
     # Place the two fragments at deterministic coords so the canvas
     # lays them out with a visible bezier line between them.
     for i, frag in enumerate(seed_fragments):
-        await admin.table("constellation_fragments").upsert(
-            {
-                "constellation_id": str(created.id),
-                "fragment_id": frag["id"],
-                "position_x": (-180 if i == 0 else 180),
-                "position_y": (-40 if i == 0 else 40),
-            },
-            on_conflict="constellation_id,fragment_id",
-        ).execute()
+        await (
+            admin.table("constellation_fragments")
+            .upsert(
+                {
+                    "constellation_id": str(created.id),
+                    "fragment_id": frag["id"],
+                    "position_x": (-180 if i == 0 else 180),
+                    "position_y": (-40 if i == 0 else 40),
+                },
+                on_conflict="constellation_id,fragment_id",
+            )
+            .execute()
+        )
 
     # Run the detector; fall back to the 'archetype' literal if no rule
     # matched so the seed still writes a valid CHECK-constrained row.
     # (The frontend treats the resonance_type cosmetically here.)
-    placed = await ConstellationService.load_composed_fragments(
-        admin, user_id, created.id
-    )
+    placed = await ConstellationService.load_composed_fragments(admin, user_id, created.id)
     match = detect_constellation(placed)
     resonance_type = str(match.resonance_type) if match is not None else "archetype"
 
@@ -160,9 +173,7 @@ async def _main() -> int:
         "insight_en": SEED_INSIGHT_EN,
         "crystallized_at": datetime.now(UTC).isoformat(),
     }
-    await admin.table("journal_constellations").update(update_payload).eq(
-        "id", str(created.id)
-    ).execute()
+    await admin.table("journal_constellations").update(update_payload).eq("id", str(created.id)).execute()
     log.info(
         "Crystallized constellation %s (resonance_type=%s). Visit "
         "/journal/constellations/%s to see the ceremony + final state.",

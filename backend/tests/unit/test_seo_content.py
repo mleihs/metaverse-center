@@ -52,12 +52,14 @@ class TestBuildViewContent:
         return client
 
     def test_agents_produces_articles(self):
-        client = self._mock_client({
-            "agents": [
-                {"name": "Ada", "character": "A brilliant inventor", "primary_profession": "Engineer"},
-                {"name": "Bob", "character": "A wandering bard", "primary_profession": "Musician"},
-            ],
-        })
+        client = self._mock_client(
+            {
+                "agents": [
+                    {"name": "Ada", "character": "A brilliant inventor", "primary_profession": "Engineer"},
+                    {"name": "Bob", "character": "A wandering bard", "primary_profession": "Musician"},
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "agents")
         assert "<article>" in html
         assert "Ada" in html
@@ -68,11 +70,13 @@ class TestBuildViewContent:
         assert parsed["numberOfItems"] == 2
 
     def test_buildings_produces_articles(self):
-        client = self._mock_client({
-            "buildings": [
-                {"name": "Tower", "description": "A tall structure", "building_type": "residential"},
-            ],
-        })
+        client = self._mock_client(
+            {
+                "buildings": [
+                    {"name": "Tower", "description": "A tall structure", "building_type": "residential"},
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "buildings")
         assert "<article>" in html
         assert "Tower" in html
@@ -82,11 +86,13 @@ class TestBuildViewContent:
         assert parsed["numberOfItems"] == 1
 
     def test_lore_produces_creative_work(self):
-        client = self._mock_client({
-            "simulations": [
-                {"description": "A dark fantasy world", "banner_url": "https://example.com/banner.jpg"},
-            ],
-        })
+        client = self._mock_client(
+            {
+                "simulations": [
+                    {"description": "A dark fantasy world", "banner_url": "https://example.com/banner.jpg"},
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "lore")
         assert "A dark fantasy world" in html
         parsed = json.loads(jsonld)
@@ -94,17 +100,19 @@ class TestBuildViewContent:
         assert parsed["image"] == "https://example.com/banner.jpg"
 
     def test_chronicle_produces_article(self):
-        client = self._mock_client({
-            "chronicles": [
-                {
-                    "title": "The Great War",
-                    "headline": "Armies clash",
-                    "content": "Long story...",
-                    "edition_number": 1,
-                    "published_at": "2026-01-01T00:00:00Z",
-                },
-            ],
-        })
+        client = self._mock_client(
+            {
+                "chronicles": [
+                    {
+                        "title": "The Great War",
+                        "headline": "Armies clash",
+                        "content": "Long story...",
+                        "edition_number": 1,
+                        "published_at": "2026-01-01T00:00:00Z",
+                    },
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "chronicle")
         assert "<article>" in html
         assert "The Great War" in html
@@ -119,10 +127,12 @@ class TestBuildViewContent:
         assert jsonld == ""
 
     def test_locations_produces_zones_and_streets(self):
-        client = self._mock_client({
-            "zones": [{"name": "Market District", "description": "Bustling trade area"}],
-            "city_streets": [{"name": "Baker Street"}],
-        })
+        client = self._mock_client(
+            {
+                "zones": [{"name": "Market District", "description": "Bustling trade area"}],
+                "city_streets": [{"name": "Baker Street"}],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "locations")
         assert "Market District" in html
         assert "Baker Street" in html
@@ -131,11 +141,13 @@ class TestBuildViewContent:
         assert parsed["numberOfItems"] == 2
 
     def test_events_produces_articles(self):
-        client = self._mock_client({
-            "events": [
-                {"title": "Festival", "description": "A grand celebration", "event_type": "social"},
-            ],
-        })
+        client = self._mock_client(
+            {
+                "events": [
+                    {"title": "Festival", "description": "A grand celebration", "event_type": "social"},
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "events")
         assert "<article>" in html
         assert "Festival" in html
@@ -159,20 +171,22 @@ class TestBuildViewContent:
         assert parsed["url"] == "https://metaverse.center/simulations/test-sim/social"
 
     def test_broadsheet_produces_article(self):
-        client = self._mock_client({
-            "simulation_broadsheets": [
-                {
-                    "title": "The Bleed Times",
-                    "subtitle": "Chronicles of the Fracture",
-                    "edition_number": 5,
-                    "published_at": "2026-04-14T00:00:00Z",
-                    "articles": [
-                        {"headline": "Zone collapse", "content": "The old quarter has fallen"},
-                    ],
-                    "editorial_voice": "alarmed",
-                },
-            ],
-        })
+        client = self._mock_client(
+            {
+                "simulation_broadsheets": [
+                    {
+                        "title": "The Bleed Times",
+                        "subtitle": "Chronicles of the Fracture",
+                        "edition_number": 5,
+                        "published_at": "2026-04-14T00:00:00Z",
+                        "articles": [
+                            {"headline": "Zone collapse", "content": "The old quarter has fallen"},
+                        ],
+                        "editorial_voice": "alarmed",
+                    },
+                ],
+            }
+        )
         html, jsonld = build_view_content(client, "sim-1", "TestSim", "test-sim", "broadsheet")
         assert "The Bleed Times" in html
         assert "Edition 5" in html
@@ -195,11 +209,13 @@ class TestBuildViewContent:
         assert jsonld == ""
 
     def test_escaped_content(self):
-        client = self._mock_client({
-            "agents": [
-                {"name": "<script>alert(1)</script>", "character": "test", "primary_profession": "test"},
-            ],
-        })
+        client = self._mock_client(
+            {
+                "agents": [
+                    {"name": "<script>alert(1)</script>", "character": "test", "primary_profession": "test"},
+                ],
+            }
+        )
         html, _ = build_view_content(client, "sim-1", "TestSim", "test-sim", "agents")
         assert "<script>" not in html
         assert "&lt;script&gt;" in html
@@ -232,14 +248,20 @@ class TestEntityDetailMeta:
 
     def test_agent_detail_returns_entity_meta(self):
         from backend.middleware.seo_content import build_agent_detail
-        client = self._mock_client_for("agents", [{
-            "name": "Alice Smith",
-            "slug": "alice-smith",
-            "character": "A brilliant inventor driven by cosmic curiosity.",
-            "primary_profession": "Engineer",
-            "portrait_image_url": "https://example.com/alice.jpg",
-            "gender": "female",
-        }])
+
+        client = self._mock_client_for(
+            "agents",
+            [
+                {
+                    "name": "Alice Smith",
+                    "slug": "alice-smith",
+                    "character": "A brilliant inventor driven by cosmic curiosity.",
+                    "primary_profession": "Engineer",
+                    "portrait_image_url": "https://example.com/alice.jpg",
+                    "gender": "female",
+                }
+            ],
+        )
         result = build_agent_detail(client, "sim-1", "Station Null", "station-null", "alice-smith")
         assert result.html != ""
         assert result.jsonld != ""
@@ -253,6 +275,7 @@ class TestEntityDetailMeta:
 
     def test_agent_detail_not_found_is_empty_result(self):
         from backend.middleware.seo_content import build_agent_detail
+
         client = self._mock_client_for("agents", [])
         result = build_agent_detail(client, "sim-1", "Station Null", "station-null", "missing")
         assert result.html == ""
@@ -261,13 +284,19 @@ class TestEntityDetailMeta:
 
     def test_building_detail_returns_place_meta(self):
         from backend.middleware.seo_content import build_building_detail
-        client = self._mock_client_for("buildings", [{
-            "name": "The Observatory",
-            "slug": "the-observatory",
-            "description": "A towering brass-and-copper astrolabe that charts the resonance.",
-            "building_type": "research",
-            "image_url": "https://example.com/obs.jpg",
-        }])
+
+        client = self._mock_client_for(
+            "buildings",
+            [
+                {
+                    "name": "The Observatory",
+                    "slug": "the-observatory",
+                    "description": "A towering brass-and-copper astrolabe that charts the resonance.",
+                    "building_type": "research",
+                    "image_url": "https://example.com/obs.jpg",
+                }
+            ],
+        )
         result = build_building_detail(client, "sim-1", "Station Null", "station-null", "the-observatory")
         assert result.meta is not None
         assert result.meta.title == "The Observatory – Station Null | metaverse.center"
@@ -281,15 +310,21 @@ class TestEntityDetailMeta:
 
     def test_lore_detail_returns_article_meta(self):
         from backend.middleware.seo_content import build_lore_detail
-        client = self._mock_client_for("simulation_lore", [{
-            "title": "The Fracture",
-            "slug": "the-fracture",
-            "chapter": "Chapter One",
-            "arcanum": "I",
-            "body": "Before the fracture, there was a single world. Its name is lost.",
-            "epigraph": "A prophet spoke in the last hour.",
-            "created_at": "2026-01-01T00:00:00Z",
-        }])
+
+        client = self._mock_client_for(
+            "simulation_lore",
+            [
+                {
+                    "title": "The Fracture",
+                    "slug": "the-fracture",
+                    "chapter": "Chapter One",
+                    "arcanum": "I",
+                    "body": "Before the fracture, there was a single world. Its name is lost.",
+                    "epigraph": "A prophet spoke in the last hour.",
+                    "created_at": "2026-01-01T00:00:00Z",
+                }
+            ],
+        )
         result = build_lore_detail(client, "sim-1", "Station Null", "station-null", "the-fracture")
         assert result.meta is not None
         assert "Chapter One: The Fracture" in result.meta.title

@@ -116,7 +116,9 @@ async def sweep_orphan_branches(
                 c.deleted = True
                 logger.info(
                     "Orphan-sweeper deleted branch %s (reason=%s, age=%.1fd)",
-                    c.name, c.reason, c.age_days,
+                    c.name,
+                    c.reason,
+                    c.age_days,
                 )
             except GitHubAPIError as exc:
                 # Log the full GitHub body for incident triage; keep the
@@ -125,7 +127,9 @@ async def sweep_orphan_branches(
                 c.error = f"{exc.status}: {exc.body[:200]}"
                 logger.warning(
                     "Orphan-sweeper failed to delete %s (status=%d): %s",
-                    c.name, exc.status, exc.body,
+                    c.name,
+                    exc.status,
+                    exc.body,
                 )
 
     return SweepOrphansResult(
@@ -142,7 +146,9 @@ async def sweep_orphan_branches(
 
 
 async def _list_draft_batch_refs(
-    client: GitHubAppClient, owner: str, repo: str,
+    client: GitHubAppClient,
+    owner: str,
+    repo: str,
 ) -> list[dict[str, Any]]:
     """Return all refs whose name starts with the draft-batch prefix.
 
@@ -180,33 +186,38 @@ async def _classify_branch(
         pr_number = int(pr["number"])
         if pr["state"] == "open":
             return OrphanBranchClassification(
-                name=branch_name, sha=sha, age_days=pr_age,
-                pr_number=pr_number, pr_state="open",
+                name=branch_name,
+                sha=sha,
+                age_days=pr_age,
+                pr_number=pr_number,
+                pr_state="open",
                 status="keep",
                 reason="PR open (active review)",
             )
         merged = bool(pr.get("merged_at"))
         return OrphanBranchClassification(
-            name=branch_name, sha=sha, age_days=pr_age,
+            name=branch_name,
+            sha=sha,
+            age_days=pr_age,
             pr_number=pr_number,
             pr_state="merged" if merged else "closed",
             status="delete",
-            reason=(
-                "PR merged – GC (GitHub auto-delete disabled or skipped)"
-                if merged
-                else "PR closed without merge"
-            ),
+            reason=("PR merged – GC (GitHub auto-delete disabled or skipped)" if merged else "PR closed without merge"),
         )
 
     commit = await client.rest(
-        "GET", f"/repos/{owner}/{repo}/commits/{sha}",
+        "GET",
+        f"/repos/{owner}/{repo}/commits/{sha}",
     )
     committed_at = commit["commit"]["committer"]["date"]
     age = _age_days(committed_at, now)
     if age > min_age_days:
         return OrphanBranchClassification(
-            name=branch_name, sha=sha, age_days=age,
-            pr_number=None, pr_state=None,
+            name=branch_name,
+            sha=sha,
+            age_days=age,
+            pr_number=None,
+            pr_state=None,
             status="delete",
             reason=(
                 f"No PR; commit age {age:.1f}d exceeds {min_age_days:.1f}d "
@@ -214,13 +225,13 @@ async def _classify_branch(
             ),
         )
     return OrphanBranchClassification(
-        name=branch_name, sha=sha, age_days=age,
-        pr_number=None, pr_state=None,
+        name=branch_name,
+        sha=sha,
+        age_days=age,
+        pr_number=None,
+        pr_state=None,
         status="keep",
-        reason=(
-            f"No PR; commit age {age:.1f}d within {min_age_days:.1f}d "
-            f"threshold (may be an in-flight publish)"
-        ),
+        reason=(f"No PR; commit age {age:.1f}d within {min_age_days:.1f}d threshold (may be an in-flight publish)"),
     )
 
 
@@ -246,7 +257,10 @@ async def _find_associated_pr(
 
 
 async def _delete_branch(
-    client: GitHubAppClient, owner: str, repo: str, branch_name: str,
+    client: GitHubAppClient,
+    owner: str,
+    repo: str,
+    branch_name: str,
 ) -> None:
     """DELETE `/git/refs/heads/{branch}`. 204 on success; 422 if already gone."""
     await client.rest(

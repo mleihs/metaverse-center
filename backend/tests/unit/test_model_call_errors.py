@@ -125,8 +125,8 @@ class TestTheGateItself:
             fake.mkdir(parents=True)
             (fake / "probe.py").write_text(source)
             patched = script.read_text().replace(
-                'ROOT = pathlib.Path(__file__).resolve().parent.parent',
-                f'ROOT = pathlib.Path({str(tmp)!r})',
+                "ROOT = pathlib.Path(__file__).resolve().parent.parent",
+                f"ROOT = pathlib.Path({str(tmp)!r})",
             )
             probe_script = Path(tmp) / "gate.py"
             probe_script.write_text(patched)

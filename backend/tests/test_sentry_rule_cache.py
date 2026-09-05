@@ -96,13 +96,18 @@ def test_compiled_rule_rejects_unknown_kind() -> None:
 
 @pytest.mark.asyncio
 async def test_reload_groups_and_orders_rules() -> None:
-    admin = _admin_with_rules([
-        _rule_row("i1", "ignore", match_message_regex="quota"),
-        _rule_row("f1", "fingerprint", match_exception_type="RateLimitError",
-                  fingerprint_template="openrouter.{exc_type}.{model}"),
-        _rule_row("d1", "downgrade", match_exception_type="ModelHTTPError",
-                  downgrade_to="warning"),
-    ])
+    admin = _admin_with_rules(
+        [
+            _rule_row("i1", "ignore", match_message_regex="quota"),
+            _rule_row(
+                "f1",
+                "fingerprint",
+                match_exception_type="RateLimitError",
+                fingerprint_template="openrouter.{exc_type}.{model}",
+            ),
+            _rule_row("d1", "downgrade", match_exception_type="ModelHTTPError", downgrade_to="warning"),
+        ]
+    )
     snapshot = await src.reload(admin)
     assert [r.id for r in snapshot.ignore] == ["i1"]
     assert [r.id for r in snapshot.fingerprint] == ["f1"]
@@ -115,10 +120,12 @@ async def test_reload_groups_and_orders_rules() -> None:
 
 @pytest.mark.asyncio
 async def test_reload_skips_bad_regex_rows() -> None:
-    admin = _admin_with_rules([
-        _rule_row("ok", "ignore", match_message_regex="quota"),
-        _rule_row("bad", "ignore", match_message_regex="(unclosed"),
-    ])
+    admin = _admin_with_rules(
+        [
+            _rule_row("ok", "ignore", match_message_regex="quota"),
+            _rule_row("bad", "ignore", match_message_regex="(unclosed"),
+        ]
+    )
     snapshot = await src.reload(admin)
     assert [r.id for r in snapshot.ignore] == ["ok"]
 
@@ -144,7 +151,10 @@ def test_apply_rules_ignore_by_message_regex() -> None:
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(rule,), fingerprint=(), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(rule,),
+        fingerprint=(),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
     exc = RuntimeError("OpenRouter: Key limit exceeded for today")
     out = apply_rules({}, {"exc_info": (RuntimeError, exc, None)}, snapshot)
@@ -157,7 +167,10 @@ def test_apply_rules_ignore_by_exception_type() -> None:
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(rule,), fingerprint=(), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(rule,),
+        fingerprint=(),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -171,13 +184,14 @@ def test_apply_rules_ignore_by_exception_type() -> None:
 def test_apply_rules_ignore_requires_all_match_fields_to_hit() -> None:
     # exception_type mismatches → ignore rule does not fire.
     rule = CompiledRule.from_row(
-        _rule_row("r", "ignore",
-                  match_exception_type="RateLimitError",
-                  match_message_regex="quota"),
+        _rule_row("r", "ignore", match_exception_type="RateLimitError", match_message_regex="quota"),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(rule,), fingerprint=(), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(rule,),
+        fingerprint=(),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
     exc = RuntimeError("quota exceeded")  # type does not match
     out = apply_rules({}, {"exc_info": (RuntimeError, exc, None)}, snapshot)
@@ -189,13 +203,19 @@ def test_apply_rules_ignore_requires_all_match_fields_to_hit() -> None:
 
 def test_apply_rules_fingerprint_substitutes_template() -> None:
     rule = CompiledRule.from_row(
-        _rule_row("r", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="openrouter.{exc_type}.{model}"),
+        _rule_row(
+            "r",
+            "fingerprint",
+            match_exception_type="RateLimitError",
+            fingerprint_template="openrouter.{exc_type}.{model}",
+        ),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -217,13 +237,19 @@ def test_apply_rules_fingerprint_missing_tag_uses_unknown_sentinel() -> None:
     # the 'unknown' sentinel (not empty string) so fingerprints stay
     # human-readable in Sentry's issue list.
     rule = CompiledRule.from_row(
-        _rule_row("r", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="openrouter.{exc_type}.{model}"),
+        _rule_row(
+            "r",
+            "fingerprint",
+            match_exception_type="RateLimitError",
+            fingerprint_template="openrouter.{exc_type}.{model}",
+        ),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -238,13 +264,16 @@ def test_apply_rules_fingerprint_unknown_placeholder_falls_back_to_blank() -> No
     # A template that references an unknown placeholder name (e.g.
     # {custom_tag}) must not raise — _DefaultDict yields ''.
     rule = CompiledRule.from_row(
-        _rule_row("r", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="openrouter.{custom_tag}"),
+        _rule_row(
+            "r", "fingerprint", match_exception_type="RateLimitError", fingerprint_template="openrouter.{custom_tag}"
+        ),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -260,13 +289,14 @@ def test_apply_rules_fingerprint_unknown_placeholder_falls_back_to_blank() -> No
 def test_apply_rules_fingerprint_tag_list_form_is_also_accepted() -> None:
     # Sentry events sometimes carry tags as [{"key": ..., "value": ...}].
     rule = CompiledRule.from_row(
-        _rule_row("r", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="{model}"),
+        _rule_row("r", "fingerprint", match_exception_type="RateLimitError", fingerprint_template="{model}"),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -283,14 +313,20 @@ def test_apply_rules_fingerprint_tag_list_form_is_also_accepted() -> None:
 
 def test_apply_rules_downgrade_sets_level() -> None:
     rule = CompiledRule.from_row(
-        _rule_row("r", "downgrade",
-                  match_exception_type="ModelHTTPError",
-                  match_message_regex=r"\b(402|403|503)\b",
-                  downgrade_to="warning"),
+        _rule_row(
+            "r",
+            "downgrade",
+            match_exception_type="ModelHTTPError",
+            match_message_regex=r"\b(402|403|503)\b",
+            downgrade_to="warning",
+        ),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(), downgrade=(rule,), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(),
+        downgrade=(rule,),
+        loaded_at_monotonic=1.0,
     )
 
     class ModelHTTPError(Exception):
@@ -304,14 +340,20 @@ def test_apply_rules_downgrade_sets_level() -> None:
 
 def test_apply_rules_downgrade_skips_when_status_does_not_match() -> None:
     rule = CompiledRule.from_row(
-        _rule_row("r", "downgrade",
-                  match_exception_type="ModelHTTPError",
-                  match_message_regex=r"\b(402|403|503)\b",
-                  downgrade_to="warning"),
+        _rule_row(
+            "r",
+            "downgrade",
+            match_exception_type="ModelHTTPError",
+            match_message_regex=r"\b(402|403|503)\b",
+            downgrade_to="warning",
+        ),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(), downgrade=(rule,), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(),
+        downgrade=(rule,),
+        loaded_at_monotonic=1.0,
     )
 
     class ModelHTTPError(Exception):
@@ -329,18 +371,20 @@ def test_apply_rules_downgrade_skips_when_status_does_not_match() -> None:
 def test_apply_rules_fingerprint_first_match_wins() -> None:
     # Two rules match, only the first (by cache order) applies.
     first = CompiledRule.from_row(
-        _rule_row("first", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="first.{exc_type}"),
+        _rule_row(
+            "first", "fingerprint", match_exception_type="RateLimitError", fingerprint_template="first.{exc_type}"
+        ),
     )
     second = CompiledRule.from_row(
-        _rule_row("second", "fingerprint",
-                  match_exception_type="RateLimitError",
-                  fingerprint_template="second.{exc_type}"),
+        _rule_row(
+            "second", "fingerprint", match_exception_type="RateLimitError", fingerprint_template="second.{exc_type}"
+        ),
     )
     assert first is not None and second is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(first, second), downgrade=(),
+        ignore=(),
+        fingerprint=(first, second),
+        downgrade=(),
         loaded_at_monotonic=1.0,
     )
 
@@ -357,12 +401,14 @@ def test_apply_rules_fingerprint_first_match_wins() -> None:
 
 def test_apply_rules_logger_prefix_requires_hit() -> None:
     rule = CompiledRule.from_row(
-        _rule_row("r", "ignore",
-                  match_logger="backend.services.openrouter"),
+        _rule_row("r", "ignore", match_logger="backend.services.openrouter"),
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(rule,), fingerprint=(), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(rule,),
+        fingerprint=(),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
     exc = RuntimeError("x")
     # Non-matching logger → rule does not fire.
@@ -397,7 +443,10 @@ def test_apply_rules_fingerprint_exposes_custom_tags() -> None:
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):
@@ -422,7 +471,10 @@ def test_apply_rules_fingerprint_explicit_keys_beat_same_named_tags() -> None:
     )
     assert rule is not None
     snapshot = Snapshot(
-        ignore=(), fingerprint=(rule,), downgrade=(), loaded_at_monotonic=1.0,
+        ignore=(),
+        fingerprint=(rule,),
+        downgrade=(),
+        loaded_at_monotonic=1.0,
     )
 
     class RateLimitError(Exception):

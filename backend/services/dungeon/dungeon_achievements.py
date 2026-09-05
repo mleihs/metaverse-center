@@ -62,15 +62,14 @@ class DungeonAchievementService:
         # Challenge: Speed Runner — completed in 8 rooms or fewer
         if instance.rooms_cleared <= 8:
             await cls._award(
-                admin_supabase, instance, "speed_runner",
+                admin_supabase,
+                instance,
+                "speed_runner",
                 {"rooms_cleared": instance.rooms_cleared},
             )
 
         # Challenge: Pacifist — no non-boss combat/elite rooms cleared
-        combat_rooms_cleared = sum(
-            1 for r in instance.rooms
-            if r.cleared and r.room_type in ("combat", "elite")
-        )
+        combat_rooms_cleared = sum(1 for r in instance.rooms if r.cleared and r.room_type in ("combat", "elite"))
         if combat_rooms_cleared == 0:
             await cls._award(admin_supabase, instance, "pacifist")
 
@@ -78,7 +77,10 @@ class DungeonAchievementService:
 
     @classmethod
     async def on_drain_trigger(
-        cls, admin_supabase: Client, instance: DungeonInstance, trigger: str,
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        trigger: str,
     ) -> None:
         """Evaluate drain-trigger badges.
 
@@ -86,7 +88,9 @@ class DungeonAchievementService:
         """
         if trigger == "total_fracture":
             await cls._award(
-                admin_supabase, instance, "political_vertigo",
+                admin_supabase,
+                instance,
+                "political_vertigo",
                 {"fracture": instance.archetype_state.get("fracture", 0)},
             )
 
@@ -94,7 +98,10 @@ class DungeonAchievementService:
 
     @classmethod
     async def on_banter_witnessed(
-        cls, admin_supabase: Client, instance: DungeonInstance, banter_id: str,
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        banter_id: str,
     ) -> None:
         """Increment deduplicated banter counter for banter_connoisseur (target=50).
 
@@ -108,7 +115,10 @@ class DungeonAchievementService:
 
     @classmethod
     async def on_anchor_encountered(
-        cls, admin_supabase: Client, instance: DungeonInstance, anchor_id: str,
+        cls,
+        admin_supabase: Client,
+        instance: DungeonInstance,
+        anchor_id: str,
     ) -> None:
         """Increment deduplicated objektanker counter for objektanker_finder (target=16).
 
@@ -159,10 +169,7 @@ class DungeonAchievementService:
             "simulation_id": str(instance.simulation_id),
             **(extra_context or {}),
         }
-        condition_notes = (
-            f"{instance.archetype} at depth {instance.depth} "
-            f"(rooms cleared: {instance.rooms_cleared})"
-        )
+        condition_notes = f"{instance.archetype} at depth {instance.depth} (rooms cleared: {instance.rooms_cleared})"
         # Instance-level UUIDs are stable across the per-player loop.
         # Pydantic already guarantees UUID types on the model, so these
         # round-trips never raise — computing once keeps the loop tight.
@@ -178,8 +185,11 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge award failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
-                           "player_id": str(player_id)},
+                    extra={
+                        "run_id": str(instance.run_id),
+                        "achievement_id": achievement_id,
+                        "player_id": str(player_id),
+                    },
                     exc_info=True,
                 )
                 continue
@@ -242,8 +252,11 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge progress increment failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
-                           "player_id": str(player_id)},
+                    extra={
+                        "run_id": str(instance.run_id),
+                        "achievement_id": achievement_id,
+                        "player_id": str(player_id),
+                    },
                     exc_info=True,
                 )
 
@@ -278,7 +291,10 @@ class DungeonAchievementService:
             except Exception:
                 logger.warning(
                     "Badge unique progress failed (non-critical)",
-                    extra={"run_id": str(instance.run_id), "achievement_id": achievement_id,
-                           "player_id": str(player_id)},
+                    extra={
+                        "run_id": str(instance.run_id),
+                        "achievement_id": achievement_id,
+                        "player_id": str(player_id),
+                    },
                     exc_info=True,
                 )

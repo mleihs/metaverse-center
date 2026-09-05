@@ -63,15 +63,19 @@ def _make_supabase(table_responses: dict[str, MagicMock]) -> MagicMock:
 class TestGetStats:
     @pytest.mark.asyncio
     async def test_returns_all_categories(self):
-        sb = _make_supabase({
-            "game_epochs": _make_chain_mock(_mock_table_response(
-                data=[{"id": EPOCH_ID_1, "updated_at": "2026-01-01T00:00:00Z"}],
-                count=3,
-            )),
-            "simulations": _make_chain_mock(_mock_table_response(count=0)),
-            "audit_log": _make_chain_mock(_mock_table_response(count=0)),
-            "bot_decision_log": _make_chain_mock(_mock_table_response(count=0)),
-        })
+        sb = _make_supabase(
+            {
+                "game_epochs": _make_chain_mock(
+                    _mock_table_response(
+                        data=[{"id": EPOCH_ID_1, "updated_at": "2026-01-01T00:00:00Z"}],
+                        count=3,
+                    )
+                ),
+                "simulations": _make_chain_mock(_mock_table_response(count=0)),
+                "audit_log": _make_chain_mock(_mock_table_response(count=0)),
+                "bot_decision_log": _make_chain_mock(_mock_table_response(count=0)),
+            }
+        )
 
         result = await CleanupService.get_stats(sb)
 
@@ -81,12 +85,14 @@ class TestGetStats:
 
     @pytest.mark.asyncio
     async def test_empty_database(self):
-        sb = _make_supabase({
-            "game_epochs": _make_chain_mock(_mock_table_response(count=0)),
-            "simulations": _make_chain_mock(_mock_table_response(count=0)),
-            "audit_log": _make_chain_mock(_mock_table_response(count=0)),
-            "bot_decision_log": _make_chain_mock(_mock_table_response(count=0)),
-        })
+        sb = _make_supabase(
+            {
+                "game_epochs": _make_chain_mock(_mock_table_response(count=0)),
+                "simulations": _make_chain_mock(_mock_table_response(count=0)),
+                "audit_log": _make_chain_mock(_mock_table_response(count=0)),
+                "bot_decision_log": _make_chain_mock(_mock_table_response(count=0)),
+            }
+        )
 
         result = await CleanupService.get_stats(sb)
 
@@ -102,10 +108,12 @@ class TestPreview:
     @pytest.mark.asyncio
     async def test_preview_completed_epochs(self):
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[
-                {"id": EPOCH_ID_1, "name": "Epoch Alpha", "updated_at": "2026-01-01T00:00:00Z"},
-                {"id": EPOCH_ID_2, "name": "Epoch Beta", "updated_at": "2026-01-02T00:00:00Z"},
-            ]),
+            _mock_table_response(
+                data=[
+                    {"id": EPOCH_ID_1, "name": "Epoch Alpha", "updated_at": "2026-01-01T00:00:00Z"},
+                    {"id": EPOCH_ID_2, "name": "Epoch Beta", "updated_at": "2026-01-02T00:00:00Z"},
+                ]
+            ),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=5))
         sim_chain = _make_chain_mock(_mock_table_response(count=2))
@@ -132,9 +140,11 @@ class TestPreview:
 
     @pytest.mark.asyncio
     async def test_preview_audit_log(self):
-        sb = _make_supabase({
-            "audit_log": _make_chain_mock(_mock_table_response(count=42)),
-        })
+        sb = _make_supabase(
+            {
+                "audit_log": _make_chain_mock(_mock_table_response(count=42)),
+            }
+        )
 
         result = await CleanupService.preview(sb, "audit_log", 90)
 
@@ -144,9 +154,11 @@ class TestPreview:
 
     @pytest.mark.asyncio
     async def test_preview_bot_decision_log(self):
-        sb = _make_supabase({
-            "bot_decision_log": _make_chain_mock(_mock_table_response(count=100)),
-        })
+        sb = _make_supabase(
+            {
+                "bot_decision_log": _make_chain_mock(_mock_table_response(count=100)),
+            }
+        )
 
         result = await CleanupService.preview(sb, "bot_decision_log", 30)
 
@@ -156,12 +168,13 @@ class TestPreview:
     @pytest.mark.asyncio
     async def test_preview_archived_instances(self):
         archived_data = [
-            {"id": str(uuid4()), "name": f"Archived {i}", "updated_at": "2026-01-01T00:00:00Z"}
-            for i in range(7)
+            {"id": str(uuid4()), "name": f"Archived {i}", "updated_at": "2026-01-01T00:00:00Z"} for i in range(7)
         ]
-        sb = _make_supabase({
-            "simulations": _make_chain_mock(_mock_table_response(data=archived_data, count=7)),
-        })
+        sb = _make_supabase(
+            {
+                "simulations": _make_chain_mock(_mock_table_response(data=archived_data, count=7)),
+            }
+        )
 
         result = await CleanupService.preview(sb, "archived_instances", 30)
 
@@ -170,9 +183,11 @@ class TestPreview:
 
     @pytest.mark.asyncio
     async def test_preview_zero_results(self):
-        sb = _make_supabase({
-            "game_epochs": _make_chain_mock(_mock_table_response(data=[], count=0)),
-        })
+        sb = _make_supabase(
+            {
+                "game_epochs": _make_chain_mock(_mock_table_response(data=[], count=0)),
+            }
+        )
 
         result = await CleanupService.preview(sb, "completed_epochs", 30)
 
@@ -183,7 +198,9 @@ class TestPreview:
     async def test_preview_stale_lobbies(self):
         sb = MagicMock()
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Stale Lobby", "updated_at": "2026-01-01T00:00:00Z"}]),
+            _mock_table_response(
+                data=[{"id": EPOCH_ID_1, "name": "Stale Lobby", "updated_at": "2026-01-01T00:00:00Z"}]
+            ),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=3))
 
@@ -208,7 +225,9 @@ class TestExecute:
     async def test_execute_completed_epochs_deletes_instances_first(self):
         """Game instance simulations must be deleted before epoch rows."""
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Epoch to Delete", "updated_at": "2026-01-01T00:00:00Z"}]),
+            _mock_table_response(
+                data=[{"id": EPOCH_ID_1, "name": "Epoch to Delete", "updated_at": "2026-01-01T00:00:00Z"}]
+            ),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=2))
         sim_chain = MagicMock()
@@ -259,10 +278,12 @@ class TestExecute:
 
     @pytest.mark.asyncio
     async def test_execute_zero_epochs(self):
-        sb = _make_supabase({
-            "game_epochs": _make_chain_mock(_mock_table_response(data=[], count=0)),
-            "audit_log": _make_chain_mock(_mock_table_response()),
-        })
+        sb = _make_supabase(
+            {
+                "game_epochs": _make_chain_mock(_mock_table_response(data=[], count=0)),
+                "audit_log": _make_chain_mock(_mock_table_response()),
+            }
+        )
 
         result = await CleanupService.execute(sb, "completed_epochs", 30, uuid4())
 
@@ -271,11 +292,13 @@ class TestExecute:
 
     @pytest.mark.asyncio
     async def test_execute_audit_log(self):
-        sb = _make_supabase({
-            "audit_log": _make_chain_mock(
-                _mock_table_response(data=[{"id": "a"}, {"id": "b"}], count=2),
-            ),
-        })
+        sb = _make_supabase(
+            {
+                "audit_log": _make_chain_mock(
+                    _mock_table_response(data=[{"id": "a"}, {"id": "b"}], count=2),
+                ),
+            }
+        )
 
         result = await CleanupService.execute(sb, "audit_log", 90, uuid4())
 
@@ -314,7 +337,9 @@ class TestCleanupServiceLogging:
     async def test_execute_logs_completion(self, caplog):
         """Successful epoch cleanup should log INFO with cleanup_type and deleted_count."""
         epoch_chain = _make_chain_mock(
-            _mock_table_response(data=[{"id": EPOCH_ID_1, "name": "Epoch for Logging", "updated_at": "2026-01-01T00:00:00Z"}]),
+            _mock_table_response(
+                data=[{"id": EPOCH_ID_1, "name": "Epoch for Logging", "updated_at": "2026-01-01T00:00:00Z"}]
+            ),
         )
         cascade_chain = _make_chain_mock(_mock_table_response(count=2))
         sim_chain = MagicMock()

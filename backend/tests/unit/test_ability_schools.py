@@ -24,6 +24,7 @@ from backend.services.dungeon_content_service import get_ability_registry
 def _school(name: str) -> list[Ability]:
     return get_ability_registry().get(name, [])
 
+
 # ── Data integrity ─────────────────────────────────────────────────────────
 
 
@@ -97,7 +98,9 @@ class TestAbilityDataIntegrity:
         valid_types = {"damage", "stress_damage", "heal_stress", "buff", "debuff", "utility"}
         for abilities in get_ability_registry().values():
             for ability in abilities:
-                assert ability.effect_type in valid_types, f"{ability.id} has invalid effect_type: {ability.effect_type}"
+                assert ability.effect_type in valid_types, (
+                    f"{ability.id} has invalid effect_type: {ability.effect_type}"
+                )
 
     def test_targets_valid(self):
         valid = {"single_enemy", "all_enemies", "single_ally", "all_allies", "self"}
@@ -200,7 +203,7 @@ class TestGetAvailableAbilities:
         for i in range(len(abilities) - 1):
             assert abilities[i].min_aptitude <= abilities[i + 1].min_aptitude, (
                 f"{school}: {abilities[i].id} (min {abilities[i].min_aptitude}) "
-                f"after {abilities[i+1].id} (min {abilities[i+1].min_aptitude})"
+                f"after {abilities[i + 1].id} (min {abilities[i + 1].min_aptitude})"
             )
 
 
@@ -219,12 +222,23 @@ class TestGetAbilityById:
     @pytest.mark.parametrize(
         "ability_id",
         [
-            "spy_observe", "spy_analyze_weakness", "spy_counter_intel",
-            "guardian_shield", "guardian_taunt", "guardian_fortify",
-            "assassin_precision_strike", "assassin_exploit", "assassin_ambush_strike",
-            "propagandist_inspire", "propagandist_demoralize", "propagandist_rally",
-            "infiltrator_evade", "infiltrator_backstab",
-            "saboteur_trap", "saboteur_disrupt", "saboteur_detonate",
+            "spy_observe",
+            "spy_analyze_weakness",
+            "spy_counter_intel",
+            "guardian_shield",
+            "guardian_taunt",
+            "guardian_fortify",
+            "assassin_precision_strike",
+            "assassin_exploit",
+            "assassin_ambush_strike",
+            "propagandist_inspire",
+            "propagandist_demoralize",
+            "propagandist_rally",
+            "infiltrator_evade",
+            "infiltrator_backstab",
+            "saboteur_trap",
+            "saboteur_disrupt",
+            "saboteur_detonate",
             "basic_attack",
         ],
     )

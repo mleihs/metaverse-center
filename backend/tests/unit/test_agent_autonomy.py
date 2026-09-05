@@ -58,9 +58,25 @@ def _mock_supabase(data=None, count=None, rpc_data=None):
 
     builder = MagicMock()
     for method in (
-        "select", "eq", "in_", "lt", "gt", "gte", "lte", "or_", "order",
-        "limit", "single", "maybe_single", "is_", "not_",
-        "range", "insert", "update", "delete", "upsert",
+        "select",
+        "eq",
+        "in_",
+        "lt",
+        "gt",
+        "gte",
+        "lte",
+        "or_",
+        "order",
+        "limit",
+        "single",
+        "maybe_single",
+        "is_",
+        "not_",
+        "range",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
     ):
         getattr(builder, method).return_value = builder
     builder.execute = AsyncMock(return_value=response)
@@ -126,48 +142,117 @@ class TestBaseCompatibility:
     """Test deterministic compatibility computation."""
 
     def test_identical_profiles_high_compatibility(self):
-        profile = {"openness": 0.8, "conscientiousness": 0.7, "extraversion": 0.6, "agreeableness": 0.5, "neuroticism": 0.4}
+        profile = {
+            "openness": 0.8,
+            "conscientiousness": 0.7,
+            "extraversion": 0.6,
+            "agreeableness": 0.5,
+            "neuroticism": 0.4,
+        }
         compat = PersonalityExtractionService.compute_base_compatibility(
-            profile, profile, str(AGENT_A), str(AGENT_B),
+            profile,
+            profile,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         # Identical profiles → high similarity → positive compatibility
         assert compat > 0
 
     def test_opposite_profiles_low_compatibility(self):
-        profile_a = {"openness": 0.9, "conscientiousness": 0.9, "extraversion": 0.9, "agreeableness": 0.9, "neuroticism": 0.1}
-        profile_b = {"openness": 0.1, "conscientiousness": 0.1, "extraversion": 0.1, "agreeableness": 0.1, "neuroticism": 0.9}
+        profile_a = {
+            "openness": 0.9,
+            "conscientiousness": 0.9,
+            "extraversion": 0.9,
+            "agreeableness": 0.9,
+            "neuroticism": 0.1,
+        }
+        profile_b = {
+            "openness": 0.1,
+            "conscientiousness": 0.1,
+            "extraversion": 0.1,
+            "agreeableness": 0.1,
+            "neuroticism": 0.9,
+        }
         compat = PersonalityExtractionService.compute_base_compatibility(
-            profile_a, profile_b, str(AGENT_A), str(AGENT_B),
+            profile_a,
+            profile_b,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         assert compat < 0
 
     def test_deterministic_same_pair(self):
-        profile_a = {"openness": 0.7, "conscientiousness": 0.5, "extraversion": 0.6, "agreeableness": 0.4, "neuroticism": 0.3}
-        profile_b = {"openness": 0.4, "conscientiousness": 0.8, "extraversion": 0.3, "agreeableness": 0.7, "neuroticism": 0.6}
+        profile_a = {
+            "openness": 0.7,
+            "conscientiousness": 0.5,
+            "extraversion": 0.6,
+            "agreeableness": 0.4,
+            "neuroticism": 0.3,
+        }
+        profile_b = {
+            "openness": 0.4,
+            "conscientiousness": 0.8,
+            "extraversion": 0.3,
+            "agreeableness": 0.7,
+            "neuroticism": 0.6,
+        }
         c1 = PersonalityExtractionService.compute_base_compatibility(
-            profile_a, profile_b, str(AGENT_A), str(AGENT_B),
+            profile_a,
+            profile_b,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         c2 = PersonalityExtractionService.compute_base_compatibility(
-            profile_a, profile_b, str(AGENT_A), str(AGENT_B),
+            profile_a,
+            profile_b,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         assert c1 == c2  # Deterministic
 
     def test_symmetric_pair_order(self):
         """Hash uses sorted pair → same result regardless of order."""
-        profile_a = {"openness": 0.7, "conscientiousness": 0.5, "extraversion": 0.6, "agreeableness": 0.4, "neuroticism": 0.3}
-        profile_b = {"openness": 0.4, "conscientiousness": 0.8, "extraversion": 0.3, "agreeableness": 0.7, "neuroticism": 0.6}
+        profile_a = {
+            "openness": 0.7,
+            "conscientiousness": 0.5,
+            "extraversion": 0.6,
+            "agreeableness": 0.4,
+            "neuroticism": 0.3,
+        }
+        profile_b = {
+            "openness": 0.4,
+            "conscientiousness": 0.8,
+            "extraversion": 0.3,
+            "agreeableness": 0.7,
+            "neuroticism": 0.6,
+        }
         c_ab = PersonalityExtractionService.compute_base_compatibility(
-            profile_a, profile_b, str(AGENT_A), str(AGENT_B),
+            profile_a,
+            profile_b,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         c_ba = PersonalityExtractionService.compute_base_compatibility(
-            profile_b, profile_a, str(AGENT_B), str(AGENT_A),
+            profile_b,
+            profile_a,
+            str(AGENT_B),
+            str(AGENT_A),
         )
         assert c_ab == c_ba
 
     def test_range_clamped(self):
-        profile = {"openness": 0.5, "conscientiousness": 0.5, "extraversion": 0.5, "agreeableness": 0.5, "neuroticism": 0.5}
+        profile = {
+            "openness": 0.5,
+            "conscientiousness": 0.5,
+            "extraversion": 0.5,
+            "agreeableness": 0.5,
+            "neuroticism": 0.5,
+        }
         compat = PersonalityExtractionService.compute_base_compatibility(
-            profile, profile, str(AGENT_A), str(AGENT_B),
+            profile,
+            profile,
+            str(AGENT_A),
+            str(AGENT_B),
         )
         assert -0.3 <= compat <= 0.3
 
@@ -183,10 +268,13 @@ class TestNeedsDecay:
         mock, _, _ = _mock_supabase(rpc_data=6)
         result = await AgentNeedsService.decay_all(mock, SIM_ID, 1.5)
         assert result == 6
-        mock.rpc.assert_called_once_with("fn_decay_agent_needs", {
-            "p_simulation_id": str(SIM_ID),
-            "p_rate_multiplier": 1.5,
-        })
+        mock.rpc.assert_called_once_with(
+            "fn_decay_agent_needs",
+            {
+                "p_simulation_id": str(SIM_ID),
+                "p_rate_multiplier": 1.5,
+            },
+        )
 
 
 class TestNeedsFulfillment:
@@ -195,11 +283,14 @@ class TestNeedsFulfillment:
         mock, _, _ = _mock_supabase(rpc_data=75.0)
         result = await AgentNeedsService.fulfill_need(mock, AGENT_A, "social", 15.0)
         assert result == 75.0
-        mock.rpc.assert_called_once_with("fn_fulfill_agent_need", {
-            "p_agent_id": str(AGENT_A),
-            "p_need_type": "social",
-            "p_amount": 15.0,
-        })
+        mock.rpc.assert_called_once_with(
+            "fn_fulfill_agent_need",
+            {
+                "p_agent_id": str(AGENT_A),
+                "p_need_type": "social",
+                "p_amount": 15.0,
+            },
+        )
 
     @pytest.mark.asyncio
     async def test_invalid_need_type_returns_zero(self):
@@ -250,9 +341,9 @@ class TestMoodProcessTick:
         call_count = 0
         rpc_returns = [
             {"expired_moodlets": 2, "expired_op_mods": 1},  # fn_expire_autonomy_modifiers
-            3,   # fn_decay_moodlet_strengths
-            6,   # fn_recalculate_mood_scores
-            4,   # fn_update_stress_levels
+            3,  # fn_decay_moodlet_strengths
+            6,  # fn_recalculate_mood_scores
+            4,  # fn_update_stress_levels
         ]
 
         def rpc_side_effect(name, params=None):
@@ -293,7 +384,9 @@ class TestAddMoodlet:
         """Verify the RPC is called with correct function name and parameters."""
         mock, _, _ = _mock_supabase(rpc_data=True)
         result = await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="social_positive",
             emotion="joy",
             strength=5,
@@ -319,7 +412,9 @@ class TestAddMoodlet:
         """When PG function returns FALSE (cap reached), Python returns False."""
         mock, _, _ = _mock_supabase(rpc_data=False)
         result = await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="crisis",
             emotion="dread",
             strength=-3,
@@ -335,7 +430,9 @@ class TestAddMoodlet:
 
         mock, _, _ = _mock_supabase(rpc_data=True)
         await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="custom",
             emotion="neutral",
             strength=1,
@@ -350,7 +447,9 @@ class TestAddMoodlet:
         """Timed moodlets should have a non-null expires_at."""
         mock, _, _ = _mock_supabase(rpc_data=True)
         await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="test",
             emotion="calm",
             strength=2,
@@ -367,7 +466,9 @@ class TestAddMoodlet:
         """Permanent moodlets should have null expires_at."""
         mock, _, _ = _mock_supabase(rpc_data=True)
         await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="trait",
             emotion="resilient",
             strength=3,
@@ -383,7 +484,9 @@ class TestAddMoodlet:
         mock, _, _ = _mock_supabase(rpc_data=True)
         mock.rpc.side_effect = httpx.HTTPError("connection failed")
         result = await AgentMoodService.add_moodlet(
-            mock, AGENT_A, SIM_ID,
+            mock,
+            AGENT_A,
+            SIM_ID,
             moodlet_type="test",
             emotion="fear",
             strength=-5,
@@ -454,9 +557,12 @@ class TestOpinionInteractionTracking:
 
         summary = await AgentOpinionService.process_tick(mock, SIM_ID)
         assert summary["recalculated"] == 5
-        mock.rpc.assert_called_once_with("fn_recalculate_opinion_scores", {
-            "p_simulation_id": str(SIM_ID),
-        })
+        mock.rpc.assert_called_once_with(
+            "fn_recalculate_opinion_scores",
+            {
+                "p_simulation_id": str(SIM_ID),
+            },
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -471,10 +577,7 @@ class TestBoltzmannSelection:
         """Low stress → low temperature → best option wins consistently."""
         utilities = {"work": 50.0, "rest": 10.0, "explore": 5.0}
         # Run 100 selections with 0 stress (low temperature)
-        selections = [
-            AgentActivityService._boltzmann_select(utilities, stress=0)
-            for _ in range(100)
-        ]
+        selections = [AgentActivityService._boltzmann_select(utilities, stress=0) for _ in range(100)]
         # Work should dominate (>80% of selections)
         work_count = selections.count("work")
         assert work_count > 70, f"Expected work to dominate, got {work_count}/100"
@@ -482,10 +585,7 @@ class TestBoltzmannSelection:
     def test_high_stress_increases_randomness(self):
         """High stress → high temperature → more options appear."""
         utilities = {"work": 50.0, "rest": 30.0, "explore": 20.0}
-        selections = [
-            AgentActivityService._boltzmann_select(utilities, stress=900)
-            for _ in range(1000)
-        ]
+        selections = [AgentActivityService._boltzmann_select(utilities, stress=900) for _ in range(1000)]
         # At high stress, at least 2 different activities should appear
         unique = set(selections)
         assert len(unique) >= 2, f"Expected variety at high stress, got only {unique}"
@@ -623,7 +723,8 @@ class TestAgentOpinionReadMethods:
     async def test_list_opinions_enriches_agent_data(self):
         raw = [
             {
-                "agent_id": str(AGENT_A), "target_agent_id": str(AGENT_B),
+                "agent_id": str(AGENT_A),
+                "target_agent_id": str(AGENT_B),
                 "opinion_score": 15,
                 "agents": {"name": "Bob", "portrait_image_url": "https://example.com/bob.avif"},
             },
@@ -661,14 +762,18 @@ class TestAgentActivityReadMethods:
     async def test_list_activities_returns_enriched_data(self):
         raw = [
             {
-                "activity_type": "explore", "significance": 5,
+                "activity_type": "explore",
+                "significance": 5,
                 "agents": {"name": "Alice", "portrait_image_url": "https://example.com/alice.avif"},
             },
         ]
         sb, _, resp = _mock_supabase(data=raw, count=1)
         from datetime import UTC, datetime
+
         data, total = await AgentActivityService.list_activities(
-            sb, SIM_ID, since=datetime(2026, 1, 1, tzinfo=UTC),
+            sb,
+            SIM_ID,
+            since=datetime(2026, 1, 1, tzinfo=UTC),
         )
         assert len(data) == 1
         assert data[0]["agent_name"] == "Alice"
@@ -680,8 +785,11 @@ class TestAgentActivityReadMethods:
     async def test_list_activities_handles_empty(self):
         sb, _, resp = _mock_supabase(data=[], count=0)
         from datetime import UTC, datetime
+
         data, total = await AgentActivityService.list_activities(
-            sb, SIM_ID, since=datetime(2026, 1, 1, tzinfo=UTC),
+            sb,
+            SIM_ID,
+            since=datetime(2026, 1, 1, tzinfo=UTC),
         )
         assert data == []
         assert total == 0
@@ -691,6 +799,7 @@ class TestPlatformConfigServiceAsync:
     @pytest.mark.asyncio
     async def test_get_returns_coerced_value(self):
         from backend.services.platform_config_service import PlatformConfigService
+
         sb, _, resp = _mock_supabase(data=[{"setting_value": '"true"'}])
         result = await PlatformConfigService.get(sb, "test_flag", False)
         assert result is True
@@ -698,6 +807,7 @@ class TestPlatformConfigServiceAsync:
     @pytest.mark.asyncio
     async def test_get_returns_default_on_missing(self):
         from backend.services.platform_config_service import PlatformConfigService
+
         sb, _, resp = _mock_supabase(data=[])
         result = await PlatformConfigService.get(sb, "missing_key", 42)
         assert result == 42
@@ -705,6 +815,7 @@ class TestPlatformConfigServiceAsync:
     @pytest.mark.asyncio
     async def test_get_returns_default_on_exception(self):
         from backend.services.platform_config_service import PlatformConfigService
+
         sb = MagicMock()
         builder = MagicMock()
         for m in ("select", "eq", "limit"):

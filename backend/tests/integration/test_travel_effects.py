@@ -36,13 +36,7 @@ _FAR_FUTURE = "2099-01-01T00:00:00+00:00"
 
 def _a_velgarien_agent(admin_client) -> str:
     """A real agent id in the Velgarien template sim (FK-positive tests need one)."""
-    resp = (
-        admin_client.table("agents")
-        .select("id")
-        .eq("simulation_id", str(SIM_VELGARIEN))
-        .limit(1)
-        .execute()
-    )
+    resp = admin_client.table("agents").select("id").eq("simulation_id", str(SIM_VELGARIEN)).limit(1).execute()
     if not resp.data:
         pytest.skip("no seeded agent in Velgarien template sim")
     return resp.data[0]["id"]
@@ -127,9 +121,7 @@ class TestAgentEffectProvenance:
         finally:
             admin_client.table("agent_travel_effects").delete().eq("id", effect_id).execute()
             admin_client.table("travel_quest_instances").delete().eq("id", instance_id).execute()
-            admin_client.table("travel_quest_templates").delete().eq(
-                "template_key", template_key
-            ).execute()
+            admin_client.table("travel_quest_templates").delete().eq("template_key", template_key).execute()
 
 
 class TestDressingCacheUpsert:

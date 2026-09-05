@@ -282,9 +282,7 @@ class BlueskyService:
         # Resize + recompress pipeline for JPEG images — CPU-bound PIL work,
         # off the event loop (P1-6)
         if mime_type == "image/jpeg" and original_size > BLOB_RECOMPRESS_THRESHOLD:
-            data, img_width, img_height = await asyncio.to_thread(
-                self._resize_recompress_jpeg, data
-            )
+            data, img_width, img_height = await asyncio.to_thread(self._resize_recompress_jpeg, data)
         elif mime_type.startswith("image/"):
             # Read dimensions without recompression for smaller images
             try:

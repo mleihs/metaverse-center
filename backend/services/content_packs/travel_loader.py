@@ -134,9 +134,7 @@ def load_quest_templates(root: Path | None = None) -> list[QuestTemplateRecord]:
                 )
             )
 
-    logger.info(
-        "drift content pack loaded from %s: %d quest template(s)", root, len(records)
-    )
+    logger.info("drift content pack loaded from %s: %d quest template(s)", root, len(records))
     return records
 
 
@@ -183,9 +181,7 @@ def load_signal_templates(root: Path | None = None) -> list[SignalTemplateRecord
                 )
             )
 
-    logger.info(
-        "drift content pack loaded from %s: %d signal template(s)", root, len(records)
-    )
+    logger.info("drift content pack loaded from %s: %d signal template(s)", root, len(records))
     return records
 
 

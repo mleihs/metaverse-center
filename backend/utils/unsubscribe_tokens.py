@@ -41,9 +41,7 @@ _LABEL = b"metaverse.center/email-unsubscribe/v1"
 
 # The notification-preference columns a token may switch off, plus the
 # catch-all. Mirrors `notification_preferences` (migration 044).
-UNSUBSCRIBE_CATEGORIES = frozenset(
-    {"cycle_resolved", "phase_changed", "epoch_completed", "deadline_reminder", "all"}
-)
+UNSUBSCRIBE_CATEGORIES = frozenset({"cycle_resolved", "phase_changed", "epoch_completed", "deadline_reminder", "all"})
 
 
 def _signing_key() -> bytes | None:

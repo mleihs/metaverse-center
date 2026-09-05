@@ -6,17 +6,34 @@ Tests 1v1 dynamics across varied matchups and strategies.
 """
 
 import sys
+
 sys.path.insert(0, "/Users/mleihs/Dev/velgarien-rebuild/scripts")
 
 from epoch_sim_lib import (
-    reset_game_state, setup_game, finish_game, deploy, counter_intel,
-    run_foundation, run_competition, run_reckoning, reachable_target,
-    run_battery, set_active_tags,
+    reset_game_state,
+    setup_game,
+    finish_game,
+    deploy,
+    counter_intel,
+    run_foundation,
+    run_competition,
+    run_reckoning,
+    reachable_target,
+    run_battery,
+    set_active_tags,
 )
 
-BASE_CONFIG = {"rp_per_cycle": 15, "rp_cap": 50, "cycle_hours": 2, "duration_days": 14,
-               "foundation_pct": 15, "reckoning_pct": 15, "max_team_size": 4, "allow_betrayal": True,
-               "score_weights": {"stability": 25, "influence": 20, "sovereignty": 20, "diplomatic": 15, "military": 20}}
+BASE_CONFIG = {
+    "rp_per_cycle": 15,
+    "rp_cap": 50,
+    "cycle_hours": 2,
+    "duration_days": 14,
+    "foundation_pct": 15,
+    "reckoning_pct": 15,
+    "max_team_size": 4,
+    "allow_betrayal": True,
+    "score_weights": {"stability": 25, "influence": 20, "sovereignty": 20, "diplomatic": 15, "military": 20},
+}
 
 
 def game_01(token):
@@ -39,18 +56,23 @@ def game_01(token):
             elif pl[tag].rp >= 3:
                 deploy(ctx, eid, pl[tag], "spy", t, pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G1: Mirror Match",
-                       "V vs GR, both 2 guardians, rotating spy/sab/prop", tags)
+    return finish_game(
+        ctx, epoch_id, admin, players, "G1: Mirror Match", "V vs GR, both 2 guardians, rotating spy/sab/prop", tags
+    )
 
 
 def game_02(token):
     """V vs SN — Heavy offense, 1 guardian each"""
     ctx = reset_game_state()
     tags = ["V", "SN"]
-    config = {**BASE_CONFIG, "rp_per_cycle": 20, "rp_cap": 60,
-              "score_weights": {"stability": 15, "influence": 15, "sovereignty": 15, "diplomatic": 15, "military": 40}}
+    config = {
+        **BASE_CONFIG,
+        "rp_per_cycle": 20,
+        "rp_cap": 60,
+        "score_weights": {"stability": 15, "influence": 15, "sovereignty": 15, "diplomatic": 15, "military": 40},
+    }
     epoch_id, players, admin = setup_game(ctx, token, "G2: Warmonger Duel", config, tags)
     last = run_foundation(ctx, epoch_id, players, admin, {"V": 1, "SN": 1}, cycles=2)
 
@@ -65,10 +87,17 @@ def game_02(token):
             elif pl[tag].rp >= 5 and pl[t].buildings:
                 deploy(ctx, eid, pl[tag], "saboteur", t, pl, pl[t].buildings[0]["id"], "building")
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G2: Warmonger Duel",
-                       "V vs SN, 1 guardian each, military=40%, assassins+saboteurs", tags)
+    return finish_game(
+        ctx,
+        epoch_id,
+        admin,
+        players,
+        "G2: Warmonger Duel",
+        "V vs SN, 1 guardian each, military=40%, assassins+saboteurs",
+        tags,
+    )
 
 
 def game_03(token):
@@ -93,10 +122,17 @@ def game_03(token):
         if pl["SP"].rp >= 3:
             deploy(ctx, eid, pl["SP"], "spy", "GR", pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G3: Fort vs Raid",
-                       "GR=3 guardians (defensive), SP=1 guardian (aggressive)", tags)
+    return finish_game(
+        ctx,
+        epoch_id,
+        admin,
+        players,
+        "G3: Fort vs Raid",
+        "GR=3 guardians (defensive), SP=1 guardian (aggressive)",
+        tags,
+    )
 
 
 def game_04(token):
@@ -113,10 +149,11 @@ def game_04(token):
             if t and pl[tag].rp >= 3:
                 deploy(ctx, eid, pl[tag], "spy", t, pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G4: Intel War",
-                       "V vs SP, spy-only operations, 2 guardians each", tags)
+    return finish_game(
+        ctx, epoch_id, admin, players, "G4: Intel War", "V vs SP, spy-only operations, 2 guardians each", tags
+    )
 
 
 def game_05(token):
@@ -134,10 +171,11 @@ def game_05(token):
                 idx = cyc % len(pl[t].buildings)
                 deploy(ctx, eid, pl[tag], "saboteur", t, pl, pl[t].buildings[idx]["id"], "building")
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G5: Demolition Derby",
-                       "SN vs GR, saboteur-only, 2 guardians each", tags)
+    return finish_game(
+        ctx, epoch_id, admin, players, "G5: Demolition Derby", "SN vs GR, saboteur-only, 2 guardians each", tags
+    )
 
 
 def game_06(token):
@@ -165,10 +203,17 @@ def game_06(token):
         if pl["GR"].rp >= 3:
             deploy(ctx, eid, pl["GR"], "spy", "V", pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G6: Defense vs Offense",
-                       "V=CI every cycle + light offense, GR=max aggression", tags)
+    return finish_game(
+        ctx,
+        epoch_id,
+        admin,
+        players,
+        "G6: Defense vs Offense",
+        "V=CI every cycle + light offense, GR=max aggression",
+        tags,
+    )
 
 
 def game_07(token):
@@ -192,10 +237,11 @@ def game_07(token):
             if pl[tag].rp >= 4:
                 deploy(ctx, eid, pl[tag], "propagandist", t, pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G7: High RP Duel",
-                       "SP vs SN, 25 RP/cycle, 75 cap, multi-ops per cycle", tags)
+    return finish_game(
+        ctx, epoch_id, admin, players, "G7: High RP Duel", "SP vs SN, 25 RP/cycle, 75 cap, multi-ops per cycle", tags
+    )
 
 
 def game_08(token):
@@ -220,10 +266,9 @@ def game_08(token):
             elif pl[tag].rp >= 3:
                 deploy(ctx, eid, pl[tag], "spy", t, pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G8: No Guardians",
-                       "V vs GR, zero guardians, pure offense", tags)
+    return finish_game(ctx, epoch_id, admin, players, "G8: No Guardians", "V vs GR, zero guardians, pure offense", tags)
 
 
 def game_09(token):
@@ -250,10 +295,11 @@ def game_09(token):
             if pl[tag].rp >= 3:
                 deploy(ctx, eid, pl[tag], "spy", t, pl)
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G9: Military Focus",
-                       "GR vs SN, military=60% weight, 1 guardian each", tags)
+    return finish_game(
+        ctx, epoch_id, admin, players, "G9: Military Focus", "GR vs SN, military=60% weight, 1 guardian each", tags
+    )
 
 
 def game_10(token):
@@ -278,10 +324,17 @@ def game_10(token):
             idx = cyc % len(pl["SP"].buildings)
             deploy(ctx, eid, pl["V"], "saboteur", "SP", pl, pl["SP"].buildings[idx]["id"], "building")
 
-    run_competition(ctx, epoch_id, players, admin, last+1, 16, strat)
+    run_competition(ctx, epoch_id, players, admin, last + 1, 16, strat)
     run_reckoning(ctx, epoch_id, players, admin, 17, 20, strat)
-    return finish_game(ctx, epoch_id, admin, players, "G10: Builder Duel",
-                       "SP=3 guards (builder), V=1 guard (raider), stability=40%", tags)
+    return finish_game(
+        ctx,
+        epoch_id,
+        admin,
+        players,
+        "G10: Builder Duel",
+        "SP=3 guards (builder), V=1 guard (raider), stability=40%",
+        tags,
+    )
 
 
 if __name__ == "__main__":
@@ -289,8 +342,7 @@ if __name__ == "__main__":
     run_battery(
         "10 Games — 2 Players",
         2,
-        [game_01, game_02, game_03, game_04, game_05,
-         game_06, game_07, game_08, game_09, game_10],
+        [game_01, game_02, game_03, game_04, game_05, game_06, game_07, game_08, game_09, game_10],
         "/Users/mleihs/Dev/velgarien-rebuild/epoch-2p-simulation.log",
         "/Users/mleihs/Dev/velgarien-rebuild/epoch-2p-analysis.md",
     )

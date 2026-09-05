@@ -229,8 +229,12 @@ class TestResolveSkillCheck:
     def test_check_value_floor_at_5(self):
         """Even with extreme penalties, check_value doesn't go below 5."""
         ctx = SkillCheckContext(
-            aptitude="spy", aptitude_level=0, personality={},
-            condition="wounded", visibility=0, difficulty_modifier=-50,
+            aptitude="spy",
+            aptitude_level=0,
+            personality={},
+            condition="wounded",
+            visibility=0,
+            difficulty_modifier=-50,
         )
         with patch("backend.services.combat.skill_checks.random.randint", return_value=50):
             outcome = resolve_skill_check(ctx)
@@ -239,7 +243,9 @@ class TestResolveSkillCheck:
     def test_check_value_cap_at_95(self):
         """Even with extreme bonuses, check_value doesn't exceed 95."""
         ctx = SkillCheckContext(
-            aptitude="spy", aptitude_level=9, personality={"conscientiousness": 1.0},
+            aptitude="spy",
+            aptitude_level=9,
+            personality={"conscientiousness": 1.0},
             difficulty_modifier=50,
         )
         with patch("backend.services.combat.skill_checks.random.randint", return_value=50):
@@ -258,7 +264,8 @@ class TestResolveSkillCheck:
     def test_explicit_check_type_overrides_auto(self):
         """Explicit check_type takes precedence over auto-detection."""
         ctx = SkillCheckContext(
-            aptitude="guardian", aptitude_level=5,
+            aptitude="guardian",
+            aptitude_level=5,
             personality={"extraversion": 0.9},
             check_type="social",
         )
@@ -325,10 +332,14 @@ class TestResolveSkillCheck:
 class TestFormatCheckForTerminal:
     def test_returns_bilingual_tuple(self):
         outcome = SkillCheckOutcome(
-            result="success", roll=75, check_value=80,
+            result="success",
+            roll=75,
+            check_value=80,
             breakdown={
-                "aptitude": "spy", "aptitude_level": 5,
-                "base": 55, "aptitude_bonus": 15,
+                "aptitude": "spy",
+                "aptitude_level": 5,
+                "base": 55,
+                "aptitude_bonus": 15,
                 "final_check_value": 80,
                 "adjustment": 25,
             },
@@ -343,11 +354,16 @@ class TestFormatCheckForTerminal:
 
     def test_includes_personality_modifier_when_present(self):
         outcome = SkillCheckOutcome(
-            result="partial", roll=50, check_value=65,
+            result="partial",
+            roll=50,
+            check_value=65,
             breakdown={
-                "aptitude": "guardian", "aptitude_level": 5,
-                "base": 55, "aptitude_bonus": 15,
-                "personality_modifier": 10, "check_type": "courage",
+                "aptitude": "guardian",
+                "aptitude_level": 5,
+                "base": 55,
+                "aptitude_bonus": 15,
+                "personality_modifier": 10,
+                "check_type": "courage",
                 "final_check_value": 65,
                 "adjustment": 10,
             },
@@ -359,10 +375,14 @@ class TestFormatCheckForTerminal:
 
     def test_includes_visibility_penalty(self):
         outcome = SkillCheckOutcome(
-            result="fail", roll=15, check_value=50,
+            result="fail",
+            roll=15,
+            check_value=50,
             breakdown={
-                "aptitude": "spy", "aptitude_level": 5,
-                "base": 55, "aptitude_bonus": 15,
+                "aptitude": "spy",
+                "aptitude_level": 5,
+                "base": 55,
+                "aptitude_bonus": 15,
                 "visibility_penalty": -15,
                 "final_check_value": 50,
                 "adjustment": -5,
@@ -374,10 +394,14 @@ class TestFormatCheckForTerminal:
 
     def test_includes_condition_penalty(self):
         outcome = SkillCheckOutcome(
-            result="fail", roll=10, check_value=40,
+            result="fail",
+            roll=10,
+            check_value=40,
             breakdown={
-                "aptitude": "spy", "aptitude_level": 5,
-                "base": 55, "aptitude_bonus": 15,
+                "aptitude": "spy",
+                "aptitude_level": 5,
+                "base": 55,
+                "aptitude_bonus": 15,
                 "condition_penalty": -30,
                 "final_check_value": 40,
                 "adjustment": -15,
@@ -389,10 +413,14 @@ class TestFormatCheckForTerminal:
 
     def test_fail_label(self):
         outcome = SkillCheckOutcome(
-            result="fail", roll=5, check_value=30,
+            result="fail",
+            roll=5,
+            check_value=30,
             breakdown={
-                "aptitude": "spy", "aptitude_level": 0,
-                "base": 55, "aptitude_bonus": 0,
+                "aptitude": "spy",
+                "aptitude_level": 0,
+                "base": 55,
+                "aptitude_bonus": 0,
                 "final_check_value": 30,
                 "adjustment": -25,
             },

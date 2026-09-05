@@ -21,7 +21,8 @@ class CleanupPreviewRequest(BaseModel):
     cleanup_type: CleanupType
     min_age_days: int = Field(..., ge=0, le=3650, description="Minimum age in days")
     epoch_ids: list[str] | None = Field(
-        None, description="Specific epoch IDs to target (bypasses age filter)",
+        None,
+        description="Specific epoch IDs to target (bypasses age filter)",
     )
 
 
@@ -29,7 +30,8 @@ class CleanupExecuteRequest(BaseModel):
     cleanup_type: CleanupType
     min_age_days: int = Field(..., ge=0, le=3650, description="Minimum age in days")
     epoch_ids: list[str] | None = Field(
-        None, description="Specific epoch IDs to target (bypasses age filter)",
+        None,
+        description="Specific epoch IDs to target (bypasses age filter)",
     )
 
 

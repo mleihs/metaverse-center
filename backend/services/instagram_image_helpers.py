@@ -39,7 +39,7 @@ BUREAU_FOOTER_HEIGHT = 40
 #   [170..1290] Content zone (portrait image, smart-cropped)
 #   [1290..1350] Footer zone (watermark + AI disclosure)
 FEED_HEADER_HEIGHT = 170  # Badge (36) + gap (12) + title (44) + gap (8) + subtitle (30) + padding
-FEED_FOOTER_HEIGHT = 60   # Watermark + AI disclosure + accent bar
+FEED_FOOTER_HEIGHT = 60  # Watermark + AI disclosure + accent bar
 FEED_CONTENT_HEIGHT = IG_HEIGHT_PORTRAIT - FEED_HEADER_HEIGHT - FEED_FOOTER_HEIGHT  # 1120px
 BUREAU_WATERMARK_TEXT = "BUREAU OF IMPOSSIBLE GEOGRAPHY – [REDACTED]"
 CLASSIFICATION_LEVELS = ("PUBLIC", "AMBER", "RESTRICTED")
@@ -62,89 +62,89 @@ STORY_TITLE_Y = 300  # Title panel top (STORY_SAFE_TOP + 70px for classification
 # → Component.
 
 # ─── Layer 1: Base ───────────────────────────────────────────────────────
-BASE_UNIT = 12                                            # Grid unit (px)
-TYPE_SCALE = 1.375                                        # Major Third ratio
-BASE_FONT_SIZE = 32                                       # Body text anchor (px)
-_LINE_LEADING = 8                                         # Standard line leading
-_FEED_STEP = BASE_UNIT // 3                               # 4 — feed/story font offset
+BASE_UNIT = 12  # Grid unit (px)
+TYPE_SCALE = 1.375  # Major Third ratio
+BASE_FONT_SIZE = 32  # Body text anchor (px)
+_LINE_LEADING = 8  # Standard line leading
+_FEED_STEP = BASE_UNIT // 3  # 4 — feed/story font offset
 
 # ─── Layer 2: Typography ─────────────────────────────────────────────────
 # Hierarchy: 4 scale levels + 3 special-purpose sizes
-FONT_H1 = round(BASE_FONT_SIZE * TYPE_SCALE ** 2)        # 60 — titles
-FONT_H2 = round(BASE_FONT_SIZE * TYPE_SCALE)             # 44 — fields, labels, directives
-FONT_BODY = BASE_FONT_SIZE                                # 32 — body content, descriptions
-FONT_CAPTION = BASE_UNIT * 2                              # 24 — badges, meta, footer (grid-aligned)
-FONT_STAT = 140                                           # Subsiding large stat numbers
-FONT_MAGNITUDE = 72                                       # Gauge value display
-FONT_CTA = 52                                             # "Deploy accordingly" call-to-action
+FONT_H1 = round(BASE_FONT_SIZE * TYPE_SCALE**2)  # 60 — titles
+FONT_H2 = round(BASE_FONT_SIZE * TYPE_SCALE)  # 44 — fields, labels, directives
+FONT_BODY = BASE_FONT_SIZE  # 32 — body content, descriptions
+FONT_CAPTION = BASE_UNIT * 2  # 24 — badges, meta, footer (grid-aligned)
+FONT_STAT = 140  # Subsiding large stat numbers
+FONT_MAGNITUDE = 72  # Gauge value display
+FONT_CTA = 52  # "Deploy accordingly" call-to-action
 
 # Line heights = font size + leading (tighter leading for H1)
-LINE_HEIGHT_H1 = FONT_H1 + _LINE_LEADING // 2            # 64
-LINE_HEIGHT_H2 = FONT_H2 + _LINE_LEADING                 # 52
-LINE_HEIGHT_BODY = FONT_BODY + _LINE_LEADING              # 40
-LINE_HEIGHT_CAPTION = FONT_CAPTION + _LINE_LEADING        # 32
+LINE_HEIGHT_H1 = FONT_H1 + _LINE_LEADING // 2  # 64
+LINE_HEIGHT_H2 = FONT_H2 + _LINE_LEADING  # 52
+LINE_HEIGHT_BODY = FONT_BODY + _LINE_LEADING  # 40
+LINE_HEIGHT_CAPTION = FONT_CAPTION + _LINE_LEADING  # 32
 
 # Feed fonts — scaled from story hierarchy for 4:5 canvas
-FONT_FEED_TITLE = FONT_BODY + _FEED_STEP                 # 36 — feed post title
-FONT_FEED_BADGE = FONT_CAPTION + _FEED_STEP              # 28 — feed classification badge
-FONT_FEED_SEAL = FONT_CAPTION - _FEED_STEP               # 20 — feed seal / cipher
-FONT_FEED_FOOTER = FONT_CAPTION - _FEED_STEP * 2         # 16 — feed footer (smallest readable)
+FONT_FEED_TITLE = FONT_BODY + _FEED_STEP  # 36 — feed post title
+FONT_FEED_BADGE = FONT_CAPTION + _FEED_STEP  # 28 — feed classification badge
+FONT_FEED_SEAL = FONT_CAPTION - _FEED_STEP  # 20 — feed seal / cipher
+FONT_FEED_FOOTER = FONT_CAPTION - _FEED_STEP * 2  # 16 — feed footer (smallest readable)
 
 # ─── Layer 3: Spacing ────────────────────────────────────────────────────
 # Multiples of BASE_UNIT for consistent vertical rhythm
-SPACING_XS = BASE_UNIT                                    # 12 — tight inline
-SPACING_SM = BASE_UNIT * 2                                # 24 — standard gap
-SPACING_MD = BASE_UNIT * 4                                # 48 — section divider
-SPACING_LG = BASE_UNIT * 6                                # 72 — major section
-SPACING_XL = BASE_UNIT * 8                                # 96 — between major zones
+SPACING_XS = BASE_UNIT  # 12 — tight inline
+SPACING_SM = BASE_UNIT * 2  # 24 — standard gap
+SPACING_MD = BASE_UNIT * 4  # 48 — section divider
+SPACING_LG = BASE_UNIT * 6  # 72 — major section
+SPACING_XL = BASE_UNIT * 8  # 96 — between major zones
 
 # ─── Layer 4: Layout ─────────────────────────────────────────────────────
 # Margins
-MARGIN_PAGE = BASE_UNIT * 5                               # 60 — text left margin from edge
-MARGIN_PANEL = SPACING_MD                                 # 48 — panel left/right from edge
-MARGIN_INDENT = SPACING_LG                                # 72 — indented text (dispatch bar)
+MARGIN_PAGE = BASE_UNIT * 5  # 60 — text left margin from edge
+MARGIN_PANEL = SPACING_MD  # 48 — panel left/right from edge
+MARGIN_INDENT = SPACING_LG  # 72 — indented text (dispatch bar)
 
 # Panel radii
-PANEL_RADIUS = BASE_UNIT                                  # 12 — standard rounded corners
-PANEL_RADIUS_SM = PANEL_RADIUS * 2 // 3                   # 8 — compact panels (quote cards)
-BADGE_RADIUS = PANEL_RADIUS // 2                          # 6 — classification badges
+PANEL_RADIUS = BASE_UNIT  # 12 — standard rounded corners
+PANEL_RADIUS_SM = PANEL_RADIUS * 2 // 3  # 8 — compact panels (quote cards)
+BADGE_RADIUS = PANEL_RADIUS // 2  # 6 — classification badges
 
 # Dividers
-DIVIDER_WEIGHT = 2                                        # Primary divider line width
-DIVIDER_WEIGHT_SM = 1                                     # Secondary/subtle divider
+DIVIDER_WEIGHT = 2  # Primary divider line width
+DIVIDER_WEIGHT_SM = 1  # Secondary/subtle divider
 
 # Gauge
-GAUGE_RADIUS = 160                                        # Magnitude gauge circle radius
-GAUGE_STROKE = 22                                         # Gauge arc line width
+GAUGE_RADIUS = 160  # Magnitude gauge circle radius
+GAUGE_STROKE = 22  # Gauge arc line width
 
 # ─── Layer 5: Component ──────────────────────────────────────────────────
 # Panel heights (derived from typography + spacing)
-TITLE_PANEL_HEIGHT = 2 * LINE_HEIGHT_H1 + FONT_BODY      # 160 — title panel
+TITLE_PANEL_HEIGHT = 2 * LINE_HEIGHT_H1 + FONT_BODY  # 160 — title panel
 IMPACT_PANEL_HEIGHT = TITLE_PANEL_HEIGHT + SPACING_MD + DIVIDER_WEIGHT  # 210
 
 # Gauge layout
-GAUGE_BG_RADIUS = GAUGE_RADIUS + 20                       # 180 — dark circle behind arc
-GAUGE_MIN_Y = IG_HEIGHT_STORY // 2 - 20                   # 940 — above canvas center
+GAUGE_BG_RADIUS = GAUGE_RADIUS + 20  # 180 — dark circle behind arc
+GAUGE_MIN_Y = IG_HEIGHT_STORY // 2 - 20  # 940 — above canvas center
 
 # Stats
-STATS_PANEL_WIDTH = 280                                   # Half-width of subsiding stats panel
-STATS_LABEL_OFFSET = FONT_STAT + 5                        # 145 — Y offset from stat to label
+STATS_PANEL_WIDTH = 280  # Half-width of subsiding stats panel
+STATS_LABEL_OFFSET = FONT_STAT + 5  # 145 — Y offset from stat to label
 
 # Operatives and portraits
-OPERATIVE_ICON_SIZE = FONT_H2 + SPACING_XS                # 56 — chess symbol spacing
-PORTRAIT_SIZE = 220                                       # Agent portrait circle diameter
-DIVIDER_INSET = 200                                       # Inset for centered divider lines
+OPERATIVE_ICON_SIZE = FONT_H2 + SPACING_XS  # 56 — chess symbol spacing
+PORTRAIT_SIZE = 220  # Agent portrait circle diameter
+DIVIDER_INSET = 200  # Inset for centered divider lines
 
 # Atmospheric filler
-FILLER_MIN_GAP = 300                                      # Minimum gap (px) to activate filler
+FILLER_MIN_GAP = 300  # Minimum gap (px) to activate filler
 
 # Watermark
-WATERMARK_SYMBOL_Y = STORY_TITLE_Y + 15 * BASE_UNIT      # 480 — below title zone
-WATERMARK_SYMBOL_SIZE = 380                               # Archetype watermark diameter
+WATERMARK_SYMBOL_Y = STORY_TITLE_Y + 15 * BASE_UNIT  # 480 — below title zone
+WATERMARK_SYMBOL_SIZE = 380  # Archetype watermark diameter
 
 # Badge padding
-BADGE_PAD_X = 16                                          # Badge horizontal padding
-BADGE_PAD_Y = 10                                          # Badge vertical padding
+BADGE_PAD_X = 16  # Badge horizontal padding
+BADGE_PAD_Y = 10  # Badge vertical padding
 
 # ── Operative type symbols for advisory template ──────────────────────────
 
@@ -733,7 +733,11 @@ def draw_atmospheric_filler(
     symbol_size = min(280, gap - 120)
     if symbol_size > 80 and archetype:
         draw_archetype_symbol(
-            draw, w // 2, mid_y - 20, symbol_size, archetype,
+            draw,
+            w // 2,
+            mid_y - 20,
+            symbol_size,
+            archetype,
             (*accent, symbol_alpha),
         )
 
@@ -747,7 +751,8 @@ def draw_atmospheric_filler(
         while x < w - MARGIN_PAGE * 2:
             draw.line(
                 [(x, line_y), (min(x + dash_len, w - MARGIN_PAGE * 2), line_y)],
-                fill=dash_color, width=1,
+                fill=dash_color,
+                width=1,
             )
             x += dash_len + dash_gap
 

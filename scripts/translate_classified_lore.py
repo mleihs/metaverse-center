@@ -35,10 +35,7 @@ async def main():
         .order("sort_order")
         .execute()
     )
-    sections = [
-        s for s in (resp.data or [])
-        if not s.get("body_de") or s["body_de"] == s["body"]
-    ]
+    sections = [s for s in (resp.data or []) if not s.get("body_de") or s["body_de"] == s["body"]]
     if not sections:
         print("No untranslated classified sections found.")
         return
@@ -52,13 +49,7 @@ async def main():
 
     for sim_id, sim_sections in by_sim.items():
         # Get simulation context
-        sim_resp = (
-            supabase.table("simulations")
-            .select("name, description")
-            .eq("id", sim_id)
-            .single()
-            .execute()
-        )
+        sim_resp = supabase.table("simulations").select("name, description").eq("id", sim_id).single().execute()
         sim = sim_resp.data
         sim_name = sim["name"]
         sim_theme = sim.get("description", "")
@@ -103,7 +94,9 @@ async def main():
             for field_name, field_value in fields_to_translate.items():
                 try:
                     result = await TranslationService.translate_text(
-                        field_value, context=context, openrouter_key=or_key,
+                        field_value,
+                        context=context,
+                        openrouter_key=or_key,
                     )
                     if result and result != field_value:
                         de_field = f"{field_name}_de"
@@ -115,9 +108,7 @@ async def main():
                     print(f"    ✗ {field_name}: {e}")
 
             if update:
-                supabase.table("simulation_lore").update(update).eq(
-                    "id", section["id"]
-                ).execute()
+                supabase.table("simulation_lore").update(update).eq("id", section["id"]).execute()
                 print(f"    → Saved {len(update)} fields")
             else:
                 print("    ✗ No translations saved")

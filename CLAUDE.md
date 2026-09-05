@@ -253,7 +253,9 @@ msg('...')
 
 ### Process
 
-- Run full lint pipeline (`ruff` + `tsc`) after EVERY change, fix before presenting.
+- Run full lint pipeline (`ruff check` + `ruff format` + `tsc`) after EVERY change, fix before presenting.
+- Never run `ruff format` over a whole directory to tidy one file. Since 2026-09-05 the tree IS format-clean and CI enforces it (`ruff format --check --diff backend/ scripts/`), so a targeted run on the files you actually changed is a no-op elsewhere — but a directory-wide run before that day pulled 77 foreign files into a commit meant to change seven. Format the paths you edited, nothing else.
+- Where hand alignment carries MEANING (a matrix whose packed rows show its shape, a comment column read as a column), guard it with `# fmt: off` / `# fmt: on`. Three places exist, all in `backend/models/`. The pragma must stand ALONE on its line — `# fmt: off  — because …` is not recognised and silently does nothing.
 - MOST DETAILED commit messages: explain why, impact, verification for every change.
 - Update docs + memory at EVERY implementation step, not batched at the end.
 - Give step-by-step status updates during multi-step work — don't go silent.

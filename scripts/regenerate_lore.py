@@ -47,10 +47,7 @@ ANCHOR = {
         "Some cartographers work to privatize and monetize memory-islands, "
         "while others fight to preserve open access to the collective past."
     ),
-    "literary_influence": (
-        "Jorge Luis Borges' Funes the Memorious meets Elinor Ostrom's "
-        "commons governance theory"
-    ),
+    "literary_influence": ("Jorge Luis Borges' Funes the Memorious meets Elinor Ostrom's commons governance theory"),
 }
 
 GEOGRAPHY = {
@@ -152,13 +149,41 @@ AGENTS = [
 ]
 
 BUILDINGS = [
-    {"name": "The Cartographer's Spire", "building_type": "Observatory", "description": "Twists upward like a copper corkscrew with memory-glass windows and brass instruments."},
-    {"name": "The Commons Hearth", "building_type": "Meeting Hall", "description": "Memory-wood and stress-marked stone. Visible scars from failed privatization attempts."},
-    {"name": "The Crystalline Codex", "building_type": "Archive", "description": "Rises like a massive geode. Faceted translucent memory-quartz walls."},
-    {"name": "The Forgetting House", "building_type": "Sanctuary", "description": "Crumbles at the edges. Mirrors that reflect nothing. Libraries of blank books."},
-    {"name": "The Mnemonic Foundry", "building_type": "Factory", "description": "Belches iridescent steam. Cathedral-like distillation chamber with towering columns of shifting light."},
-    {"name": "The Reminiscence Exchange", "building_type": "Market", "description": "Copper and brass tiers. Living metal price walls displaying fluctuating memory values."},
-    {"name": "The Reverie Roost", "building_type": "Tavern", "description": "Perched precariously on the edge. Bar crafted from fossilized memories."},
+    {
+        "name": "The Cartographer's Spire",
+        "building_type": "Observatory",
+        "description": "Twists upward like a copper corkscrew with memory-glass windows and brass instruments.",
+    },
+    {
+        "name": "The Commons Hearth",
+        "building_type": "Meeting Hall",
+        "description": "Memory-wood and stress-marked stone. Visible scars from failed privatization attempts.",
+    },
+    {
+        "name": "The Crystalline Codex",
+        "building_type": "Archive",
+        "description": "Rises like a massive geode. Faceted translucent memory-quartz walls.",
+    },
+    {
+        "name": "The Forgetting House",
+        "building_type": "Sanctuary",
+        "description": "Crumbles at the edges. Mirrors that reflect nothing. Libraries of blank books.",
+    },
+    {
+        "name": "The Mnemonic Foundry",
+        "building_type": "Factory",
+        "description": "Belches iridescent steam. Cathedral-like distillation chamber with towering columns of shifting light.",
+    },
+    {
+        "name": "The Reminiscence Exchange",
+        "building_type": "Market",
+        "description": "Copper and brass tiers. Living metal price walls displaying fluctuating memory values.",
+    },
+    {
+        "name": "The Reverie Roost",
+        "building_type": "Tavern",
+        "description": "Perched precariously on the edge. Bar crafted from fossilized memories.",
+    },
 ]
 
 # ── Astrolabe research context (from original draft) ──────────────────

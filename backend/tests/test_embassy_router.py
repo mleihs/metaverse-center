@@ -331,9 +331,7 @@ class TestUpdateEmbassy:
 
     @patch("backend.routers.embassies.EmbassyService.update_embassy", new_callable=AsyncMock)
     def test_not_found(self, mock_update, admin_client):
-        mock_update.side_effect = HTTPException(
-            status_code=404, detail="Embassy not found."
-        )
+        mock_update.side_effect = HTTPException(status_code=404, detail="Embassy not found.")
 
         resp = admin_client.patch(
             f"{BASE_URL}/embassies/{EMBASSY_ID}",

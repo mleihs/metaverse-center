@@ -46,9 +46,7 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 
 def _run_row(admin_client, run_id) -> dict:
-    return (
-        admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()
-    ).data[0]
+    return (admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()).data[0]
 
 
 def _armed_run(admin_client, client, user, chart_home, **force):
@@ -103,9 +101,7 @@ def _log(admin_client, run_id, kind=None) -> list[dict]:
 
 
 class TestDigging:
-    def test_the_yield_rises_with_every_dig(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_the_yield_rises_with_every_dig(self, admin_client, user_clients, test_user_ids, chart_home):
         """The table is drift_tuning.sondierung_yields — never a constant in the code."""
         user, client = test_user_ids[0], user_clients[0]
         yields = _tuning(admin_client, "sondierung_yields")
@@ -121,9 +117,7 @@ class TestDigging:
                 break
             assert last["yield"] == expected
 
-    def test_a_dig_spends_a_takt_and_writes_the_logbook(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_a_dig_spends_a_takt_and_writes_the_logbook(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=20)
         before = run["window_remaining"]
@@ -136,9 +130,7 @@ class TestDigging:
         assert len(entries) == 1
         assert entries[0]["payload"]["dig"] == 1
 
-    def test_the_marker_stack_is_open_and_countable(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_the_marker_stack_is_open_and_countable(self, admin_client, user_clients, test_user_ids, chart_home):
         """R4: the odds are never numbered, the evidence always is."""
         user, client = test_user_ids[0], user_clients[0]
         classes = _tuning(admin_client, "sondierung_marker_classes")
@@ -152,9 +144,7 @@ class TestDigging:
         assert stack[0] in classes
         assert run["checkpoint"]["last_sondierung"]["marker"] == stack[0]
 
-    def test_digging_is_deterministic(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_digging_is_deterministic(self, admin_client, user_clients, test_user_ids, chart_home):
         """Salted, replayable, retry-safe: a repeated call recomputes the same marker
         rather than re-rolling it."""
         user, client = test_user_ids[0], user_clients[0]
@@ -193,9 +183,7 @@ class TestBust:
         )
         return _run_row(admin_client, run["id"])
 
-    def test_the_third_of_a_kind_tears_the_node(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_the_third_of_a_kind_tears_the_node(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         classes = _tuning(admin_client, "sondierung_marker_classes")
         riss = _tuning(admin_client, "sondierung_riss")
@@ -229,9 +217,7 @@ class TestBust:
             {
                 "p_user": str(user),
                 "p_run": run["id"],
-                "p_deltas": {
-                    "cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 4}
-                },
+                "p_deltas": {"cargo_grant": {"family": "blaupausen", "vector": "architecture", "haul": 4}},
                 "p_source": "test",
             },
         ).execute()
@@ -253,14 +239,10 @@ class TestBust:
         assert after["checkpoint"]["last_sondierung"]["bust"] is True
         assert after["haul_safe"] == 9, "the reserve is safe from the Riss"
         assert after["status"] == "active", "a Riss does not end the run"
-        cargo = (
-            admin_client.table("travel_cargo").select("id").eq("run_id", run["id"]).execute()
-        ).data
+        cargo = (admin_client.table("travel_cargo").select("id").eq("run_id", run["id"]).execute()).data
         assert len(cargo) == 1, "a Riss does not touch the manifest"
 
-    def test_a_stoerungs_marker_counts_towards_the_stack(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_a_stoerungs_marker_counts_towards_the_stack(self, admin_client, user_clients, test_user_ids, chart_home):
         """marker_add (a Störung outcome, 267) poisons the dig site: the stack that busts
         is not always the one the traveller built."""
         user, client = test_user_ids[0], user_clients[0]
@@ -293,9 +275,7 @@ class TestBust:
             marker = last["marker"]
             counts[marker] = counts.get(marker, 0) + 1
             if marker == "statik":
-                assert last["bust"] is True, (
-                    "two Störungs-markers plus one dug marker of the same class is three"
-                )
+                assert last["bust"] is True, "two Störungs-markers plus one dug marker of the same class is three"
                 return
             if counts[marker] >= 3:
                 assert last["bust"] is True, "three of a kind must tear the node"
@@ -328,9 +308,7 @@ class TestFunkboje:
         assert after["haul"] == 0, "what is transmitted is no longer loose"
         assert _log(admin_client, run["id"], "bank")
 
-    def test_banking_at_home_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_banking_at_home_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         """At home the Entladung pays 100 % — a bank could only ever cost the traveller
         30 % of their own haul. A dead option is worse than no option."""
         user, client = test_user_ids[0], user_clients[0]
@@ -341,9 +319,7 @@ class TestFunkboje:
         with pytest.raises(Exception, match="AT_HOME"):
             _bank(client, user, run)
 
-    def test_banking_nothing_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign
-    ):
+    def test_banking_nothing_is_refused(self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         run = self._at_foreign_dock(admin_client, run, chart_foreign, 0)
@@ -381,9 +357,7 @@ class TestTheReserveArrives:
         )
         return _run_row(admin_client, run["id"])
 
-    def test_entladung_pays_loose_and_reserve(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_entladung_pays_loose_and_reserve(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
         run = self._home_with(admin_client, run, chart_home, haul=10, safe=7)
@@ -413,8 +387,12 @@ class TestTheReserveArrives:
         stranded = (
             client.rpc(
                 "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_to_node": home_neighbor,
+                },
             )
             .execute()
             .data
@@ -426,8 +404,12 @@ class TestTheReserveArrives:
         closed = (
             client.rpc(
                 "fn_travel_havarie_resolve",
-                {"p_user": str(user), "p_run": stranded["id"],
-                 "p_run_version": stranded["run_version"], "p_choice": "rueckruf"},
+                {
+                    "p_user": str(user),
+                    "p_run": stranded["id"],
+                    "p_run_version": stranded["run_version"],
+                    "p_choice": "rueckruf",
+                },
             )
             .execute()
             .data
@@ -436,9 +418,7 @@ class TestTheReserveArrives:
         assert closed["checkpoint"]["closing"]["haul_banked"] == int(loose * mult) + 7
         assert closed["checkpoint"]["closing"]["haul_transmitted"] == 7
 
-    def test_even_a_rueckzug_pays_the_reserve(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_even_a_rueckzug_pays_the_reserve(self, admin_client, user_clients, test_user_ids, chart_home):
         """The Funkboje's promise is unconditional — and a Rückzug is the one closing path
         that is neither a failure nor a success, just a traveller walking away. Which is
         exactly why it was missed: bank 20, withdraw, and 14 already-transmitted points
@@ -452,8 +432,7 @@ class TestTheReserveArrives:
         closed = (
             client.rpc(
                 "fn_travel_abandon",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"]},
+                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"]},
             )
             .execute()
             .data
@@ -484,8 +463,12 @@ class TestTheReserveArrives:
         stranded = (
             client.rpc(
                 "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_to_node": home_neighbor,
+                },
             )
             .execute()
             .data
@@ -500,8 +483,12 @@ class TestTheReserveArrives:
         drained = (
             client.rpc(
                 "fn_travel_havarie_resolve",
-                {"p_user": str(user), "p_run": stranded["id"],
-                 "p_run_version": stranded["run_version"], "p_choice": "zerfaserung"},
+                {
+                    "p_user": str(user),
+                    "p_run": stranded["id"],
+                    "p_run_version": stranded["run_version"],
+                    "p_choice": "zerfaserung",
+                },
             )
             .execute()
             .data
@@ -531,8 +518,12 @@ class TestTheReserveArrives:
         stranded = (
             client.rpc(
                 "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_to_node": home_neighbor,
+                },
             )
             .execute()
             .data
@@ -544,8 +535,12 @@ class TestTheReserveArrives:
         closed = (
             client.rpc(
                 "fn_travel_havarie_resolve",
-                {"p_user": str(user), "p_run": stranded["id"],
-                 "p_run_version": stranded["run_version"], "p_choice": "zerfaserung"},
+                {
+                    "p_user": str(user),
+                    "p_run": stranded["id"],
+                    "p_run_version": stranded["run_version"],
+                    "p_choice": "zerfaserung",
+                },
             )
             .execute()
             .data
@@ -560,9 +555,7 @@ class TestTheReserveArrives:
 
 
 class TestGuards:
-    def test_the_reserve_survives_a_move(
-        self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor
-    ):
+    def test_the_reserve_survives_a_move(self, admin_client, user_clients, test_user_ids, chart_home, home_neighbor):
         """fn_travel_move REBUILDS the checkpoint on every advance, and the reserve must not
         evaporate on the next Takt.
 
@@ -578,17 +571,19 @@ class TestGuards:
         moved = (
             client.rpc(
                 "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_to_node": home_neighbor,
+                },
             )
             .execute()
             .data
         )
         assert moved["haul_safe"] == 6
 
-    def test_a_pending_scene_blocks_the_shovel(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_a_pending_scene_blocks_the_shovel(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=10)
         _force_run_state(
@@ -604,9 +599,7 @@ class TestGuards:
         with pytest.raises(Exception, match="SIGNAL_PENDING"):
             _dig(client, user, run)
 
-    def test_an_empty_window_cannot_be_dug(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_an_empty_window_cannot_be_dug(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=0)
         with pytest.raises(Exception, match="WINDOW_EMPTY"):
@@ -618,9 +611,7 @@ class TestGuards:
         """Digging IS travelling: it spends the same window, and the floor is the same."""
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home)
-        _force_run_state(
-            admin_client, run["id"], position_node_id=home_neighbor, window_remaining=1
-        )
+        _force_run_state(admin_client, run["id"], position_node_id=home_neighbor, window_remaining=1)
         run = _run_row(admin_client, run["id"])
 
         after = _dig(client, user, run)
@@ -628,9 +619,7 @@ class TestGuards:
         assert after["status"] == "havarie"
         assert after["checkpoint"]["havarie"]["cause"] == "window"
 
-    def test_gate_off_refuses_the_shovel_and_the_boje(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_gate_off_refuses_the_shovel_and_the_boje(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=10)
         _set_gate(admin_client, False)
@@ -640,9 +629,7 @@ class TestGuards:
         with pytest.raises(Exception, match="GATE_CLOSED"):
             _bank(client, user, run)
 
-    def test_stale_version_is_refused(
-        self, admin_client, user_clients, test_user_ids, chart_home
-    ):
+    def test_stale_version_is_refused(self, admin_client, user_clients, test_user_ids, chart_home):
         user, client = test_user_ids[0], user_clients[0]
         run = _armed_run(admin_client, client, user, chart_home, window_remaining=10)
         with pytest.raises(Exception, match="RUN_STALE"):
@@ -726,7 +713,7 @@ class TestTheFunkbojeSettlesItsLedgers:
             {
                 "owner_user_id": str(user),
                 "run_id": run["id"],
-                "family": "kontrakte",   # one of the 7 cargo families (241) — as a Fund grants
+                "family": "kontrakte",  # one of the 7 cargo families (241) — as a Fund grants
                 "vector": "commerce",
                 "manifest_slot": 0,
                 "haul_value": 6,
@@ -736,18 +723,14 @@ class TestTheFunkbojeSettlesItsLedgers:
 
         _bank(client, user, run)
 
-        rows = (
-            admin_client.table("travel_cargo").select("haul_value").eq("run_id", run["id"])
-        ).execute().data
+        rows = (admin_client.table("travel_cargo").select("haul_value").eq("run_id", run["id"])).execute().data
         assert rows[0]["haul_value"] == 0, "transmitted freight stops paying a second time"
 
     @staticmethod
     def _at_foreign_dock_for(admin_client, run, chart_foreign, *, haul):
         # No haul_survey here: the loose haul comes ENTIRELY from the manifest row the caller
         # inserted (travel_cargo.haul_value), which is exactly the ledger under test.
-        _force_run_state(
-            admin_client, run["id"], position_node_id=chart_foreign["id"]
-        )
+        _force_run_state(admin_client, run["id"], position_node_id=chart_foreign["id"])
         run = _run_row(admin_client, run["id"])
         assert run["haul"] == haul, "the freight IS the loose haul"
         return run

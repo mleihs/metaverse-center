@@ -62,10 +62,12 @@ def _resolve_in_thread(epoch_id, barrier):
     turns a thread that never arrives into a loud failure instead of a CI job
     that hangs until it is killed.
     """
+
     async def _run():
         client = await create_async_client(settings.supabase_url, settings.supabase_service_role_key)
         barrier.wait(timeout=30)
         return await CycleResolutionService.resolve_cycle(client, epoch_id)
+
     return asyncio.run(_run())
 
 
@@ -108,11 +110,7 @@ class TestConcurrentCycleResolve:
 
         # Check final cycle in DB
         row = (
-            admin_client.table("game_epochs")
-            .select("current_cycle")
-            .eq("id", str(epoch.epoch_id))
-            .single()
-            .execute()
+            admin_client.table("game_epochs").select("current_cycle").eq("id", str(epoch.epoch_id)).single().execute()
         ).data
 
         # Optimistic lock: only one increment should apply

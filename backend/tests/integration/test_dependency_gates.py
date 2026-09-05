@@ -59,13 +59,23 @@ def _mock_supabase():
         chain.execute = AsyncMock(return_value=execute_result)
         # Make all query methods return the chain itself so chaining works
         query_methods = (
-            'select', 'eq', 'neq', 'gt', 'lt', 'order',
-            'range', 'limit', 'offset', 'filter', 'ilike', 'in_',
+            "select",
+            "eq",
+            "neq",
+            "gt",
+            "lt",
+            "order",
+            "range",
+            "limit",
+            "offset",
+            "filter",
+            "ilike",
+            "in_",
         )
         for method in query_methods:
             getattr(chain, method).return_value = chain
         # insert/update/upsert/delete also chain
-        for method in ('insert', 'update', 'upsert', 'delete'):
+        for method in ("insert", "update", "upsert", "delete"):
             getattr(chain, method).return_value = chain
         return chain
 
@@ -127,8 +137,7 @@ def _mock_supabase_with_role(role: str | None):
     # share execute.return_value with entity queries.
     member_chain = MagicMock()
     member_chain.execute = AsyncMock(return_value=member_result)
-    for method in ('select', 'eq', 'neq', 'gt', 'lt', 'order',
-                   'range', 'limit', 'offset', 'filter', 'ilike', 'in_'):
+    for method in ("select", "eq", "neq", "gt", "lt", "order", "range", "limit", "offset", "filter", "ilike", "in_"):
         getattr(member_chain, method).return_value = member_chain
 
     # Return the member chain for simulation_members, default for everything else.
@@ -488,7 +497,6 @@ class TestDataIsolation:
         # Patch create_async_client (the actual import in dependencies.py)
         mock_client = AsyncMock()
         with patch("backend.dependencies.create_async_client", new_callable=AsyncMock, return_value=mock_client):
-
             from backend.dependencies import get_supabase
 
             # get_supabase is a yield-dependency (async generator): drive it
@@ -497,16 +505,13 @@ class TestDataIsolation:
             await gen.__anext__()
             try:
                 # Verify the client had set_session called with user_a's token
-                mock_client.auth.set_session.assert_called_once_with(
-                    user_a.access_token, ""
-                )
+                mock_client.auth.set_session.assert_called_once_with(user_a.access_token, "")
             finally:
                 await gen.aclose()
 
     def test_require_role_queries_correct_simulation(self, user_a, mock_supabase_client):
         """require_role should query simulation_members for the given simulation_id."""
         import asyncio
-
 
         sim_id = uuid4()
 

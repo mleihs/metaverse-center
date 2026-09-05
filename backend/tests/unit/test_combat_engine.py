@@ -585,7 +585,8 @@ class TestResolveCombatRound:
         agent = _make_agent(agent_id=AGENT_A_ID, aptitudes={"assassin": 5})
         enemy = _make_enemy(condition_steps=5, evasion=50)
         ctx = CombatContext(
-            agents=[agent], enemies=[enemy],
+            agents=[agent],
+            enemies=[enemy],
             archetype_state={"visibility": 0},  # -15% hit penalty
         )
 

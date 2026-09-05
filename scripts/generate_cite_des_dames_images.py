@@ -54,7 +54,8 @@ def get_entity_ids() -> tuple[list, list]:
         wrapped = f"SELECT json_agg(t) FROM ({query}) t;"
         result = subprocess.run(
             ["docker", "exec", "supabase_db_velgarien-rebuild", "psql", "-U", "postgres", "-t", "-A", "-c", wrapped],
-            capture_output=True, text=True
+            capture_output=True,
+            text=True,
         )
         raw = result.stdout.strip()
         if not raw or raw == "":
@@ -66,10 +67,14 @@ def get_entity_ids() -> tuple[list, list]:
         f"SELECT id, name, character, background FROM agents WHERE simulation_id = '{SIM_ID}' ORDER BY name"
     )
     agents = [
-        (row["id"], row["name"], {
-            "character": row.get("character") or "",
-            "background": row.get("background") or "",
-        })
+        (
+            row["id"],
+            row["name"],
+            {
+                "character": row.get("character") or "",
+                "background": row.get("background") or "",
+            },
+        )
         for row in agent_rows
     ]
 
@@ -81,12 +86,16 @@ def get_entity_ids() -> tuple[list, list]:
         f"WHERE b.simulation_id = '{SIM_ID}' ORDER BY b.name"
     )
     buildings = [
-        (row["id"], row["name"], {
-            "building_type": row.get("building_type") or "",
-            "building_condition": row.get("building_condition") or "",
-            "description": row.get("description") or "",
-            "zone_name": row.get("zone_name") or "",
-        })
+        (
+            row["id"],
+            row["name"],
+            {
+                "building_type": row.get("building_type") or "",
+                "building_condition": row.get("building_condition") or "",
+                "description": row.get("description") or "",
+                "zone_name": row.get("zone_name") or "",
+            },
+        )
         for row in building_rows
     ]
 

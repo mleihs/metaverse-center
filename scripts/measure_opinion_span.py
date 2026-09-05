@@ -103,11 +103,17 @@ def _token() -> str:
 def _query(sql: str) -> list[dict]:
     proc = subprocess.run(
         [
-            "curl", "-sS", "-X", "POST",
+            "curl",
+            "-sS",
+            "-X",
+            "POST",
             f"https://api.supabase.com/v1/projects/{PROJECT}/database/query",
-            "-H", f"Authorization: Bearer {_token()}",
-            "-H", "Content-Type: application/json",
-            "--data", "@-",
+            "-H",
+            f"Authorization: Bearer {_token()}",
+            "-H",
+            "Content-Type: application/json",
+            "--data",
+            "@-",
         ],
         input=json.dumps({"query": sql}),
         capture_output=True,
@@ -135,14 +141,8 @@ def messen() -> dict:
         f"count(*) filter (where abs(opinion_score) >= {RELATIONSHIP_CREATE_THRESHOLD}) as am_tor "
         "from agent_opinions"
     )
-    mods = _query(
-        "select count(*) as negative_modifikatoren "
-        "from agent_opinion_modifiers where opinion_change < 0"
-    )
-    ereignisse = _query(
-        "select count(*) as ereignisse_7d from events "
-        "where created_at > now() - interval '7 days'"
-    )
+    mods = _query("select count(*) as negative_modifikatoren from agent_opinion_modifiers where opinion_change < 0")
+    ereignisse = _query("select count(*) as ereignisse_7d from events where created_at > now() - interval '7 days'")
     return {
         "min": _zahl(span, "min"),
         "max": _zahl(span, "max"),
@@ -168,14 +168,17 @@ def main() -> int:
 
     print("── Meinungsspanne auf Prod ──────────────────────────────────")
     print()
-    print(f"  Spanne                {m['min']} … {m['max']}"
-          f"   (31.08.: {BASIS['min']} … {BASIS['max']})")
+    print(f"  Spanne                {m['min']} … {m['max']}   (31.08.: {BASIS['min']} … {BASIS['max']})")
     print(f"  Zeilen                {m['zeilen']:>6}   {_diff(m['zeilen'], BASIS['zeilen'])}")
     print(f"  davon negativ         {m['negativ']:>6}   {_diff(m['negativ'], BASIS['negativ'])}")
-    print(f"  davon |Meinung| >= {RELATIONSHIP_CREATE_THRESHOLD}"
-          f"  {m['am_tor']:>6}   {_diff(m['am_tor'], BASIS['am_tor'])}")
-    print(f"  negative Modifikatoren {m['negative_modifikatoren']:>5}   "
-          f"{_diff(m['negative_modifikatoren'], BASIS['negative_modifikatoren'])}")
+    print(
+        f"  davon |Meinung| >= {RELATIONSHIP_CREATE_THRESHOLD}"
+        f"  {m['am_tor']:>6}   {_diff(m['am_tor'], BASIS['am_tor'])}"
+    )
+    print(
+        f"  negative Modifikatoren {m['negative_modifikatoren']:>5}   "
+        f"{_diff(m['negative_modifikatoren'], BASIS['negative_modifikatoren'])}"
+    )
     print(f"  Ereignisse (7 Tage)   {m['ereignisse_7d']:>6}")
     print()
 

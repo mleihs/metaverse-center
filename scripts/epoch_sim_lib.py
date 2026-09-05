@@ -64,8 +64,8 @@ class IntelSnapshot:
     zone_security: list = field(default_factory=list)
     building_ids: list = field(default_factory=list)
     agent_ids: list = field(default_factory=list)
-    has_buildings: bool = True   # assume true when unscouted
-    has_agents: bool = True      # assume true when unscouted
+    has_buildings: bool = True  # assume true when unscouted
+    has_agents: bool = True  # assume true when unscouted
     scouted: bool = False
     last_spy_cycle: int = -1
 
@@ -132,8 +132,16 @@ def set_active_tags(tags):
 
 # Flat stat keys: per-player int counters
 _FLAT_STAT_KEYS = [
-    "deployed", "success", "detected", "failed", "guardians",
-    "ci_sweeps", "rp_spent", "ci_caught", "rp_remaining", "intel_gathered",
+    "deployed",
+    "success",
+    "detected",
+    "failed",
+    "guardians",
+    "ci_sweeps",
+    "rp_spent",
+    "ci_caught",
+    "rp_remaining",
+    "intel_gathered",
 ]
 # Nested stat keys: per-player dicts of {op_type: count}
 _NESTED_STAT_KEYS = ["deployed_by_type", "success_by_type", "detected_by_type", "failed_by_type"]
@@ -151,8 +159,22 @@ def log(msg):
     LOG.append(msg)
 
 
-def action_log(ctx, cycle, phase, player_tag, action, detail, result="",
-               *, op_type=None, cost=None, prob=None, target=None, aptitude=None, caught=None):
+def action_log(
+    ctx,
+    cycle,
+    phase,
+    player_tag,
+    action,
+    detail,
+    result="",
+    *,
+    op_type=None,
+    cost=None,
+    prob=None,
+    target=None,
+    aptitude=None,
+    caught=None,
+):
     entry = {
         "cycle": cycle,
         "phase": phase,
@@ -184,9 +206,10 @@ def action_log(ctx, cycle, phase, player_tag, action, detail, result="",
 # creates ~400 connections → 10 games = 4000 TIME_WAIT sockets. The backend's
 # GoTrue connections are invisible to us, so we must be conservative.
 
-_PORT_HIGH_WATER = 3000   # ~19% of 16k ports → intervene early (backend doubles our count)
-_PORT_CRITICAL = 6000     # ~37% → aggressive wait
+_PORT_HIGH_WATER = 3000  # ~19% of 16k ports → intervene early (backend doubles our count)
+_PORT_CRITICAL = 6000  # ~37% → aggressive wait
 _consecutive_failures = 0  # Track cascading failures within a game
+
 
 def _count_stuck_ports():
     """Count TIME_WAIT + CLOSE_WAIT sockets on macOS.
@@ -203,6 +226,7 @@ def _count_stuck_ports():
         return tw + cw, tw, cw
     except Exception:
         return 0, 0, 0
+
 
 def _restart_backend():
     """Kill and restart the uvicorn backend to clear leaked CLOSE_WAIT sockets.
@@ -229,7 +253,8 @@ def _restart_backend():
     subprocess.run(
         "ps aux | grep 'multiprocessing.spawn\\|multiprocessing.resource_tracker'"
         " | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null",
-        shell=True, capture_output=True
+        shell=True,
+        capture_output=True,
     )
     time.sleep(3)
     # Start backend using venv's uvicorn
@@ -247,12 +272,13 @@ def _restart_backend():
         try:
             r = httpx.get("http://127.0.0.1:8000/api/v1/health", timeout=5)
             if r.status_code == 200:
-                print(f"  ✓ Backend restarted (took {(i+1)*2}s)")
+                print(f"  ✓ Backend restarted (took {(i + 1) * 2}s)")
                 return True
         except Exception:
             pass
     print("  ✗ Backend failed to restart!")
     return False
+
 
 def _wait_for_ports(label=""):
     """Block until stuck sockets drop below high-water mark.
@@ -287,7 +313,8 @@ def _wait_for_ports(label=""):
 # ── API & Auth ──
 
 _api_call_count = 0
-_GAME_FAILURE_CAP = 30     # Abort game after this many total failures
+_GAME_FAILURE_CAP = 30  # Abort game after this many total failures
+
 
 def _refresh_all_tokens():
     """Re-authenticate and update token on all active Player instances.
@@ -353,7 +380,7 @@ def api(method, path, player=None, retries=2, **kwargs):
         try:
             resp = _http_client.request(method, f"{BASE}{path}", headers=headers, **kwargs)
             if resp.status_code == 429:  # Rate limited
-                wait = min(2 ** attempt, 10)
+                wait = min(2**attempt, 10)
                 log(f"    RATE LIMITED on {path}, waiting {wait}s...")
                 time.sleep(wait)
                 continue
@@ -413,15 +440,21 @@ def api(method, path, player=None, retries=2, **kwargs):
 def auth_login():
     global ANON_KEY, _http_client
     if not ANON_KEY:
-        r = subprocess.run(["supabase", "status", "--output", "json"],
-                           capture_output=True, text=True, cwd="/Users/mleihs/Dev/velgarien-rebuild")
+        r = subprocess.run(
+            ["supabase", "status", "--output", "json"],
+            capture_output=True,
+            text=True,
+            cwd="/Users/mleihs/Dev/velgarien-rebuild",
+        )
         s = json.loads(r.stdout)
         ANON_KEY = s.get("ANON_KEY") or s.get("anon_key") or s.get("API_KEY")
     for attempt in range(10):
         try:
-            resp = _http_client.post(f"{AUTH_URL}/token?grant_type=password",
-                              json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
-                              headers={"apikey": ANON_KEY, "Content-Type": "application/json"})
+            resp = _http_client.post(
+                f"{AUTH_URL}/token?grant_type=password",
+                json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD},
+                headers={"apikey": ANON_KEY, "Content-Type": "application/json"},
+            )
             if resp.status_code != 200:
                 if attempt < 9:
                     time.sleep(3)
@@ -431,8 +464,8 @@ def auth_login():
         except Exception as e:
             if attempt < 9:
                 wait = min(10 + attempt * 5, 45)  # 10s, 15s, 20s, ... up to 45s
-                print(f"  Auth attempt {attempt+1} failed: {e}, waiting {wait}s...")
-                _wait_for_ports(f"auth retry {attempt+1}")
+                print(f"  Auth attempt {attempt + 1} failed: {e}, waiting {wait}s...")
+                _wait_for_ports(f"auth retry {attempt + 1}")
                 time.sleep(wait)
                 # Recycle client on persistent connection errors
                 if attempt >= 3:
@@ -454,7 +487,8 @@ def _get_service_role_key():
         return SERVICE_ROLE_KEY
     r = subprocess.run(
         ["supabase", "status", "--output", "json"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
         cwd="/Users/mleihs/Dev/velgarien-rebuild",
     )
     s = json.loads(r.stdout)
@@ -475,8 +509,8 @@ def _create_test_user(tag):
     # Fast path: check if user already exists
     result = _psql(f"SELECT id FROM auth.users WHERE email = '{email}';")
     try:
-        user_id = result.stdout.strip().split('\n')[2].strip()
-        if len(user_id) >= 32 and '-' in user_id:
+        user_id = result.stdout.strip().split("\n")[2].strip()
+        if len(user_id) >= 32 and "-" in user_id:
             return user_id
     except (IndexError, ValueError):
         pass
@@ -495,9 +529,7 @@ def _create_test_user(tag):
     if resp.status_code in (200, 201):
         return resp.json()["id"]
 
-    raise RuntimeError(
-        f"Failed to create test user {email}: {resp.status_code} {resp.text[:200]}"
-    )
+    raise RuntimeError(f"Failed to create test user {email}: {resp.status_code} {resp.text[:200]}")
 
 
 def _login_as(email, password):
@@ -511,9 +543,7 @@ def _login_as(email, password):
         headers={"apikey": ANON_KEY, "Content-Type": "application/json"},
     )
     if resp.status_code != 200:
-        raise RuntimeError(
-            f"Login failed for {email}: {resp.status_code} {resp.text[:200]}"
-        )
+        raise RuntimeError(f"Login failed for {email}: {resp.status_code} {resp.text[:200]}")
     return resp.json()["access_token"]
 
 
@@ -567,7 +597,8 @@ def _psql(sql):
     """Run SQL via docker exec (same pattern as force_expire)."""
     return subprocess.run(
         ["docker", "exec", "supabase_db_velgarien-rebuild", "psql", "-U", "postgres", "-c", sql],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
 
 
@@ -596,21 +627,21 @@ def ensure_nm_simulation():
     result = _psql(f"SELECT count(*) FROM agents WHERE simulation_id = '{nm_id}';")
     agent_count = 0
     try:
-        agent_count = int(result.stdout.strip().split('\n')[2].strip())
+        agent_count = int(result.stdout.strip().split("\n")[2].strip())
     except (IndexError, ValueError):
         pass
     if agent_count < 6:
         for i in range(agent_count, 6):
             _psql(f"""
                 INSERT INTO agents (simulation_id, name, background)
-                VALUES ('{nm_id}', 'NM Agent {i+1}', 'Test agent for Nova Meridian')
+                VALUES ('{nm_id}', 'NM Agent {i + 1}', 'Test agent for Nova Meridian')
                 ON CONFLICT DO NOTHING;
             """)
     # Ensure it has zones (needed for security level normalization)
     result = _psql(f"SELECT count(*) FROM zones WHERE simulation_id = '{nm_id}';")
     zone_count = 0
     try:
-        zone_count = int(result.stdout.strip().split('\n')[2].strip())
+        zone_count = int(result.stdout.strip().split("\n")[2].strip())
     except (IndexError, ValueError):
         pass
     if zone_count < 4:
@@ -622,7 +653,7 @@ def ensure_nm_simulation():
         """)
         city_id_result = _psql(f"SELECT id FROM cities WHERE simulation_id = '{nm_id}' LIMIT 1;")
         try:
-            city_id = city_id_result.stdout.strip().split('\n')[2].strip()
+            city_id = city_id_result.stdout.strip().split("\n")[2].strip()
         except (IndexError, ValueError):
             city_id = None
         if city_id:
@@ -650,21 +681,40 @@ def ensure_nm_simulation():
 
 # ── Mission Operations ──
 
+
 def force_expire(epoch_id):
-    subprocess.run(["docker", "exec", "supabase_db_velgarien-rebuild", "psql", "-U", "postgres", "-c",
-                    f"UPDATE operative_missions SET resolves_at = NOW() - INTERVAL '1 hour' "
-                    f"WHERE epoch_id = '{epoch_id}' AND status IN ('deploying', 'active') "
-                    f"AND operative_type != 'guardian';"], capture_output=True, text=True)
+    subprocess.run(
+        [
+            "docker",
+            "exec",
+            "supabase_db_velgarien-rebuild",
+            "psql",
+            "-U",
+            "postgres",
+            "-c",
+            f"UPDATE operative_missions SET resolves_at = NOW() - INTERVAL '1 hour' "
+            f"WHERE epoch_id = '{epoch_id}' AND status IN ('deploying', 'active') "
+            f"AND operative_type != 'guardian';",
+        ],
+        capture_output=True,
+        text=True,
+    )
 
 
-def deploy(ctx, epoch_id, player, op_type, target_tag, players,
-           target_entity_id=None, target_entity_type=None):
+def deploy(ctx, epoch_id, player, op_type, target_tag, players, target_entity_id=None, target_entity_type=None):
     # Use aptitude-aware agent selection
     agent = player.best_agent_for(op_type)
     if not agent:
-        action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-                   f"deploy_{op_type}", "No agents available", "SKIP",
-                   op_type=op_type)
+        action_log(
+            ctx,
+            ctx.current_cycle,
+            ctx.current_phase,
+            player.tag,
+            f"deploy_{op_type}",
+            "No agents available",
+            "SKIP",
+            op_type=op_type,
+        )
         return None
     agent_name = agent.get("name", "?")
     apt_level = player.aptitudes.get(agent["id"], {}).get(op_type, 6)
@@ -677,9 +727,17 @@ def deploy(ctx, epoch_id, player, op_type, target_tag, players,
         body["target_simulation_id"] = target.instance_id
         emb = player.embassies.get(target.instance_id)
         if not emb:
-            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-                       f"deploy_{op_type}", f"No embassy to {target_tag}", "SKIP",
-                       op_type=op_type, target=target_tag)
+            action_log(
+                ctx,
+                ctx.current_cycle,
+                ctx.current_phase,
+                player.tag,
+                f"deploy_{op_type}",
+                f"No embassy to {target_tag}",
+                "SKIP",
+                op_type=op_type,
+                target=target_tag,
+            )
             return None
         body["embassy_id"] = emb
         if target_entity_id:
@@ -688,8 +746,7 @@ def deploy(ctx, epoch_id, player, op_type, target_tag, players,
         tgt = f", target:{target_entity_type}" if target_entity_id else ""
         detail = f"{agent_name} (apt:{apt_level}) → {target_tag} ({op_type}, RP:{player.rp}{tgt})"
 
-    resp = api("POST", f"/api/v1/epochs/{epoch_id}/operatives?simulation_id={player.instance_id}",
-               player, json=body)
+    resp = api("POST", f"/api/v1/epochs/{epoch_id}/operatives?simulation_id={player.instance_id}", player, json=body)
     mission = resp.get("data")
     if mission:
         player.deployed_agents.add(agent["id"])
@@ -702,20 +759,47 @@ def deploy(ctx, epoch_id, player, op_type, target_tag, players,
         if op_type == "guardian":
             ctx.stats["guardians"][player.tag] += 1
             player.guardians += 1
-            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-                       "deploy_guardian", detail, f"OK cost={cost}",
-                       op_type=op_type, cost=cost, aptitude=apt_level)
+            action_log(
+                ctx,
+                ctx.current_cycle,
+                ctx.current_phase,
+                player.tag,
+                "deploy_guardian",
+                detail,
+                f"OK cost={cost}",
+                op_type=op_type,
+                cost=cost,
+                aptitude=apt_level,
+            )
         else:
-            action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-                       f"deploy_{op_type}", detail, f"OK cost={cost} prob={prob}",
-                       op_type=op_type, cost=cost, prob=prob, target=target_tag,
-                       aptitude=apt_level)
+            action_log(
+                ctx,
+                ctx.current_cycle,
+                ctx.current_phase,
+                player.tag,
+                f"deploy_{op_type}",
+                detail,
+                f"OK cost={cost} prob={prob}",
+                op_type=op_type,
+                cost=cost,
+                prob=prob,
+                target=target_tag,
+                aptitude=apt_level,
+            )
         log(f"    {player.tag}: {op_type} {agent_name}→{target_tag or 'self'} cost={cost} prob={prob}")
     else:
         err = resp.get("detail", "unknown error")
-        action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-                   f"deploy_{op_type}", detail, f"FAIL: {err}",
-                   op_type=op_type, target=target_tag)
+        action_log(
+            ctx,
+            ctx.current_cycle,
+            ctx.current_phase,
+            player.tag,
+            f"deploy_{op_type}",
+            detail,
+            f"FAIL: {err}",
+            op_type=op_type,
+            target=target_tag,
+        )
         log(f"    {player.tag}: {op_type} FAILED — {err}")
     return mission
 
@@ -726,10 +810,16 @@ def counter_intel(ctx, epoch_id, player):
     ctx.stats["rp_spent"][player.tag] += 3
     caught = resp.get("data", [])
     ctx.stats["ci_caught"][player.tag] += len(caught)
-    action_log(ctx, ctx.current_cycle, ctx.current_phase, player.tag,
-               "counter_intel", f"Sweep (RP:{player.rp}→{player.rp-3})",
-               f"caught={len(caught)}",
-               caught=len(caught))
+    action_log(
+        ctx,
+        ctx.current_cycle,
+        ctx.current_phase,
+        player.tag,
+        "counter_intel",
+        f"Sweep (RP:{player.rp}→{player.rp - 3})",
+        f"caught={len(caught)}",
+        caught=len(caught),
+    )
     log(f"    {player.tag}: counter-intel sweep → caught {len(caught)}")
     return caught
 
@@ -759,9 +849,18 @@ def resolve_and_score(ctx, epoch_id, admin, cycle, players):
             by_type = ctx.stats["success_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
             effect = mr.get("effect_description", "")
-            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", f"SUCCESS {effect}",
-                       op_type=op_type, prob=prob, target=target_tag)
+            action_log(
+                ctx,
+                cycle,
+                "resolve",
+                tag,
+                f"outcome_{op_type}",
+                f"→{target_tag} prob={prob}",
+                f"SUCCESS {effect}",
+                op_type=op_type,
+                prob=prob,
+                target=target_tag,
+            )
             # Spy success → update intel snapshot for the attacker
             if op_type == "spy" and target_tag != "?":
                 spy_intel = mr.get("intel", {})
@@ -783,20 +882,47 @@ def resolve_and_score(ctx, epoch_id, admin, cycle, players):
             ctx.stats["detected"][tag] += 1
             by_type = ctx.stats["detected_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
-            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", "DETECTED (-2 mil)",
-                       op_type=op_type, prob=prob, target=target_tag)
+            action_log(
+                ctx,
+                cycle,
+                "resolve",
+                tag,
+                f"outcome_{op_type}",
+                f"→{target_tag} prob={prob}",
+                "DETECTED (-2 mil)",
+                op_type=op_type,
+                prob=prob,
+                target=target_tag,
+            )
         elif outcome == "failed":
             ctx.stats["failed"][tag] += 1
             by_type = ctx.stats["failed_by_type"][tag]
             by_type[op_type] = by_type.get(op_type, 0) + 1
-            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", "FAILED (undetected)",
-                       op_type=op_type, prob=prob, target=target_tag)
+            action_log(
+                ctx,
+                cycle,
+                "resolve",
+                tag,
+                f"outcome_{op_type}",
+                f"→{target_tag} prob={prob}",
+                "FAILED (undetected)",
+                op_type=op_type,
+                prob=prob,
+                target=target_tag,
+            )
         else:
-            action_log(ctx, cycle, "resolve", tag, f"outcome_{op_type}",
-                       f"→{target_tag} prob={prob}", f"{outcome}",
-                       op_type=op_type, prob=prob, target=target_tag)
+            action_log(
+                ctx,
+                cycle,
+                "resolve",
+                tag,
+                f"outcome_{op_type}",
+                f"→{target_tag} prob={prob}",
+                f"{outcome}",
+                op_type=op_type,
+                prob=prob,
+                target=target_tag,
+            )
 
         outcomes_by_tag[tag].append(f"{op_type}→{target_tag}:{outcome}")
 
@@ -819,15 +945,20 @@ def resolve_and_score(ctx, epoch_id, admin, cycle, players):
         tag = next((t for t, p in players.items() if p.instance_id == sim_id), None)
         if tag:
             sd = {
-                d: s.get(f"{d}_score", 0)
-                for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]
+                d: s.get(f"{d}_score", 0) for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]
             }
             sd["composite"] = s.get("composite_score", 0)
             ctx.score_history[tag].append((cycle, sd))
-            action_log(ctx, cycle, "score", tag, "score",
-                       f"stab={sd['stability']:.1f} inf={sd['influence']:.1f} sov={sd['sovereignty']:.1f} "
-                       f"dip={sd['diplomatic']:.1f} mil={sd['military']:.1f}",
-                       f"composite={sd['composite']:.2f}")
+            action_log(
+                ctx,
+                cycle,
+                "score",
+                tag,
+                "score",
+                f"stab={sd['stability']:.1f} inf={sd['influence']:.1f} sov={sd['sovereignty']:.1f} "
+                f"dip={sd['diplomatic']:.1f} mil={sd['military']:.1f}",
+                f"composite={sd['composite']:.2f}",
+            )
     parts = api("GET", f"/api/v1/epochs/{epoch_id}/participants", admin)
     part_map = {p["simulation_id"]: p for p in (parts.get("data") or [])}
     for tag, p in players.items():
@@ -835,8 +966,7 @@ def resolve_and_score(ctx, epoch_id, admin, cycle, players):
             old_rp = p.rp
             p.rp = part_map[p.instance_id].get("current_rp", 0)
             if p.rp != old_rp:
-                action_log(ctx, cycle, "rp_grant", tag, "rp_update",
-                           f"RP: {old_rp}→{p.rp}", f"+{p.rp - old_rp}")
+                action_log(ctx, cycle, "rp_grant", tag, "rp_update", f"RP: {old_rp}→{p.rp}", f"+{p.rp - old_rp}")
 
 
 def reachable_target(player, targets, players):
@@ -852,11 +982,15 @@ def api_join_team(epoch_id, players, joiner_tag, leader_tag):
     teams = resp.get("data", [])
     if teams:
         tid = teams[0]["id"]
-        api("POST", f"/api/v1/epochs/{epoch_id}/teams/{tid}/join?simulation_id={players[joiner_tag].sim_id}",
-            players[joiner_tag])
+        api(
+            "POST",
+            f"/api/v1/epochs/{epoch_id}/teams/{tid}/join?simulation_id={players[joiner_tag].sim_id}",
+            players[joiner_tag],
+        )
 
 
 # ── Game Setup & Finish ──
+
 
 def setup_game(ctx, token, name, config, tags, alliances=None):
     ctx.game_start_time = time.time()
@@ -885,14 +1019,17 @@ def setup_game(ctx, token, name, config, tags, alliances=None):
     if alliances:
         for team_name, members in alliances.items():
             creator = members[0]
-            resp = api("POST", f"/api/v1/epochs/{epoch_id}/teams?simulation_id={players[creator].sim_id}",
-                       players[creator], json={"name": team_name})
+            resp = api(
+                "POST",
+                f"/api/v1/epochs/{epoch_id}/teams?simulation_id={players[creator].sim_id}",
+                players[creator],
+                json={"name": team_name},
+            )
             tid = resp.get("data", {}).get("id")
             if tid:
                 for joiner in members[1:]:
                     join_url = f"/api/v1/epochs/{epoch_id}/teams/{tid}/join"
-                    api("POST", f"{join_url}?simulation_id={players[joiner].sim_id}",
-                        players[joiner])
+                    api("POST", f"{join_url}?simulation_id={players[joiner].sim_id}", players[joiner])
 
     api("POST", f"/api/v1/epochs/{epoch_id}/start", admin)
 
@@ -961,10 +1098,7 @@ def finish_game(ctx, epoch_id, admin, players, game_name, game_desc, tags, *, ga
     # Deep-copy nested stat dicts to isolate result from future state resets
     serialized_stats = {}
     for k, v in ctx.stats.items():
-        serialized_stats[k] = {
-            t: (dict(inner) if isinstance(inner, dict) else inner)
-            for t, inner in v.items()
-        }
+        serialized_stats[k] = {t: (dict(inner) if isinstance(inner, dict) else inner) for t, inner in v.items()}
 
     result = {
         "name": game_name,
@@ -1010,14 +1144,17 @@ def finish_game(ctx, epoch_id, admin, players, game_name, game_desc, tags, *, ga
         d = ctx.stats["detected"].get(tag, 0)
         f = ctx.stats["failed"].get(tag, 0)
         total = s + d + f
-        rate = f"{s}/{total} ({100*s/total:.0f}%)" if total else "0/0"
-        log(f"    {tag}: deployed={ctx.stats['deployed'].get(tag,0)} success={rate} "
-            f"guards={ctx.stats['guardians'].get(tag,0)} ci={ctx.stats['ci_sweeps'].get(tag,0)}")
+        rate = f"{s}/{total} ({100 * s / total:.0f}%)" if total else "0/0"
+        log(
+            f"    {tag}: deployed={ctx.stats['deployed'].get(tag, 0)} success={rate} "
+            f"guards={ctx.stats['guardians'].get(tag, 0)} ci={ctx.stats['ci_sweeps'].get(tag, 0)}"
+        )
 
     return result
 
 
 # ── Phase Runners ──
+
 
 def run_foundation(ctx, epoch_id, players, admin, guardian_counts, cycles=3):
     ctx.current_phase = "foundation"
@@ -1077,16 +1214,16 @@ OP_COSTS = {"spy": 3, "propagandist": 4, "saboteur": 5, "infiltrator": 5, "assas
 
 # Strategy archetypes for random game generation
 STRATEGY_PRESETS = [
-    "balanced",       # Mix of all ops
-    "spy_heavy",      # Focus on spies + occasional sab
-    "saboteur_heavy", # Focus on saboteurs
+    "balanced",  # Mix of all ops
+    "spy_heavy",  # Focus on spies + occasional sab
+    "saboteur_heavy",  # Focus on saboteurs
     "assassin_rush",  # Expensive assassin ops
-    "propagandist",   # Propaganda + spy
-    "ci_defensive",   # Counter-intel every cycle + light offense
-    "all_out",        # Whatever the most expensive op RP allows
-    "infiltrator",    # Infiltrators + spies
-    "econ_build",     # Save RP, sparse high-value ops
-    "random_mix",     # Random op type each cycle
+    "propagandist",  # Propaganda + spy
+    "ci_defensive",  # Counter-intel every cycle + light offense
+    "all_out",  # Whatever the most expensive op RP allows
+    "infiltrator",  # Infiltrators + spies
+    "econ_build",  # Save RP, sparse high-value ops
+    "random_mix",  # Random op type each cycle
 ]
 
 
@@ -1278,15 +1415,15 @@ def run_parametric_game(token, game_def):
     ctx = reset_game_state()
     tags = game_def["tags"]
     epoch_id, players, admin = setup_game(
-        ctx, token, game_def["name"], game_def["config"], tags, game_def.get("alliances"))
+        ctx, token, game_def["name"], game_def["config"], tags, game_def.get("alliances")
+    )
 
     if epoch_id is None:
         log("  SKIPPING game — setup failed")
         return None
 
     # Foundation
-    last = run_foundation(ctx, epoch_id, players, admin,
-                          game_def["guardian_counts"], game_def["foundation_cycles"])
+    last = run_foundation(ctx, epoch_id, players, admin, game_def["guardian_counts"], game_def["foundation_cycles"])
 
     strategies = game_def["strategies"]
     ci_freq = game_def["ci_freq"]
@@ -1357,11 +1494,11 @@ def run_parametric_game(token, game_def):
     run_competition(ctx, epoch_id, players, admin, last + 1, comp_end, strategy_fn)
     run_reckoning(ctx, epoch_id, players, admin, comp_end + 1, reck_end, strategy_fn)
 
-    return finish_game(ctx, epoch_id, admin, players, game_def["name"],
-                       game_def["desc"], tags, game_def=game_def)
+    return finish_game(ctx, epoch_id, admin, players, game_def["name"], game_def["desc"], tags, game_def=game_def)
 
 
 # ── Analysis Generation ──
+
 
 def generate_analysis(output_path, title, player_count, include_actions=False):
     """Generate markdown analysis. Set include_actions=False for 60-game runs (too large)."""
@@ -1376,15 +1513,17 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     ]
 
     # Summary Table
-    lines += ["## Summary Table", "",
-              "| # | Game | Winner | Score | Runner-Up | Score | Margin |",
-              "|---|------|--------|-------|-----------|-------|--------|"]
+    lines += [
+        "## Summary Table",
+        "",
+        "| # | Game | Winner | Score | Runner-Up | Score | Margin |",
+        "|---|------|--------|-------|-----------|-------|--------|",
+    ]
 
     win_counts = defaultdict(int)
     margins = []
     total_stats = {
-        k: defaultdict(int)
-        for k in ["deployed", "success", "detected", "failed", "guardians", "ci_sweeps", "rp_spent"]
+        k: defaultdict(int) for k in ["deployed", "success", "detected", "failed", "guardians", "ci_sweeps", "rp_spent"]
     }
     all_composites = defaultdict(list)
     all_dim_scores = defaultdict(lambda: defaultdict(list))
@@ -1402,8 +1541,8 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             margins.append(margin)
             win_counts[w_name] += 1
             lines.append(
-                f"| {i} | {g['name'][:40]} | {w_name} | {w_score:.1f}"
-                f" | {r_name} | {r_score:.1f} | {margin:.1f} |")
+                f"| {i} | {g['name'][:40]} | {w_name} | {w_score:.1f} | {r_name} | {r_score:.1f} | {margin:.1f} |"
+            )
 
             for e in lb:
                 name = shorten_name(e.get("simulation_name", "?"))
@@ -1428,32 +1567,44 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         for t in g.get("tags", []):
             all_names.add(ALL_SIM_NAMES.get(t, t))
 
-    lines += ["", "## Win Distribution", "",
-              "| Simulation | Wins | Games | Win Rate |", "|-----------|------|-------|----------|"]
+    lines += [
+        "",
+        "## Win Distribution",
+        "",
+        "| Simulation | Wins | Games | Win Rate |",
+        "|-----------|------|-------|----------|",
+    ]
     tag_by_name = {v: k for k, v in ALL_SIM_NAMES.items()}
     for name in sorted(all_names):
         tag = tag_by_name.get(name, "")
         gp = games_played.get(tag, 0)
         wins = win_counts.get(name, 0)
-        rate = f"{100*wins/gp:.0f}%" if gp > 0 else "N/A"
+        rate = f"{100 * wins / gp:.0f}%" if gp > 0 else "N/A"
         lines.append(f"| {name} | {wins} | {gp} | {rate} |")
 
     # Victory Margins
     if margins:
-        lines += ["", "## Victory Margins", "",
-                  f"- **Mean margin:** {sum(margins)/len(margins):.1f}",
-                  f"- **Median margin:** {sorted(margins)[len(margins)//2]:.1f}",
-                  f"- **Min margin:** {min(margins):.1f}",
-                  f"- **Max margin:** {max(margins):.1f}",
-                  f"- **Close games (margin < 5):** "
-                  f"{sum(1 for m in margins if m < 5)}/{len(margins)}"
-                  f" ({100 * sum(1 for m in margins if m < 5) / len(margins):.0f}%)",
-                  ]
+        lines += [
+            "",
+            "## Victory Margins",
+            "",
+            f"- **Mean margin:** {sum(margins) / len(margins):.1f}",
+            f"- **Median margin:** {sorted(margins)[len(margins) // 2]:.1f}",
+            f"- **Min margin:** {min(margins):.1f}",
+            f"- **Max margin:** {max(margins):.1f}",
+            f"- **Close games (margin < 5):** "
+            f"{sum(1 for m in margins if m < 5)}/{len(margins)}"
+            f" ({100 * sum(1 for m in margins if m < 5) / len(margins):.0f}%)",
+        ]
 
     # Average Score by Dimension
-    lines += ["", "## Average Scores by Dimension", "",
-              "| Simulation | Avg Composite | Avg Stab | Avg Inf | Avg Sov | Avg Dip | Avg Mil |",
-              "|-----------|--------------|----------|---------|---------|---------|---------|"]
+    lines += [
+        "",
+        "## Average Scores by Dimension",
+        "",
+        "| Simulation | Avg Composite | Avg Stab | Avg Inf | Avg Sov | Avg Dip | Avg Mil |",
+        "|-----------|--------------|----------|---------|---------|---------|---------|",
+    ]
     for name in sorted(all_names):
         comps = all_composites.get(name, [])
         if not comps:
@@ -1463,27 +1614,40 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         for d in ["stability", "influence", "sovereignty", "diplomatic", "military"]:
             vals = all_dim_scores[name][d]
             dims[d] = sum(vals) / len(vals) if vals else 0
-        lines.append(f"| {name} | {avg_comp:.1f} | {dims['stability']:.0f} | {dims['influence']:.0f} "
-                    f"| {dims['sovereignty']:.0f} | {dims['diplomatic']:.0f} | {dims['military']:.0f} |")
+        lines.append(
+            f"| {name} | {avg_comp:.1f} | {dims['stability']:.0f} | {dims['influence']:.0f} "
+            f"| {dims['sovereignty']:.0f} | {dims['diplomatic']:.0f} | {dims['military']:.0f} |"
+        )
 
     # Aggregate Mission Stats
-    lines += ["", "## Aggregate Mission Statistics", "",
-              "| Simulation | Games | Deployed | Success | Detected | Failed | Success Rate | CI | RP Spent |",
-              "|-----------|-------|----------|---------|----------|--------|-------------|-----|----------|"]
+    lines += [
+        "",
+        "## Aggregate Mission Statistics",
+        "",
+        "| Simulation | Games | Deployed | Success | Detected | Failed | Success Rate | CI | RP Spent |",
+        "|-----------|-------|----------|---------|----------|--------|-------------|-----|----------|",
+    ]
     for tag in sorted(total_stats["deployed"].keys()):
         dep = total_stats["deployed"][tag]
         suc = total_stats["success"][tag]
         det = total_stats["detected"][tag]
         fail = total_stats["failed"][tag]
         total = suc + det + fail
-        rate = f"{100*suc/total:.0f}%" if total > 0 else "N/A"
+        rate = f"{100 * suc / total:.0f}%" if total > 0 else "N/A"
         gp = games_played.get(tag, 0)
-        lines.append(f"| {ALL_SIM_NAMES.get(tag, tag)} | {gp} | {dep} | {suc} | {det} | {fail} | {rate} "
-                     f"| {total_stats['ci_sweeps'][tag]} | {total_stats['rp_spent'][tag]} |")
+        lines.append(
+            f"| {ALL_SIM_NAMES.get(tag, tag)} | {gp} | {dep} | {suc} | {det} | {fail} | {rate} "
+            f"| {total_stats['ci_sweeps'][tag]} | {total_stats['rp_spent'][tag]} |"
+        )
 
     # Score Dimension Analysis
-    lines += ["", "## Score Dimension Analysis", "",
-              "Shows whether each scoring dimension differentiates players or stays flat.", ""]
+    lines += [
+        "",
+        "## Score Dimension Analysis",
+        "",
+        "Shows whether each scoring dimension differentiates players or stays flat.",
+        "",
+    ]
 
     all_dim_values = defaultdict(list)
     for g in ALL_GAME_RESULTS:
@@ -1504,8 +1668,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             lines.append(f"| {d} | {mean:.1f} | {std:.1f} | {mn:.0f} | {mx:.0f} | {flat} |")
 
     # Guardian Impact Analysis
-    lines += ["", "## Guardian Impact Analysis", "",
-              "Correlates guardian count with win rate and success rate.", ""]
+    lines += ["", "## Guardian Impact Analysis", "", "Correlates guardian count with win rate and success rate.", ""]
     guard_wins = defaultdict(lambda: [0, 0])  # [wins, games]
     guard_success = defaultdict(lambda: [0, 0])  # [successes, total_ops]
     for g in ALL_GAME_RESULTS:
@@ -1529,14 +1692,13 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     lines.append("|-----------|-------|------|----------|-----------------|")
     for gc in sorted(guard_wins.keys()):
         wins, games_ct = guard_wins[gc]
-        rate = f"{100*wins/games_ct:.0f}%" if games_ct > 0 else "N/A"
+        rate = f"{100 * wins / games_ct:.0f}%" if games_ct > 0 else "N/A"
         suc, total = guard_success[gc]
-        sr = f"{100*suc/total:.0f}%" if total > 0 else "N/A"
+        sr = f"{100 * suc / total:.0f}%" if total > 0 else "N/A"
         lines.append(f"| {gc} | {games_ct} | {wins} | {rate} | {sr} |")
 
     # RP Economy Analysis
-    lines += ["", "## RP Economy Impact", "",
-              "How RP per cycle affects game dynamics.", ""]
+    lines += ["", "## RP Economy Impact", "", "How RP per cycle affects game dynamics.", ""]
     rp_margins = defaultdict(list)
     rp_ops = defaultdict(lambda: [0, 0])  # [total_deployed, games]
     for g in ALL_GAME_RESULTS:
@@ -1563,8 +1725,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lines.append(f"| {rpc} | {len(margins_list)} | {avg_margin:.1f} | {avg_ops:.0f} |")
 
     # Strategy Analysis
-    lines += ["", "## Strategy Effectiveness", "",
-              "Win rate by strategy preset.", ""]
+    lines += ["", "## Strategy Effectiveness", "", "Win rate by strategy preset.", ""]
     strat_wins = defaultdict(lambda: [0, 0])  # [wins, appearances]
     for g in ALL_GAME_RESULTS:
         lb = g["leaderboard"]
@@ -1593,14 +1754,19 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     lines.append("|----------|------------|------|----------|")
     for strat in sorted(strat_wins.keys()):
         wins, apps = strat_wins[strat]
-        rate = f"{100*wins/apps:.0f}%" if apps > 0 else "N/A"
+        rate = f"{100 * wins / apps:.0f}%" if apps > 0 else "N/A"
         lines.append(f"| {strat} | {apps} | {wins} | {rate} |")
 
     # ── P3.4: Advanced Analysis Sections ──
 
     # 1. Per-Operative-Type Effectiveness
-    lines += ["", "## Per-Operative-Type Effectiveness", "",
-              "Aggregate success rates by operative type across all games.", ""]
+    lines += [
+        "",
+        "## Per-Operative-Type Effectiveness",
+        "",
+        "Aggregate success rates by operative type across all games.",
+        "",
+    ]
     type_totals = defaultdict(lambda: {"deployed": 0, "success": 0, "detected": 0, "failed": 0})
     for g in ALL_GAME_RESULTS:
         for tag in g.get("tags", []):
@@ -1621,14 +1787,12 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             resolved = t["success"] + t["detected"] + t["failed"]
             sr = f"{100 * t['success'] / resolved:.0f}%" if resolved > 0 else "N/A"
             dr = f"{100 * t['detected'] / resolved:.0f}%" if resolved > 0 else "N/A"
-            lines.append(f"| {ot} | {t['deployed']} | {t['success']} "
-                         f"| {t['detected']} | {t['failed']} | {sr} | {dr} |")
+            lines.append(f"| {ot} | {t['deployed']} | {t['success']} | {t['detected']} | {t['failed']} | {sr} | {dr} |")
     else:
         lines.append("*No per-type data available (handcrafted games only).*")
 
     # 2. Counter-Intelligence Effectiveness
-    lines += ["", "## Counter-Intelligence Effectiveness", "",
-              "Catch rate per sweep and CI ROI.", ""]
+    lines += ["", "## Counter-Intelligence Effectiveness", "", "Catch rate per sweep and CI ROI.", ""]
     total_ci_sw = 0
     total_ci_ct = 0
     ci_by_strat = defaultdict(lambda: [0, 0])  # [caught, sweeps]
@@ -1646,8 +1810,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     if total_ci_sw > 0:
         lines.append(f"- **Total sweeps:** {total_ci_sw}")
         lines.append(f"- **Total caught:** {total_ci_ct}")
-        lines.append(f"- **Catch rate:** {100 * total_ci_ct / total_ci_sw:.1f}%"
-                     f" ({total_ci_ct}/{total_ci_sw})")
+        lines.append(f"- **Catch rate:** {100 * total_ci_ct / total_ci_sw:.1f}% ({total_ci_ct}/{total_ci_sw})")
         if total_ci_ct > 0:
             lines.append(f"- **RP cost per catch:** {3 * total_ci_sw / total_ci_ct:.1f}")
         else:
@@ -1663,8 +1826,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lines.append("*No CI sweeps recorded.*")
 
     # 3. Score Trajectory Analysis
-    lines += ["", "## Score Trajectory Analysis", "",
-              "Tipping points, lead changes, and convergence patterns.", ""]
+    lines += ["", "## Score Trajectory Analysis", "", "Tipping points, lead changes, and convergence patterns.", ""]
     tipping_points = []
     lead_changes_list = []
     for g in ALL_GAME_RESULTS:
@@ -1672,8 +1834,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         if not scores or not g["leaderboard"]:
             continue
         winner_name = shorten_name(g["leaderboard"][0].get("simulation_name", "?"))
-        winner_tag = next(
-            (t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
+        winner_tag = next((t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
 
         all_cycles = sorted({c for hist in scores.values() for c, _ in hist})
         lead_changes = 0
@@ -1699,20 +1860,23 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lead_changes_list.append(lead_changes)
 
     if tipping_points:
-        lines.append(f"- **Avg tipping point:** cycle {sum(tipping_points) / len(tipping_points):.1f}"
-                     f" (earliest: {min(tipping_points)}, latest: {max(tipping_points)})")
+        lines.append(
+            f"- **Avg tipping point:** cycle {sum(tipping_points) / len(tipping_points):.1f}"
+            f" (earliest: {min(tipping_points)}, latest: {max(tipping_points)})"
+        )
     if lead_changes_list:
-        lines.append(f"- **Avg lead changes per game:** "
-                     f"{sum(lead_changes_list) / len(lead_changes_list):.1f}"
-                     f" (max: {max(lead_changes_list)})")
+        lines.append(
+            f"- **Avg lead changes per game:** "
+            f"{sum(lead_changes_list) / len(lead_changes_list):.1f}"
+            f" (max: {max(lead_changes_list)})"
+        )
         decided_early = sum(1 for lc in lead_changes_list if lc == 0)
         contested = sum(1 for lc in lead_changes_list if lc >= 3)
         lines.append(f"- **Decided early (0 lead changes):** {decided_early}/{len(lead_changes_list)}")
         lines.append(f"- **Contested (3+ lead changes):** {contested}/{len(lead_changes_list)}")
 
     # 4. Phase-Based Outcomes
-    lines += ["", "## Phase-Based Outcomes", "",
-              "Mission outcomes grouped by game phase.", ""]
+    lines += ["", "## Phase-Based Outcomes", "", "Mission outcomes grouped by game phase.", ""]
     phase_outcomes = defaultdict(lambda: {"deployed": 0, "success": 0, "detected": 0, "failed": 0})
     for g in ALL_GAME_RESULTS:
         for a in g.get("actions", []):
@@ -1738,20 +1902,30 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             po = phase_outcomes[phase]
             resolved = po["success"] + po["detected"] + po["failed"]
             sr = f"{100 * po['success'] / resolved:.0f}%" if resolved > 0 else "N/A"
-            lines.append(f"| {phase} | {po['deployed']} | {po['success']} "
-                         f"| {po['detected']} | {po['failed']} | {sr} |")
+            lines.append(f"| {phase} | {po['deployed']} | {po['success']} | {po['detected']} | {po['failed']} | {sr} |")
     else:
         lines.append("*No action data available.*")
 
     # 5. Strategy Matchup Matrix
     _strat_abbrev = {
-        "balanced": "BAL", "spy_heavy": "SPY", "saboteur_heavy": "SAB",
-        "assassin_rush": "ASN", "propagandist": "PRO", "ci_defensive": "CID",
-        "all_out": "ALL", "infiltrator": "INF", "econ_build": "ECO",
+        "balanced": "BAL",
+        "spy_heavy": "SPY",
+        "saboteur_heavy": "SAB",
+        "assassin_rush": "ASN",
+        "propagandist": "PRO",
+        "ci_defensive": "CID",
+        "all_out": "ALL",
+        "infiltrator": "INF",
+        "econ_build": "ECO",
         "random_mix": "RND",
     }
-    lines += ["", "## Strategy Matchup Matrix", "",
-              "Win rate when two strategies co-appear. Row = strategy, column = opponent strategy.", ""]
+    lines += [
+        "",
+        "## Strategy Matchup Matrix",
+        "",
+        "Win rate when two strategies co-appear. Row = strategy, column = opponent strategy.",
+        "",
+    ]
 
     strat_matchup = defaultdict(lambda: defaultdict(lambda: [0, 0]))  # [wins, meetings]
     all_strats_seen = set()
@@ -1763,8 +1937,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         if not lb:
             continue
         winner_name = shorten_name(lb[0].get("simulation_name", "?"))
-        winner_tag = next(
-            (t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
+        winner_tag = next((t for t in g["tags"] if ALL_SIM_NAMES.get(t) == winner_name), None)
         game_strats = [(tag, strategies[tag]) for tag in g["tags"]]
         for tag_a, strat_a in game_strats:
             all_strats_seen.add(strat_a)
@@ -1797,14 +1970,12 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
                         row += " - |"
             lines.append(row)
         lines.append("")
-        lines.append("Legend: " + ", ".join(
-            f"{a}={s}" for a, s in zip(abbr, sorted_strats, strict=True)))
+        lines.append("Legend: " + ", ".join(f"{a}={s}" for a, s in zip(abbr, sorted_strats, strict=True)))
     else:
         lines.append("*No structured strategy data available.*")
 
     # 6. Alliance Impact
-    lines += ["", "## Alliance Impact", "",
-              "Win rates for allied vs solo players (parametric games only).", ""]
+    lines += ["", "## Alliance Impact", "", "Win rates for allied vs solo players (parametric games only).", ""]
     allied_wins = [0, 0]  # [wins, appearances]
     solo_wins = [0, 0]
     alliance_game_count = 0
@@ -1839,11 +2010,11 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lines.append("| Status | Appearances | Wins | Win Rate |")
         lines.append("|--------|------------|------|----------|")
         if allied_wins[1] > 0:
-            lines.append(f"| Allied | {allied_wins[1]} | {allied_wins[0]} "
-                         f"| {100 * allied_wins[0] / allied_wins[1]:.0f}% |")
+            lines.append(
+                f"| Allied | {allied_wins[1]} | {allied_wins[0]} | {100 * allied_wins[0] / allied_wins[1]:.0f}% |"
+            )
         if solo_wins[1] > 0:
-            lines.append(f"| Solo | {solo_wins[1]} | {solo_wins[0]} "
-                         f"| {100 * solo_wins[0] / solo_wins[1]:.0f}% |")
+            lines.append(f"| Solo | {solo_wins[1]} | {solo_wins[0]} | {100 * solo_wins[0] / solo_wins[1]:.0f}% |")
         lines.append("")
         lines.append(f"- **Games with alliances:** {alliance_game_count}")
         lines.append(f"- **Games without alliances:** {no_alliance_game_count}")
@@ -1851,8 +2022,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lines.append("*No alliance data available.*")
 
     # 7. Parameter Sensitivity
-    lines += ["", "## Parameter Sensitivity", "",
-              "How game configuration parameters affect victory margins.", ""]
+    lines += ["", "## Parameter Sensitivity", "", "How game configuration parameters affect victory margins.", ""]
     param_margins = defaultdict(lambda: defaultdict(list))
     for g in ALL_GAME_RESULTS:
         config = g.get("config")
@@ -1862,8 +2032,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         margin = (lb[0].get("composite", 0) - lb[1].get("composite", 0)) if len(lb) >= 2 else None
         if margin is None:
             continue
-        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct",
-                      "allow_betrayal", "max_team_size"]:
+        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct", "allow_betrayal", "max_team_size"]:
             val = config.get(param)
             if val is not None:
                 param_margins[param][str(val)].append(margin)
@@ -1875,8 +2044,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             return (1, x)
 
     if param_margins:
-        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct",
-                      "allow_betrayal", "max_team_size"]:
+        for param in ["rp_per_cycle", "rp_cap", "foundation_pct", "reckoning_pct", "allow_betrayal", "max_team_size"]:
             if param not in param_margins:
                 continue
             lines.append(f"**{param}:**")
@@ -1892,8 +2060,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
         lines.append("*No structured config data available (handcrafted games only).*")
 
     # 8. Probability Calibration
-    lines += ["", "## Probability Calibration", "",
-              "Predicted success probability vs actual outcome rate.", ""]
+    lines += ["", "## Probability Calibration", "", "Predicted success probability vs actual outcome rate.", ""]
     prob_buckets = defaultdict(lambda: [0, 0])  # [successes, total]
     for g in ALL_GAME_RESULTS:
         for a in g.get("actions", []):
@@ -1935,8 +2102,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
     # 9. Fog of War Impact + Intel ROI
     fog_games = [g for g in ALL_GAME_RESULTS if g.get("fog_of_war")]
     if fog_games:
-        lines += ["", "## Fog of War Impact", "",
-                  f"**{len(fog_games)}** games played with fog of war enabled.", ""]
+        lines += ["", "## Fog of War Impact", "", f"**{len(fog_games)}** games played with fog of war enabled.", ""]
 
         # Win rate by strategy under fog
         fog_strat_wins = defaultdict(lambda: [0, 0])  # [wins, games]
@@ -1961,19 +2127,13 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
                 rate = 100 * wins / total if total > 0 else 0
                 # Compare to overall strategy win rate (if available)
                 advantage = "—"
-                strats_in_use = {
-                    s for g2 in ALL_GAME_RESULTS
-                    for s in g2.get("strategies", {}).values()
-                }
+                strats_in_use = {s for g2 in ALL_GAME_RESULTS for s in g2.get("strategies", {}).values()}
                 if strat in strats_in_use:
                     all_wins = sum(
-                        1 for g2 in ALL_GAME_RESULTS
-                        if g2.get("strategies", {}).get(g2.get("winner_tag")) == strat
+                        1 for g2 in ALL_GAME_RESULTS if g2.get("strategies", {}).get(g2.get("winner_tag")) == strat
                     )
                     all_total = sum(
-                        1 for g2 in ALL_GAME_RESULTS
-                        for _t, s in g2.get("strategies", {}).items()
-                        if s == strat
+                        1 for g2 in ALL_GAME_RESULTS for _t, s in g2.get("strategies", {}).items() if s == strat
                     )
                     all_rate = 100 * all_wins / all_total if all_total > 0 else 0
                     diff = rate - all_rate
@@ -1998,15 +2158,17 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
                         else:
                             untargeted += 1
         if targeted + untargeted > 0:
-            lines.append(f"Targeted saboteur/assassin deployments: **{targeted}** "
-                        f"({100*targeted/(targeted+untargeted):.0f}%)")
-            lines.append(f"Untargeted (blind) deployments: **{untargeted}** "
-                        f"({100*untargeted/(targeted+untargeted):.0f}%)")
+            lines.append(
+                f"Targeted saboteur/assassin deployments: **{targeted}** "
+                f"({100 * targeted / (targeted + untargeted):.0f}%)"
+            )
+            lines.append(
+                f"Untargeted (blind) deployments: **{untargeted}** ({100 * untargeted / (targeted + untargeted):.0f}%)"
+            )
             lines.append("")
 
         # Intel ROI: spy investment correlation with winning
-        lines += ["## Intel ROI", "",
-                  "Correlation between spy intelligence gathering and game outcomes.", ""]
+        lines += ["## Intel ROI", "", "Correlation between spy intelligence gathering and game outcomes.", ""]
 
         winner_intel = []
         loser_intel = []
@@ -2026,7 +2188,7 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             lines.append(f"Average intel reports gathered by **winners**: {avg_w:.1f}")
             lines.append(f"Average intel reports gathered by **losers**: {avg_l:.1f}")
             if avg_l > 0:
-                lines.append(f"Intel advantage ratio: **{avg_w/avg_l:.1f}x**")
+                lines.append(f"Intel advantage ratio: **{avg_w / avg_l:.1f}x**")
             lines.append("")
 
             # Spy deployment rate for winners vs losers
@@ -2062,21 +2224,25 @@ def generate_analysis(output_path, title, player_count, include_actions=False):
             lines.append("|------|-----|-----------|------|-----|-----|-----|-----|")
             for e in g["leaderboard"]:
                 name = shorten_name(e.get("simulation_name", "?"))
-                lines.append(f"| #{e.get('rank','?')} | {name} | {e.get('composite',0):.1f} "
-                            f"| {e.get('stability',0):.0f} | {e.get('influence',0):.0f} "
-                            f"| {e.get('sovereignty',0):.0f} | {e.get('diplomatic',0):.0f} "
-                            f"| {e.get('military',0):.0f} |")
+                lines.append(
+                    f"| #{e.get('rank', '?')} | {name} | {e.get('composite', 0):.1f} "
+                    f"| {e.get('stability', 0):.0f} | {e.get('influence', 0):.0f} "
+                    f"| {e.get('sovereignty', 0):.0f} | {e.get('diplomatic', 0):.0f} "
+                    f"| {e.get('military', 0):.0f} |"
+                )
             lines.append("")
 
             lines.append("| Player | Deployed | S | D | F | Guards | CI | RP |")
             lines.append("|--------|----------|---|---|---|--------|----|----|")
             for tag in game_tags:
                 st = g["stats"]
-                lines.append(f"| {tag} | {st['deployed'].get(tag,0)} "
-                            f"| {st['success'].get(tag,0)} | {st['detected'].get(tag,0)} "
-                            f"| {st['failed'].get(tag,0)} "
-                            f"| {st['guardians'].get(tag,0)} | {st['ci_sweeps'].get(tag,0)} "
-                            f"| {st['rp_spent'].get(tag,0)} |")
+                lines.append(
+                    f"| {tag} | {st['deployed'].get(tag, 0)} "
+                    f"| {st['success'].get(tag, 0)} | {st['detected'].get(tag, 0)} "
+                    f"| {st['failed'].get(tag, 0)} "
+                    f"| {st['guardians'].get(tag, 0)} | {st['ci_sweeps'].get(tag, 0)} "
+                    f"| {st['rp_spent'].get(tag, 0)} |"
+                )
             lines.append("")
 
             if include_actions:
@@ -2126,9 +2292,9 @@ def run_battery(title, player_count, games, log_path, md_path, include_actions=F
     provision_test_users(_active_tags)
 
     for i, fn in enumerate(games, 1):
-        log(f"\n{'='*70}")
+        log(f"\n{'=' * 70}")
         log(f"GAME {i}/{len(games)}")
-        log(f"{'='*70}")
+        log(f"{'=' * 70}")
         try:
             if callable(fn):
                 fn(token)
@@ -2138,6 +2304,7 @@ def run_battery(title, player_count, games, log_path, md_path, include_actions=F
         except Exception as e:
             log(f"  ERROR in game {i}: {e}")
             import traceback
+
             log(f"  {traceback.format_exc()}")
         log("")
 
@@ -2166,6 +2333,7 @@ def _save_checkpoint(md_path, completed_game, results, log_lines):
     with open(tmp, "w") as f:
         json.dump(data, f)
     import os
+
     os.replace(tmp, cp)
 
 
@@ -2181,8 +2349,16 @@ def _load_checkpoint(md_path):
 
 
 def run_parametric_battery(
-    title, player_count, num_games, all_tags, log_path, md_path,
-    seed=42, batch_size=15, *, fog_of_war=False,
+    title,
+    player_count,
+    num_games,
+    all_tags,
+    log_path,
+    md_path,
+    seed=42,
+    batch_size=15,
+    *,
+    fog_of_war=False,
 ):
     """Generate and run N parametric games in batches to avoid macOS port exhaustion.
 
@@ -2228,10 +2404,10 @@ def run_parametric_battery(
 
     for i in range(start_game, num_games + 1):
         game_def = generate_parametric_game(i, player_count, all_tags, rng, fog_of_war=fog_of_war)
-        log(f"\n{'='*70}")
+        log(f"\n{'=' * 70}")
         log(f"GAME {i}/{num_games}: {game_def['name']}")
         log(f"  {game_def['desc']}")
-        log(f"{'='*70}")
+        log(f"{'=' * 70}")
         try:
             result = run_parametric_game(token, game_def)
         except Exception as e:

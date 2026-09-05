@@ -32,8 +32,7 @@ QUELLE = inspect.getsource(ChatAIService._prepare_single_context)
 class TestDieBesetzungKommtAusDerTabelle:
     def test_die_verknuepfungstabelle_wird_gefragt(self):
         assert "_load_conversation_agents" in QUELLE, (
-            "der Einzelpfad fragt die Besetzung nicht — eine entfernte Figur "
-            "kann weiter antworten"
+            "der Einzelpfad fragt die Besetzung nicht — eine entfernte Figur kann weiter antworten"
         )
 
     def test_die_altlast_ist_nur_noch_rueckfall(self):
@@ -54,8 +53,7 @@ class TestDieBesetzungKommtAusDerTabelle:
 class TestDiePerspektivgrenzeGiltAuchAllein:
     def test_sie_wird_im_einzelpfad_angewendet(self):
         assert "_bound_to_perspective" in QUELLE, (
-            "der Einzelpfad schneidet den Verlauf nicht auf den Beitritt — "
-            "eine Figur, die spaeter dazukam, saehe alles"
+            "der Einzelpfad schneidet den Verlauf nicht auf den Beitritt — eine Figur, die spaeter dazukam, saehe alles"
         )
 
     def test_sie_bekommt_den_beitritt_aus_der_tabelle(self):

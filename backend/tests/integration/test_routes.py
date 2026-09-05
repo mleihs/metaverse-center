@@ -54,9 +54,7 @@ class TestRouteRegistration:
 
         for prefix in self.EXPECTED_PREFIXES:
             matching = [r for r in routes if r.startswith(prefix)]
-            assert len(matching) > 0, (
-                f"No routes found with prefix '{prefix}'. Available routes:\n{route_str}"
-            )
+            assert len(matching) > 0, f"No routes found with prefix '{prefix}'. Available routes:\n{route_str}"
 
     def test_simulation_scoped_routes_registered(self, client: TestClient):
         """Check that simulation-scoped entity routes exist."""
@@ -71,9 +69,7 @@ class TestRouteRegistration:
         routes = list(app.openapi()["paths"].keys())
         # Filter out docs/openapi routes
         api_routes = [r for r in routes if r.startswith("/api/")]
-        assert len(api_routes) >= 200, (
-            f"Expected 200+ API routes, got {len(api_routes)}"
-        )
+        assert len(api_routes) >= 200, f"Expected 200+ API routes, got {len(api_routes)}"
 
     def test_chat_group_endpoints_registered(self, client: TestClient):
         """Verify multi-agent chat endpoints are registered."""
@@ -103,9 +99,7 @@ class TestUnauthenticatedAccess:
         response = client.request(method, path)
         # FastAPI returns 422 when auth header is missing (validation error),
         # or 401/403 when the auth header is present but invalid.
-        assert response.status_code in (401, 403, 422), (
-            f"{method} {path} returned {response.status_code}"
-        )
+        assert response.status_code in (401, 403, 422), f"{method} {path} returned {response.status_code}"
 
 
 class TestSwaggerDocs:

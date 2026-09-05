@@ -67,9 +67,7 @@ class _Ctx:
     # -- state --------------------------------------------------------------
 
     def row(self, run_id) -> dict:
-        return (
-            self.admin.table("travel_runs").select("*").eq("id", str(run_id)).execute()
-        ).data[0]
+        return (self.admin.table("travel_runs").select("*").eq("id", str(run_id)).execute()).data[0]
 
     def armed(self, *, haul: int = 0, **force) -> dict:
         """A fresh traveller, an open gate, an open run — forced into `force` state.
@@ -132,8 +130,10 @@ def _m_move(ctx: _Ctx) -> dict:
     run = ctx.armed(window_remaining=20)
     return ctx.rpc(
         "fn_travel_move",
-        p_user=str(ctx.user), p_run=run["id"],
-        p_run_version=run["run_version"], p_to_node=ctx.neighbor,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_to_node=ctx.neighbor,
     )
 
 
@@ -142,8 +142,10 @@ def _m_signal_resolve(ctx: _Ctx) -> dict:
     run = _park_signal(ctx, run, "stoerung_bandbreitenfrass", [{"key": "abschirmen"}])
     return ctx.rpc(
         "fn_signal_resolve",
-        p_user=str(ctx.user), p_run=run["id"],
-        p_run_version=run["run_version"], p_option_key="abschirmen",
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_option_key="abschirmen",
     )
 
 
@@ -156,8 +158,10 @@ def _m_signal_resolve_gate_drained(ctx: _Ctx) -> dict:
     run = ctx.row(run["id"])
     out = ctx.rpc(
         "fn_signal_resolve",
-        p_user=str(ctx.user), p_run=run["id"],
-        p_run_version=run["run_version"], p_option_key="abschirmen",
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_option_key="abschirmen",
     )
     _set_gate(ctx.admin, True)
     return out
@@ -167,18 +171,24 @@ def _m_sondieren(ctx: _Ctx) -> dict:
     run = ctx.armed(window_remaining=20)
     return ctx.rpc(
         "fn_sondieren",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
     )
 
 
 def _m_bank(ctx: _Ctx) -> dict:
     """The Funkboje: a foreign dock, a loose haul, and a transmitter."""
     run = ctx.armed(
-        position_node_id=ctx.foreign["id"], window_remaining=20, haul=12,
+        position_node_id=ctx.foreign["id"],
+        window_remaining=20,
+        haul=12,
     )
     return ctx.rpc(
         "fn_funkboje_bank",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
     )
 
 
@@ -195,8 +205,10 @@ def _wreck(ctx: _Ctx, cause: str, **force) -> dict:
     run = ctx.armed(**force)
     ctx.rpc(
         "fn_travel_move",
-        p_user=str(ctx.user), p_run=run["id"],
-        p_run_version=run["run_version"], p_to_node=ctx.neighbor,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_to_node=ctx.neighbor,
     )
     run = ctx.row(run["id"])
     assert run["status"] == "havarie", f"the {cause} floor did not open a Havarie"
@@ -207,8 +219,11 @@ def _m_havarie_ueberziehen(ctx: _Ctx) -> dict:
     run = _wreck(ctx, "window")
     return ctx.rpc(
         "fn_travel_havarie_resolve",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
-        p_choice="ueberziehen", p_jettison_cargo_ids=None,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_choice="ueberziehen",
+        p_jettison_cargo_ids=None,
     )
 
 
@@ -217,8 +232,11 @@ def _m_havarie_rueckruf(ctx: _Ctx) -> dict:
     run = _wreck(ctx, "window", haul=10)
     return ctx.rpc(
         "fn_travel_havarie_resolve",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
-        p_choice="rueckruf", p_jettison_cargo_ids=None,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_choice="rueckruf",
+        p_jettison_cargo_ids=None,
     )
 
 
@@ -226,8 +244,11 @@ def _m_havarie_notruf(ctx: _Ctx) -> dict:
     run = _wreck(ctx, "kohaerenz", haul=10)
     return ctx.rpc(
         "fn_travel_havarie_resolve",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
-        p_choice="notruf", p_jettison_cargo_ids=None,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_choice="notruf",
+        p_jettison_cargo_ids=None,
     )
 
 
@@ -235,8 +256,11 @@ def _m_havarie_zerfaserung(ctx: _Ctx) -> dict:
     run = _wreck(ctx, "kohaerenz", haul=10)
     return ctx.rpc(
         "fn_travel_havarie_resolve",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
-        p_choice="zerfaserung", p_jettison_cargo_ids=None,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_choice="zerfaserung",
+        p_jettison_cargo_ids=None,
     )
 
 
@@ -248,8 +272,11 @@ def _m_havarie_gate_drained(ctx: _Ctx) -> dict:
     _set_gate(ctx.admin, False)
     out = ctx.rpc(
         "fn_travel_havarie_resolve",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
-        p_choice="zerfaserung", p_jettison_cargo_ids=None,
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
+        p_choice="zerfaserung",
+        p_jettison_cargo_ids=None,
     )
     _set_gate(ctx.admin, True)
     return out
@@ -259,7 +286,9 @@ def _m_complete(ctx: _Ctx) -> dict:
     run = ctx.armed(haul=6)
     return ctx.rpc(
         "fn_travel_complete",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
     )
 
 
@@ -267,7 +296,9 @@ def _m_abandon(ctx: _Ctx) -> dict:
     run = ctx.armed(haul=4)
     return ctx.rpc(
         "fn_travel_abandon",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
     )
 
 
@@ -275,7 +306,9 @@ def _m_quest_accept(ctx: _Ctx) -> dict:
     run = ctx.armed()
     out = ctx.rpc(
         "fn_quest_accept",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
         p_template_key="deliver_memory_parcel",
         p_target_sim=str(ctx.foreign["simulation_id"]),
     )
@@ -288,7 +321,9 @@ def _m_quest_advance(ctx: _Ctx) -> dict:
     run = ctx.armed()
     accepted = ctx.rpc(
         "fn_quest_accept",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
         p_template_key="deliver_memory_parcel",
         p_target_sim=str(ctx.foreign["simulation_id"]),
     )
@@ -298,7 +333,9 @@ def _m_quest_advance(ctx: _Ctx) -> dict:
     run = ctx.row(run["id"])
     out = ctx.rpc(
         "fn_quest_advance",
-        p_user=str(ctx.user), p_run=run["id"], p_run_version=run["run_version"],
+        p_user=str(ctx.user),
+        p_run=run["id"],
+        p_run_version=run["run_version"],
         p_instance=accepted["instance"]["id"],
     )
     # The whole wrapper is a typed response too — validate it as the router would.
@@ -335,15 +372,25 @@ MUTATIONS = {
 class TestEveryMutationSpeaksTheRunContract:
     @pytest.mark.parametrize("mutation", sorted(MUTATIONS))
     def test_the_result_parses_as_a_run(
-        self, mutation, admin_client, user_clients, test_user_ids,
-        chart_home, chart_foreign, home_neighbor,
+        self,
+        mutation,
+        admin_client,
+        user_clients,
+        test_user_ids,
+        chart_home,
+        chart_foreign,
+        home_neighbor,
     ):
         """The model validates the WHOLE row. A key this model cannot read does not break
         the mutation — it breaks every subsequent GET on the run, which is a far worse and
         far quieter failure. Whatever a mutation writes, it has to be able to say."""
         ctx = _Ctx(
-            admin_client, user_clients[0], test_user_ids[0],
-            chart_home, chart_foreign, home_neighbor,
+            admin_client,
+            user_clients[0],
+            test_user_ids[0],
+            chart_home,
+            chart_foreign,
+            home_neighbor,
         )
         try:
             raw = MUTATIONS[mutation](ctx)
@@ -354,22 +401,36 @@ class TestEveryMutationSpeaksTheRunContract:
             assert str(parsed.id) == str(raw["id"])
             assert str(parsed.user_id) == str(ctx.user)
             assert parsed.status in {
-                "active", "frozen", "distress", "havarie", "completed", "abandoned",
+                "active",
+                "frozen",
+                "distress",
+                "havarie",
+                "completed",
+                "abandoned",
             }
         finally:
             _set_gate(admin_client, True)
             _reset_traveler(admin_client, test_user_ids[0])
 
     def test_the_lifted_blocks_actually_arrive(
-        self, admin_client, user_clients, test_user_ids,
-        chart_home, chart_foreign, home_neighbor,
+        self,
+        admin_client,
+        user_clients,
+        test_user_ids,
+        chart_home,
+        chart_foreign,
+        home_neighbor,
     ):
         """Parsing is necessary but not sufficient: every lifted field is OPTIONAL, so a
         renamed key parses perfectly and simply lifts NOTHING. The scene would vanish from
         the HUD with a 200 and a green suite. So each lift is asserted where it must occur."""
         ctx = _Ctx(
-            admin_client, user_clients[0], test_user_ids[0],
-            chart_home, chart_foreign, home_neighbor,
+            admin_client,
+            user_clients[0],
+            test_user_ids[0],
+            chart_home,
+            chart_foreign,
+            home_neighbor,
         )
         try:
             resolved = TravelRunResponse(**_m_signal_resolve(ctx))
@@ -403,8 +464,13 @@ class TestEveryMutationSpeaksTheRunContract:
             _reset_traveler(admin_client, test_user_ids[0])
 
     def test_the_raw_checkpoint_never_leaves_the_api(
-        self, admin_client, user_clients, test_user_ids,
-        chart_home, chart_foreign, home_neighbor,
+        self,
+        admin_client,
+        user_clients,
+        test_user_ids,
+        chart_home,
+        chart_foreign,
+        home_neighbor,
     ):
         """The odds are never numbered (R4) — and until W2.6 they were, in DevTools.
 
@@ -415,19 +481,27 @@ class TestEveryMutationSpeaksTheRunContract:
         it is dropped on the way out.
         """
         ctx = _Ctx(
-            admin_client, user_clients[0], test_user_ids[0],
-            chart_home, chart_foreign, home_neighbor,
+            admin_client,
+            user_clients[0],
+            test_user_ids[0],
+            chart_home,
+            chart_foreign,
+            home_neighbor,
         )
         try:
             run = ctx.armed(kohaerenz=80, bandbreite=4, window_remaining=20)
             run = _park_signal(
-                ctx, run, "stoerung_bandbreitenfrass",
-                [{
-                    "key": "abschirmen",
-                    "label_de": "Abschirmen",
-                    "label_en": "Shield",
-                    "check": {"vector": "memory", "difficulty": 9},
-                }],
+                ctx,
+                run,
+                "stoerung_bandbreitenfrass",
+                [
+                    {
+                        "key": "abschirmen",
+                        "label_de": "Abschirmen",
+                        "label_en": "Shield",
+                        "check": {"vector": "memory", "difficulty": 9},
+                    }
+                ],
             )
             serialised = TravelRunResponse(**ctx.row(run["id"])).model_dump(mode="json")
 
@@ -440,9 +514,7 @@ class TestEveryMutationSpeaksTheRunContract:
             assert option["check"]["vector"] == "memory", "the HUD knows a check exists"
             blob = json.dumps(serialised)
             assert "difficulty" not in blob, "the odds must not be shipped to the client"
-            assert '"deltas"' not in blob, (
-                "nor may the outcome of every branch — the raw checkpoint carried both"
-            )
+            assert '"deltas"' not in blob, "nor may the outcome of every branch — the raw checkpoint carried both"
         finally:
             _set_gate(admin_client, True)
             _reset_traveler(admin_client, test_user_ids[0])

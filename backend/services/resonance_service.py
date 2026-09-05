@@ -804,12 +804,18 @@ class ResonanceService(BaseService):
         # ── 12. Record resonance memory for adaptive susceptibility ──
         was_mitigated = had_attunement or had_anchor_protection
         try:
-            await supabase.table("resonance_memory").insert({
-                "simulation_id": sim_id,
-                "resonance_signature": signature,
-                "effective_magnitude": effective_mag,
-                "was_mitigated": was_mitigated,
-            }).execute()
+            await (
+                supabase.table("resonance_memory")
+                .insert(
+                    {
+                        "simulation_id": sim_id,
+                        "resonance_signature": signature,
+                        "effective_magnitude": effective_mag,
+                        "was_mitigated": was_mitigated,
+                    }
+                )
+                .execute()
+            )
         except (PostgrestAPIError, httpx.HTTPError, KeyError, TypeError, ValueError):
             logger.debug("Resonance memory recording failed (non-fatal)")
 

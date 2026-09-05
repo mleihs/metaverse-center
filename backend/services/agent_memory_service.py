@@ -420,9 +420,7 @@ class AgentMemoryService:
         return str(reflexion.get("created_at")) if reflexion.get("created_at") else None
 
     @classmethod
-    async def _reflection_boundary(
-        cls, supabase: Client, agent_id: UUID, simulation_id: UUID
-    ) -> str | None:
+    async def _reflection_boundary(cls, supabase: Client, agent_id: UUID, simulation_id: UUID) -> str | None:
         """Dieselbe Grenze für EINE Figur — die Lesestelle in `reflect()`.
 
         Sie muss dieselbe Antwort geben wie `_boundary_of` in der Auswahl;
@@ -489,9 +487,7 @@ class AgentMemoryService:
         # Der Wasserstand steht IN der Reflexion (`source_id` → die jüngste
         # Beobachtung, die sie gelesen hat). Er wird hier aufgelöst, ohne eine
         # dritte Rundreise: die Beobachtungen liegen schon vor.
-        wann: dict[str, str] = {
-            str(z["id"]): str(z["created_at"]) for z in beobachtungen if z.get("id")
-        }
+        wann: dict[str, str] = {str(z["id"]): str(z["created_at"]) for z in beobachtungen if z.get("id")}
 
         offen: dict[str, int] = {}
         for zeile in beobachtungen:

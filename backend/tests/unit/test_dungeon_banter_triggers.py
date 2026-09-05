@@ -69,9 +69,7 @@ def _call_site_triggers() -> frozenset[str]:
             if isinstance(node, ast.Call):
                 func = node.func
                 name = (
-                    func.id
-                    if isinstance(func, ast.Name)
-                    else (func.attr if isinstance(func, ast.Attribute) else None)
+                    func.id if isinstance(func, ast.Name) else (func.attr if isinstance(func, ast.Attribute) else None)
                 )
                 if name not in _EMITTERS:
                     continue
@@ -114,7 +112,6 @@ class TestTheScanReadsSomething:
         found = emitted()
         assert "room_entered" in found, "Aufrufstellen-Hälfte liest nicht"
         assert "visibility_zero" in found, "Drain-Hälfte liest nicht"
-
 
     def test_no_emitter_outside_services(self):
         """The scan root is an assumption; this is the assumption's test."""

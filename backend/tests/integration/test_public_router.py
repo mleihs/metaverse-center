@@ -70,37 +70,27 @@ class TestPublicAgents:
         assert body["meta"]["total"] >= 1
 
     def test_list_agents_with_search(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?search=nonexistent_xyz"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?search=nonexistent_xyz")
         assert r.status_code == 200
         body = r.json()
         assert body["data"] == []
 
     def test_list_agents_pagination(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?limit=2&offset=0"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?limit=2&offset=0")
         assert r.status_code == 200
         assert len(r.json()["data"]) <= 2
 
     def test_get_agent(self, client: TestClient):
         # First, get an agent ID from the list
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?limit=1"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents?limit=1")
         agent_id = r.json()["data"][0]["id"]
 
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents/{agent_id}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents/{agent_id}")
         assert r.status_code == 200
         assert r.json()["data"]["id"] == agent_id
 
     def test_get_agent_not_found(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents/{SIM_NONEXISTENT}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/agents/{SIM_NONEXISTENT}")
         assert r.status_code == 404
 
 
@@ -116,21 +106,15 @@ class TestPublicBuildings:
         assert len(body["data"]) >= 1
 
     def test_get_building(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings?limit=1"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings?limit=1")
         building_id = r.json()["data"][0]["id"]
 
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings/{building_id}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings/{building_id}")
         assert r.status_code == 200
         assert r.json()["data"]["id"] == building_id
 
     def test_get_building_not_found(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings/{SIM_NONEXISTENT}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/buildings/{SIM_NONEXISTENT}")
         assert r.status_code == 404
 
 
@@ -144,18 +128,21 @@ class TestPublicEvents:
         from uuid import uuid4
 
         self._event_id = str(uuid4())
-        admin_client.table("events").insert({
-            "id": self._event_id,
-            "simulation_id": SIM_VELGARIEN,
-            "title": "Test Event for Public Router",
-            "event_type": "narrative",
-            "event_status": "active",
-            "impact_level": 1,
-        }).execute()
+        admin_client.table("events").insert(
+            {
+                "id": self._event_id,
+                "simulation_id": SIM_VELGARIEN,
+                "title": "Test Event for Public Router",
+                "event_type": "narrative",
+                "event_status": "active",
+                "impact_level": 1,
+            }
+        ).execute()
         yield
         try:
             admin_client.table("events").delete().eq(
-                "id", self._event_id,
+                "id",
+                self._event_id,
             ).execute()
         except Exception:  # noqa: S110
             pass  # Best-effort cleanup
@@ -175,9 +162,7 @@ class TestPublicEvents:
         assert r.json()["data"]["id"] == self._event_id
 
     def test_get_event_not_found(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/events/{SIM_NONEXISTENT}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/events/{SIM_NONEXISTENT}")
         assert r.status_code == 404
 
 
@@ -197,9 +182,7 @@ class TestPublicLocations:
         r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/cities")
         city_id = r.json()["data"][0]["id"]
 
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/cities/{city_id}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/cities/{city_id}")
         assert r.status_code == 200
         assert r.json()["data"]["id"] == city_id
 
@@ -212,9 +195,7 @@ class TestPublicLocations:
         r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/zones")
         zone_id = r.json()["data"][0]["id"]
 
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/zones/{zone_id}"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/locations/zones/{zone_id}")
         assert r.status_code == 200
         assert r.json()["data"]["id"] == zone_id
 
@@ -229,9 +210,7 @@ class TestPublicLocations:
 
 class TestPublicChat:
     def test_list_conversations(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
@@ -239,17 +218,13 @@ class TestPublicChat:
 
     def test_list_messages(self, client: TestClient):
         # Get a conversation ID first
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations")
         conversations = r.json()["data"]
         if not conversations:
             pytest.skip("No conversations in seed data")
         conv_id = conversations[0]["id"]
 
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations/{conv_id}/messages"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/chat/conversations/{conv_id}/messages")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
@@ -262,18 +237,14 @@ class TestPublicChat:
 
 class TestPublicTaxonomies:
     def test_list_taxonomies(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/taxonomies"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/taxonomies")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
         assert len(body["data"]) >= 1
 
     def test_list_taxonomies_by_type(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/taxonomies?taxonomy_type=building_type"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/taxonomies?taxonomy_type=building_type")
         assert r.status_code == 200
         for item in r.json()["data"]:
             assert item["taxonomy_type"] == "building_type"
@@ -285,9 +256,7 @@ class TestPublicTaxonomies:
 class TestPublicSettings:
     def test_list_settings_returns_design_only(self, client: TestClient):
         """Public settings endpoint must only return 'design' category."""
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_CAPYBARA}/settings"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_CAPYBARA}/settings")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
@@ -300,9 +269,7 @@ class TestPublicSettings:
 
     def test_list_settings_no_ai_or_integration(self, client: TestClient):
         """Verify that AI and integration settings are NOT exposed publicly."""
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/settings"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/settings")
         assert r.status_code == 200
         body = r.json()
         # No ai or integration settings should be exposed — only design is allowed
@@ -317,18 +284,14 @@ class TestPublicSettings:
 
 class TestPublicSocial:
     def test_list_social_trends(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/social-trends"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/social-trends")
         assert r.status_code == 200
         body = r.json()
         assert body["success"] is True
         assert isinstance(body["data"], list)
 
     def test_list_social_media(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/social-media"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/social-media")
         assert r.status_code == 200
         assert isinstance(r.json()["data"], list)
 
@@ -338,9 +301,7 @@ class TestPublicSocial:
 
 class TestPublicCampaigns:
     def test_list_campaigns(self, client: TestClient):
-        r = client.get(
-            f"/api/v1/public/simulations/{SIM_VELGARIEN}/campaigns"
-        )
+        r = client.get(f"/api/v1/public/simulations/{SIM_VELGARIEN}/campaigns")
         assert r.status_code == 200
         assert isinstance(r.json()["data"], list)
 
@@ -364,6 +325,4 @@ class TestPublicNoWriteAccess:
     @pytest.mark.parametrize("method,path", WRITE_ATTEMPTS)
     def test_write_rejected(self, client: TestClient, method: str, path: str):
         r = client.request(method, path, json={})
-        assert r.status_code == 405, (
-            f"{method} {path} returned {r.status_code}, expected 405 Method Not Allowed"
-        )
+        assert r.status_code == 405, f"{method} {path} returned {r.status_code}, expected 405 Method Not Allowed"

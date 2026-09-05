@@ -68,12 +68,8 @@ def _spalten_aus_migrationen() -> set[str]:
         text = datei.read_text(encoding="utf-8")
         if "simulation_heartbeats" not in text:
             continue
-        for block in re.finditer(
-            r"ALTER TABLE\s+(?:public\.)?simulation_heartbeats(.*?);", text, re.S | re.I
-        ):
-            spalten.update(
-                re.findall(r"ADD COLUMN\s+(?:IF NOT EXISTS\s+)?([a-z_]+)", block.group(1), re.I)
-            )
+        for block in re.finditer(r"ALTER TABLE\s+(?:public\.)?simulation_heartbeats(.*?);", text, re.S | re.I):
+            spalten.update(re.findall(r"ADD COLUMN\s+(?:IF NOT EXISTS\s+)?([a-z_]+)", block.group(1), re.I))
         for block in re.finditer(
             r"CREATE TABLE\s+(?:IF NOT EXISTS\s+)?(?:public\.)?simulation_heartbeats\s*\((.*?)\n\);",
             text,
@@ -82,7 +78,11 @@ def _spalten_aus_migrationen() -> set[str]:
             for zeile in block.group(1).splitlines():
                 treffer = re.match(r"\s*([a-z_]+)\s+[A-Za-z]", zeile)
                 if treffer and treffer.group(1).upper() not in {
-                    "CONSTRAINT", "PRIMARY", "UNIQUE", "FOREIGN", "CHECK",
+                    "CONSTRAINT",
+                    "PRIMARY",
+                    "UNIQUE",
+                    "FOREIGN",
+                    "CHECK",
                 }:
                     spalten.add(treffer.group(1))
     return spalten

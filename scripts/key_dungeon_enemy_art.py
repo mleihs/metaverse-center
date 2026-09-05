@@ -251,9 +251,7 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    sources = sorted(
-        p for p in args.in_dir.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"}
-    )
+    sources = sorted(p for p in args.in_dir.iterdir() if p.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"})
     if not sources:
         print(f"No images in {args.in_dir}", file=sys.stderr)
         return 1

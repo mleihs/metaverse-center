@@ -88,9 +88,7 @@ def test_a_different_path_reloads(tmp_path, monkeypatch):
 
     other = tmp_path / "other"
     other.mkdir()
-    second = spa_document.load_spa_document(
-        _write_index(other, "<html><head></head><body>other root</body></html>")
-    )
+    second = spa_document.load_spa_document(_write_index(other, "<html><head></head><body>other root</body></html>"))
 
     assert first != second
 

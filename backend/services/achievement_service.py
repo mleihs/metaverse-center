@@ -140,10 +140,7 @@ class AchievementService:
 
             # Earned count
             earned_resp = await (
-                supabase.table("user_achievements")
-                .select("id", count="exact")
-                .eq("user_id", user_id)
-                .execute()
+                supabase.table("user_achievements").select("id", count="exact").eq("user_id", user_id).execute()
             )
             total_earned = earned_resp.count or 0
 

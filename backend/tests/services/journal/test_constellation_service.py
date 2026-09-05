@@ -102,7 +102,9 @@ def test_clamp_coord_stringable():
 # ── capacity guard ─────────────────────────────────────────────────────
 
 
-def _fake_constellation(cid: UUID, *, status: str = "drafting", fragments: list[UUID] | None = None) -> ConstellationResponse:
+def _fake_constellation(
+    cid: UUID, *, status: str = "drafting", fragments: list[UUID] | None = None
+) -> ConstellationResponse:
     now = datetime.now(UTC)
     return ConstellationResponse(
         id=cid,
@@ -124,11 +126,21 @@ def _admin_with_owned_fragment(fragment_id: UUID) -> MagicMock:
     class Chain:
         def __init__(self, resp):
             self.resp = resp
-        def select(self, *a, **kw): return self
-        def eq(self, *a, **kw): return self
-        def maybe_single(self): return self
-        def upsert(self, *a, **kw): return self
-        async def execute(self): return self.resp
+
+        def select(self, *a, **kw):
+            return self
+
+        def eq(self, *a, **kw):
+            return self
+
+        def maybe_single(self):
+            return self
+
+        def upsert(self, *a, **kw):
+            return self
+
+        async def execute(self):
+            return self.resp
 
     def table_side_effect(name: str):
         if name == "journal_fragments":
@@ -149,15 +161,18 @@ async def test_place_fragment_rejects_over_capacity():
     in the next test."""
     cid = uuid4()
     new_frag = uuid4()
-    saturated = _fake_constellation(
-        cid, fragments=[uuid4() for _ in range(_MAX_FRAGMENTS_PER_CONSTELLATION)]
-    )
+    saturated = _fake_constellation(cid, fragments=[uuid4() for _ in range(_MAX_FRAGMENTS_PER_CONSTELLATION)])
 
     admin = _admin_with_owned_fragment(new_frag)
     with patch.object(ConstellationService, "get", new=AsyncMock(return_value=saturated)):
         with pytest.raises(Exception) as excinfo:
             await ConstellationService.place_fragment(
-                admin, USER_ID, cid, new_frag, position_x=100, position_y=100,
+                admin,
+                USER_ID,
+                cid,
+                new_frag,
+                position_x=100,
+                position_y=100,
             )
     assert "capacity" in str(excinfo.value).lower()
 
@@ -177,13 +192,22 @@ async def test_place_fragment_allows_move_at_capacity():
     class Chain:
         def __init__(self, resp):
             self.resp = resp
-        def select(self, *a, **kw): return self
-        def eq(self, *a, **kw): return self
-        def maybe_single(self): return self
+
+        def select(self, *a, **kw):
+            return self
+
+        def eq(self, *a, **kw):
+            return self
+
+        def maybe_single(self):
+            return self
+
         def upsert(self, *a, **kw):
             call_log.append(("upsert", a, kw))
             return self
-        async def execute(self): return self.resp
+
+        async def execute(self):
+            return self.resp
 
     def table_side_effect(name: str):
         if name == "journal_fragments":
@@ -200,7 +224,12 @@ async def test_place_fragment_allows_move_at_capacity():
         # the same mock, which does NOT reflect the upsert — we're only
         # asserting that the capacity check let the flow through to upsert.
         await ConstellationService.place_fragment(
-            admin, USER_ID, cid, target, position_x=50, position_y=50,
+            admin,
+            USER_ID,
+            cid,
+            target,
+            position_x=50,
+            position_y=50,
         )
     assert any(c[0] == "upsert" for c in call_log), "move should have reached the upsert builder"
 
@@ -216,9 +245,15 @@ async def test_place_fragment_rejects_foreign_fragment():
     # Owned-fragment lookup returns no row (cross-user fragment
     # - the user-scoped supabase + RLS filter it out).
     class Chain:
-        def select(self, *a, **kw): return self
-        def eq(self, *a, **kw): return self
-        def maybe_single(self): return self
+        def select(self, *a, **kw):
+            return self
+
+        def eq(self, *a, **kw):
+            return self
+
+        def maybe_single(self):
+            return self
+
         async def execute(self):
             return _mk_response(None)
 
@@ -228,7 +263,12 @@ async def test_place_fragment_rejects_foreign_fragment():
     with patch.object(ConstellationService, "get", new=AsyncMock(return_value=empty)):
         with pytest.raises(Exception) as excinfo:
             await ConstellationService.place_fragment(
-                admin, USER_ID, cid, uuid4(), position_x=0, position_y=0,
+                admin,
+                USER_ID,
+                cid,
+                uuid4(),
+                position_x=0,
+                position_y=0,
             )
     msg = str(excinfo.value).lower()
     assert "accessible" in msg or "forbidden" in type(excinfo.value).__name__.lower()
@@ -246,7 +286,12 @@ async def test_place_fragment_rejects_non_drafting_status():
     with patch.object(ConstellationService, "get", new=AsyncMock(return_value=crystallized)):
         with pytest.raises(Exception) as excinfo:
             await ConstellationService.place_fragment(
-                admin, USER_ID, cid, uuid4(), position_x=0, position_y=0,
+                admin,
+                USER_ID,
+                cid,
+                uuid4(),
+                position_x=0,
+                position_y=0,
             )
     msg = str(excinfo.value).lower()
     assert "drafting" in msg or "crystallized" in msg or "status" in msg
@@ -257,7 +302,9 @@ async def test_rename_requires_at_least_one_field():
     admin = MagicMock()
     with pytest.raises(Exception) as excinfo:
         await ConstellationService.rename(
-            admin, USER_ID, uuid4(),
+            admin,
+            USER_ID,
+            uuid4(),
         )
     assert "no fields" in str(excinfo.value).lower() or "update" in str(excinfo.value).lower()
 
@@ -272,9 +319,14 @@ async def test_commit_crystallization_idempotency_guard():
     cid = uuid4()
 
     class Chain:
-        def update(self, *a, **kw): return self
-        def eq(self, *a, **kw): return self
-        async def execute(self): return _mk_response([])  # empty → guard failed
+        def update(self, *a, **kw):
+            return self
+
+        def eq(self, *a, **kw):
+            return self
+
+        async def execute(self):
+            return _mk_response([])  # empty → guard failed
 
     admin = MagicMock()
     admin.table.return_value = Chain()
@@ -285,8 +337,12 @@ async def test_commit_crystallization_idempotency_guard():
     )
     with pytest.raises(Exception) as excinfo:
         await ConstellationService.commit_crystallization(
-            admin, USER_ID, cid,
-            match=match, insight_de="DE", insight_en="EN",
+            admin,
+            USER_ID,
+            cid,
+            match=match,
+            insight_de="DE",
+            insight_en="EN",
         )
     assert "draft" in str(excinfo.value).lower() or "crystalliz" in str(excinfo.value).lower()
 

@@ -918,9 +918,7 @@ class GenerationService:
             },
             locale=locale,
         )
-        parsed = GenerationService._parse_json_object(
-            result.get("content", ""), source="judge_memory_supersession"
-        )
+        parsed = GenerationService._parse_json_object(result.get("content", ""), source="judge_memory_supersession")
         if not parsed:
             return MemorySupersessionVerdict(supersedes=False, reason="unlesbare Antwort")
         return MemorySupersessionVerdict(

@@ -211,10 +211,7 @@ class ForgeMapService:
 
         admin = await get_admin_supabase()
         resp = await (
-            admin.table("zones")
-            .select("id, city_id, geojson")
-            .eq("simulation_id", str(simulation_id))
-            .execute()
+            admin.table("zones").select("id, city_id, geojson").eq("simulation_id", str(simulation_id)).execute()
         )
         zone_geoms: list[tuple[UUID, UUID, object]] = []
         for row in resp.data or []:

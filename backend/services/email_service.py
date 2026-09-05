@@ -45,6 +45,7 @@ class MailRecord:
     simulation_id: str | None = None
     cycle_number: int | None = None
 
+
 logger = logging.getLogger(__name__)
 
 RESEND_API_URL = "https://api.resend.com/emails"
@@ -108,9 +109,7 @@ class EmailService:
                 message_id = resp.json().get("id", "")
             except ValueError:
                 message_id = ""
-                logger.warning(
-                    "Resend returned a 2xx with a non-JSON body", extra={"recipient": to}
-                )
+                logger.warning("Resend returned a 2xx with a non-JSON body", extra={"recipient": to})
                 with sentry_sdk.push_scope() as scope:
                     scope.set_tag("service", "EmailService")
                     scope.set_tag("transport", "resend")
@@ -139,9 +138,7 @@ class EmailService:
             scope.set_tag("service", "EmailService")
             scope.set_tag("transport", "resend")
             scope.set_context("resend", {"status_code": resp.status_code})
-            sentry_sdk.capture_message(
-                f"Resend API rejected email (status {resp.status_code})", level="error"
-            )
+            sentry_sdk.capture_message(f"Resend API rejected email (status {resp.status_code})", level="error")
         return False
 
     @staticmethod
@@ -177,9 +174,7 @@ class EmailService:
             with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=30) as server:
                 server.login(settings.smtp_user, settings.smtp_password)
                 server.sendmail(settings.smtp_from, [to], msg.as_string())
-            logger.info(
-                "Email sent via SMTP", extra={"recipient": to, "subject_preview": subject[:60]}
-            )
+            logger.info("Email sent via SMTP", extra={"recipient": to, "subject_preview": subject[:60]})
             return True
         except smtplib.SMTPException as exc:
             logger.exception("SMTP error sending email", extra={"recipient": to})
@@ -282,22 +277,22 @@ class EmailService:
             extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
         if cls._resend_configured():
-            ok = await cls._send_via_resend(
-                to, subject, html_body, text_body=text_body, extra_headers=extra_headers
-            )
+            ok = await cls._send_via_resend(to, subject, html_body, text_body=text_body, extra_headers=extra_headers)
             await cls._record(to, subject, record, transport="resend", ok=ok)
             return ok
 
         if cls._smtp_configured():
             ok = await asyncio.to_thread(
-                cls._send_sync, to, subject, html_body,
-                text_body=text_body, extra_headers=extra_headers,
+                cls._send_sync,
+                to,
+                subject,
+                html_body,
+                text_body=text_body,
+                extra_headers=extra_headers,
             )
             await cls._record(to, subject, record, transport="smtp", ok=ok)
             return ok
 
         logger.warning("No email transport configured, skipping email", extra={"recipient": to})
-        await cls._record(
-            to, subject, record, transport="none", ok=False, error="no transport configured"
-        )
+        await cls._record(to, subject, record, transport="none", ok=False, error="no transport configured")
         return False

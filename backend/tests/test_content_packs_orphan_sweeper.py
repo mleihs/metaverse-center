@@ -150,7 +150,11 @@ class TestSingleBranchClassification:
             pr_by_branch={branch: [_pr(number=42, state="open")]},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         assert result.total_found == 1
         assert result.kept_count == 1
@@ -177,7 +181,11 @@ class TestSingleBranchClassification:
             },
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         c = result.branches[0]
         assert c.status == "delete"
@@ -189,12 +197,14 @@ class TestSingleBranchClassification:
         branch = "content/drafts-batch-20260410-080000-abad1dea"
         client = _mock_client(
             refs=[_ref(branch)],
-            pr_by_branch={
-                branch: [_pr(number=9, state="closed", merged_at=None)]
-            },
+            pr_by_branch={branch: [_pr(number=9, state="closed", merged_at=None)]},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         c = result.branches[0]
         assert c.status == "delete"
@@ -210,7 +220,11 @@ class TestSingleBranchClassification:
             commits_by_sha={sha: _commit(_NOW - timedelta(days=20))},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         c = result.branches[0]
         assert c.status == "delete"
@@ -227,7 +241,11 @@ class TestSingleBranchClassification:
             commits_by_sha={sha: _commit(_NOW - timedelta(hours=2))},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         c = result.branches[0]
         assert c.status == "keep"
@@ -246,7 +264,12 @@ class TestSingleBranchClassification:
             commits_by_sha={sha: _commit(_NOW - timedelta(days=3))},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, min_age_days=1.0, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            min_age_days=1.0,
+            now=_NOW,
         )
         assert result.branches[0].status == "delete"
 
@@ -257,12 +280,14 @@ class TestDryRunVsRealDelete:
         branch = "content/drafts-batch-20260401-000000-deadbeef"
         client = _mock_client(
             refs=[_ref(branch)],
-            pr_by_branch={
-                branch: [_pr(number=1, state="closed", merged_at=None)]
-            },
+            pr_by_branch={branch: [_pr(number=1, state="closed", merged_at=None)]},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         assert result.deleted_count == 0
         assert not result.branches[0].deleted
@@ -288,7 +313,11 @@ class TestDryRunVsRealDelete:
             },
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=False, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=False,
+            now=_NOW,
         )
         assert result.deleted_count == 2
         assert result.error_count == 0
@@ -309,7 +338,11 @@ class TestDryRunVsRealDelete:
             delete_failures={branches[0]},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=False, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=False,
+            now=_NOW,
         )
         # Both classified delete; one succeeded, one failed.
         assert result.total_found == 2
@@ -350,9 +383,7 @@ class TestMixedBatch:
                         merged_at=_iso(_NOW - timedelta(days=1)),
                     )
                 ],
-                closed_branch: [
-                    _pr(number=3, state="closed", merged_at=None)
-                ],
+                closed_branch: [_pr(number=3, state="closed", merged_at=None)],
             },
             commits_by_sha={
                 "4" * 40: _commit(_NOW - timedelta(days=20)),
@@ -360,7 +391,11 @@ class TestMixedBatch:
             },
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         assert result.total_found == 5
         assert result.kept_count == 2  # open, fresh
@@ -401,7 +436,11 @@ class TestMultiPrBranch:
             pr_by_branch={branch: [old_closed, new_open]},
         )
         result = await sweep_orphan_branches(
-            client, _OWNER, _REPO, dry_run=True, now=_NOW,
+            client,
+            _OWNER,
+            _REPO,
+            dry_run=True,
+            now=_NOW,
         )
         c = result.branches[0]
         assert c.status == "keep"

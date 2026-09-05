@@ -52,12 +52,7 @@ class CircuitRevertSweeper(BaseSchedulerMixin):
         # ``.delete()`` with ``returning='representation'`` is supabase-py's
         # default — the response.data carries the rows that were removed,
         # so we can fan out reset() calls without a separate read.
-        resp = await (
-            admin.table("ai_circuit_state")
-            .delete()
-            .lte("revert_at", now_iso)
-            .execute()
-        )
+        resp = await admin.table("ai_circuit_state").delete().lte("revert_at", now_iso).execute()
         rows = extract_list(resp)
         for row in rows:
             scope = str(row.get("scope") or "")

@@ -245,9 +245,7 @@ class TestHeartbeatIntervalHasOneName:
         # holds an interval, it does not name a settings key. Comments are gone
         # by construction, since ast never carries them (J3b).
         literals = [
-            node.value
-            for node in ast.walk(tree)
-            if isinstance(node, ast.Constant) and isinstance(node.value, str)
+            node.value for node in ast.walk(tree) if isinstance(node, ast.Constant) and isinstance(node.value, str)
         ]
         assert "heartbeat_interval" not in literals, (
             "event_service.py still carries the bare key name 'heartbeat_interval' "

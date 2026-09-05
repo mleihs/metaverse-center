@@ -64,13 +64,14 @@ class _Harness:
         sb.table = MagicMock(return_value=epochs_chain)
         sb.rpc = MagicMock(return_value=_chain(execute=AsyncMock(return_value=MagicMock(data=None))))
 
-        with patch("backend.services.epoch_service.EpochService.get", new=AsyncMock(return_value=self.epoch)), \
-             patch("backend.services.epoch_lifecycle_service.BattleLogService") as battle, \
-             patch("backend.services.epoch_lifecycle_service.GameInstanceService") as instances, \
-             patch("backend.services.scoring_service.ScoringService") as scoring, \
-             patch("backend.services.cycle_notification_service.CycleNotificationService") as notif, \
-             patch("backend.services.epoch_lifecycle_service.sentry_sdk"):
-
+        with (
+            patch("backend.services.epoch_service.EpochService.get", new=AsyncMock(return_value=self.epoch)),
+            patch("backend.services.epoch_lifecycle_service.BattleLogService") as battle,
+            patch("backend.services.epoch_lifecycle_service.GameInstanceService") as instances,
+            patch("backend.services.scoring_service.ScoringService") as scoring,
+            patch("backend.services.cycle_notification_service.CycleNotificationService") as notif,
+            patch("backend.services.epoch_lifecycle_service.sentry_sdk"),
+        ):
             battle.log_phase_change = AsyncMock()
             instances.archive_instances = AsyncMock()
             scoring.compute_cycle_scores = AsyncMock(side_effect=_scored)
@@ -130,13 +131,14 @@ class TestManualCompletionScores:
         sb.table = MagicMock(return_value=epochs_chain)
         sb.rpc = MagicMock(return_value=_chain(execute=AsyncMock(return_value=MagicMock(data=None))))
 
-        with patch("backend.services.epoch_service.EpochService.get", new=AsyncMock(return_value=harness.epoch)), \
-             patch("backend.services.epoch_lifecycle_service.BattleLogService") as battle, \
-             patch("backend.services.epoch_lifecycle_service.GameInstanceService") as instances, \
-             patch("backend.services.scoring_service.ScoringService") as scoring, \
-             patch("backend.services.cycle_notification_service.CycleNotificationService") as notif, \
-             patch("backend.services.epoch_lifecycle_service.sentry_sdk"):
-
+        with (
+            patch("backend.services.epoch_service.EpochService.get", new=AsyncMock(return_value=harness.epoch)),
+            patch("backend.services.epoch_lifecycle_service.BattleLogService") as battle,
+            patch("backend.services.epoch_lifecycle_service.GameInstanceService") as instances,
+            patch("backend.services.scoring_service.ScoringService") as scoring,
+            patch("backend.services.cycle_notification_service.CycleNotificationService") as notif,
+            patch("backend.services.epoch_lifecycle_service.sentry_sdk"),
+        ):
             battle.log_phase_change = AsyncMock()
             instances.archive_instances = AsyncMock()
             scoring.compute_cycle_scores = AsyncMock(side_effect=ValueError("scoring RPC blew up"))

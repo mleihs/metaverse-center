@@ -291,21 +291,21 @@ def generate_html(results: list[dict]) -> str:
         path_without = f"ab_50_without/{r['filename']}"
         path_with = f"ab_50_with/{r['filename']}"
         cards_html += f"""
-      <div class="card" data-sim="{r['sim']}">
+      <div class="card" data-sim="{r["sim"]}">
         <div class="card-header">
-          <span class="badge badge-{r['sim']}">{sim_label}</span>
-          <span class="entity-name">{r['name']}</span>
-          <span class="entity-type">{r['type'].upper()}</span>
+          <span class="badge badge-{r["sim"]}">{sim_label}</span>
+          <span class="entity-name">{r["name"]}</span>
+          <span class="entity-type">{r["type"].upper()}</span>
         </div>
         <div class="pair">
           <div class="img-slot">
             <div class="label">WITHOUT effects</div>
-            <img src="{path_without}" alt="{r['name']} — no effects"
+            <img src="{path_without}" alt="{r["name"]} — no effects"
                  loading="lazy" onclick="openLightbox(this.src)" />
           </div>
           <div class="img-slot">
             <div class="label">WITH effects</div>
-            <img src="{path_with}" alt="{r['name']} — with effects"
+            <img src="{path_with}" alt="{r["name"]} — with effects"
                  loading="lazy" onclick="openLightbox(this.src)" />
           </div>
         </div>
@@ -475,9 +475,9 @@ def generate_html(results: list[dict]) -> str:
 
   <div class="filters">
     <button class="active" onclick="filterSim('all')">All ({len(results)})</button>
-    <button onclick="filterSim('cite')">Cite des Dames ({sum(1 for r in results if r['sim'] == 'cite')})</button>
-    <button onclick="filterSim('spengbab')">Spengbab ({sum(1 for r in results if r['sim'] == 'spengbab')})</button>
-    <button onclick="filterSim('momo')">Time Bank ({sum(1 for r in results if r['sim'] == 'momo')})</button>
+    <button onclick="filterSim('cite')">Cite des Dames ({sum(1 for r in results if r["sim"] == "cite")})</button>
+    <button onclick="filterSim('spengbab')">Spengbab ({sum(1 for r in results if r["sim"] == "spengbab")})</button>
+    <button onclick="filterSim('momo')">Time Bank ({sum(1 for r in results if r["sim"] == "momo")})</button>
   </div>
 
   <div class="gallery">
@@ -563,6 +563,7 @@ async def main() -> None:
 
     # Also patch the module-level references imported into instagram_image_service
     import backend.services.instagram_image_service as img_service_mod
+
     img_service_mod.bleach_bypass = helpers.bleach_bypass
     img_service_mod.chromatic_aberration = helpers.chromatic_aberration
 
@@ -575,14 +576,16 @@ async def main() -> None:
             jpeg_bytes = compose_image(service, raw_bytes, entry, idx)
             (DIR_WITHOUT / filename).write_bytes(jpeg_bytes)
             count_without += 1
-            results.append({
-                "index": idx,
-                "name": entry["name"],
-                "sim": entry["sim"],
-                "type": entry["type"],
-                "filename": filename,
-                "size_without": len(jpeg_bytes),
-            })
+            results.append(
+                {
+                    "index": idx,
+                    "name": entry["name"],
+                    "sim": entry["sim"],
+                    "type": entry["type"],
+                    "filename": filename,
+                    "size_without": len(jpeg_bytes),
+                }
+            )
             if (count_without) % 10 == 0:
                 logger.info("  ... %d / %d without effects", count_without, len(downloaded))
         except Exception:

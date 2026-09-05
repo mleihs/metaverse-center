@@ -67,9 +67,9 @@ async def _load_bond_settings(supabase: Client, simulation_id: UUID) -> dict:
         "max_bonds": int(
             settings.get("bond_max_per_simulation", _DEFAULT_MAX_BONDS),
         ),
-        "enabled": str(settings.get("bonds_enabled", "true")).lower()
-        not in ("false", "0"),
+        "enabled": str(settings.get("bonds_enabled", "true")).lower() not in ("false", "0"),
     }
+
 
 # ── Agent enrichment select ───────────────────────────────────────────────
 
@@ -128,9 +128,7 @@ class BondService:
             ).execute()
         except Exception as exc:
             if "Agent does not belong to simulation" in str(exc):
-                raise bad_request(
-                    "Agent does not belong to this simulation."
-                ) from exc
+                raise bad_request("Agent does not belong to this simulation.") from exc
             raise
 
         data = extract_list(resp)
@@ -171,13 +169,15 @@ class BondService:
         candidates = []
         for row in extract_list(resp):
             agent = row.pop("agents", None) or {}
-            candidates.append({
-                "agent_id": row["agent_id"],
-                "agent_name": agent.get("name", ""),
-                "agent_portrait_url": agent.get("portrait_image_url"),
-                "attention_score": row["attention_score"],
-                "simulation_id": row["simulation_id"],
-            })
+            candidates.append(
+                {
+                    "agent_id": row["agent_id"],
+                    "agent_name": agent.get("name", ""),
+                    "agent_portrait_url": agent.get("portrait_image_url"),
+                    "attention_score": row["attention_score"],
+                    "simulation_id": row["simulation_id"],
+                }
+            )
         return candidates
 
     # ── Bond formation ─────────────────────────────────────────────────
@@ -213,16 +213,11 @@ class BondService:
             raise not_found("Bond", context="no forming bond found for this agent")
 
         if bond["attention_score"] < threshold:
-            raise bad_request(
-                f"Agent has not reached recognition threshold "
-                f"({bond['attention_score']}/{threshold})."
-            )
+            raise bad_request(f"Agent has not reached recognition threshold ({bond['attention_score']}/{threshold}).")
 
         cutoff = datetime.now(UTC) - timedelta(days=OBSERVATION_PERIOD_DAYS)
         if datetime.fromisoformat(bond["created_at"]) > cutoff:
-            raise bad_request(
-                f"Bond must be at least {OBSERVATION_PERIOD_DAYS} days old before formation."
-            )
+            raise bad_request(f"Bond must be at least {OBSERVATION_PERIOD_DAYS} days old before formation.")
 
         # 2. Pre-check configurable slot limit (trigger enforces hard max of 5)
         max_bonds = settings["max_bonds"]
@@ -236,9 +231,7 @@ class BondService:
         )
         active_count = count_resp.count if count_resp.count is not None else 0
         if active_count >= max_bonds:
-            raise conflict(
-                f"Maximum {max_bonds} active bonds per simulation reached."
-            )
+            raise conflict(f"Maximum {max_bonds} active bonds per simulation reached.")
 
         # 3. Transition to active.
         # The fn_bond_lifecycle_guard trigger enforces structural invariants.
@@ -254,33 +247,38 @@ class BondService:
         except Exception as exc:
             err_msg = str(exc)
             if "Maximum 5 active bonds" in err_msg:
-                logger.info("Bond slot limit reached", extra={
-                    "user_id": str(user_id), "simulation_id": str(simulation_id),
-                })
-                raise conflict(
-                    "Maximum active bonds per simulation reached."
-                ) from exc
+                logger.info(
+                    "Bond slot limit reached",
+                    extra={
+                        "user_id": str(user_id),
+                        "simulation_id": str(simulation_id),
+                    },
+                )
+                raise conflict("Maximum active bonds per simulation reached.") from exc
             if "Invalid bond status transition" in err_msg:
                 raise conflict("Bond was modified concurrently.") from exc
             sentry_sdk.capture_exception(exc)
             raise
         # Refetch (update without select doesn't return data)
         updated_bond = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select(_BOND_SELECT)
-            .eq("id", str(bond["id"]))
-            .maybe_single()
+            supabase.table("agent_bonds").select(_BOND_SELECT).eq("id", str(bond["id"])).maybe_single()
         )
         if not updated_bond or updated_bond.get("status") != "active":
             raise conflict("Bond was modified concurrently.")
 
         # 4. Create milestone memory
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond["id"]),
-            "memory_type": "milestone",
-            "description": "Bond formed",
-            "context": {"formed_at": datetime.now(UTC).isoformat()},
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond["id"]),
+                    "memory_type": "milestone",
+                    "description": "Bond formed",
+                    "context": {"formed_at": datetime.now(UTC).isoformat()},
+                }
+            )
+            .execute()
+        )
 
         logger.info(
             "Bond formed",
@@ -323,10 +321,7 @@ class BondService:
         """Get full bond detail with recent whispers and agent mood."""
         # Bond with agent enrichment (RLS ensures ownership)
         bond = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select(_BOND_SELECT)
-            .eq("id", str(bond_id))
-            .maybe_single()
+            supabase.table("agent_bonds").select(_BOND_SELECT).eq("id", str(bond_id)).maybe_single()
         )
         if not bond:
             raise not_found("Bond", bond_id)
@@ -386,12 +381,7 @@ class BondService:
         """Get paginated whispers for a bond."""
         # Verify bond exists and belongs to user (RLS + explicit check).
         # Without this, a wrong bond_id silently returns empty instead of 404.
-        bond = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select("id")
-            .eq("id", str(bond_id))
-            .maybe_single()
-        )
+        bond = await maybe_single_data(supabase.table("agent_bonds").select("id").eq("id", str(bond_id)).maybe_single())
         if not bond:
             raise not_found("Bond", bond_id)
 
@@ -467,16 +457,22 @@ class BondService:
             raise not_found("Whisper", whisper_id)
 
         # Create action memory
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond_id),
-            "memory_type": "action",
-            "description": f"Player acted on {whisper['whisper_type']} whisper",
-            "context": {
-                "whisper_id": str(whisper_id),
-                "whisper_type": whisper["whisper_type"],
-                "acted_at": datetime.now(UTC).isoformat(),
-            },
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond_id),
+                    "memory_type": "action",
+                    "description": f"Player acted on {whisper['whisper_type']} whisper",
+                    "context": {
+                        "whisper_id": str(whisper_id),
+                        "whisper_type": whisper["whisper_type"],
+                        "acted_at": datetime.now(UTC).isoformat(),
+                    },
+                }
+            )
+            .execute()
+        )
 
         return whisper
 
@@ -526,12 +522,7 @@ class BondService:
         # The fn_bond_lifecycle_guard trigger enforces:
         #   - Depth monotonicity (can only increase by 1)
         #   - depth_N_at timestamp auto-set
-        await (
-            supabase.table("agent_bonds")
-            .update({"depth": next_depth})
-            .eq("id", str(bond_id))
-            .execute()
-        )
+        await supabase.table("agent_bonds").update({"depth": next_depth}).eq("id", str(bond_id)).execute()
         updated = await maybe_single_data(
             supabase.table("agent_bonds")
             .select(
@@ -545,12 +536,18 @@ class BondService:
             return None
 
         # Record milestone memory
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond_id),
-            "memory_type": "milestone",
-            "description": f"Bond deepened to depth {next_depth}",
-            "context": {"depth": next_depth, "advanced_at": datetime.now(UTC).isoformat()},
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond_id),
+                    "memory_type": "milestone",
+                    "description": f"Bond deepened to depth {next_depth}",
+                    "context": {"depth": next_depth, "advanced_at": datetime.now(UTC).isoformat()},
+                }
+            )
+            .execute()
+        )
 
         logger.info(
             "Bond depth advanced",
@@ -591,12 +588,7 @@ class BondService:
                 return False
 
         if "total_memories" in requirements:
-            resp = await (
-                supabase.table("bond_memories")
-                .select("id", count="exact")
-                .eq("bond_id", bid)
-                .execute()
-            )
+            resp = await supabase.table("bond_memories").select("id", count="exact").eq("bond_id", bid).execute()
             if (resp.count or 0) < requirements["total_memories"]:
                 return False
 
@@ -634,21 +626,22 @@ class BondService:
             .eq("status", "active")
             .execute()
         )
-        data = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select("*")
-            .eq("id", str(bond_id))
-            .maybe_single()
-        )
+        data = await maybe_single_data(supabase.table("agent_bonds").select("*").eq("id", str(bond_id)).maybe_single())
         if not data or data.get("status") != "strained":
             raise not_found("Bond", bond_id, context="or not in active status")
 
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond_id),
-            "memory_type": "neglect",
-            "description": reason,
-            "context": {"strained_at": datetime.now(UTC).isoformat()},
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond_id),
+                    "memory_type": "neglect",
+                    "description": reason,
+                    "context": {"strained_at": datetime.now(UTC).isoformat()},
+                }
+            )
+            .execute()
+        )
 
         logger.info(
             "Bond entered strain",
@@ -669,11 +662,7 @@ class BondService:
         strain start time (not updated_at, which any trigger could change).
         """
         bond = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select("id")
-            .eq("id", str(bond_id))
-            .eq("status", "strained")
-            .maybe_single()
+            supabase.table("agent_bonds").select("id").eq("id", str(bond_id)).eq("status", "strained").maybe_single()
         )
         if not bond:
             return None
@@ -709,27 +698,25 @@ class BondService:
             return None
 
         # Recover (set_updated_at trigger handles timestamp automatically)
-        await (
-            supabase.table("agent_bonds")
-            .update({"status": "active"})
-            .eq("id", str(bond_id))
-            .execute()
-        )
+        await supabase.table("agent_bonds").update({"status": "active"}).eq("id", str(bond_id)).execute()
         recovered = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select("*")
-            .eq("id", str(bond_id))
-            .maybe_single()
+            supabase.table("agent_bonds").select("*").eq("id", str(bond_id)).maybe_single()
         )
         if not recovered:
             return None
 
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond_id),
-            "memory_type": "milestone",
-            "description": "Bond recovered from strain",
-            "context": {"recovered_at": datetime.now(UTC).isoformat()},
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond_id),
+                    "memory_type": "milestone",
+                    "description": "Bond recovered from strain",
+                    "context": {"recovered_at": datetime.now(UTC).isoformat()},
+                }
+            )
+            .execute()
+        )
 
         logger.info("Bond recovered from strain", extra={"bond_id": str(bond_id)})
         return recovered
@@ -755,21 +742,22 @@ class BondService:
             .in_("status", ["active", "strained"])
             .execute()
         )
-        data = await maybe_single_data(
-            supabase.table("agent_bonds")
-            .select("*")
-            .eq("id", str(bond_id))
-            .maybe_single()
-        )
+        data = await maybe_single_data(supabase.table("agent_bonds").select("*").eq("id", str(bond_id)).maybe_single())
         if not data or data.get("status") != "farewell":
             raise not_found("Bond", bond_id, context="or already farewelled")
 
-        await supabase.table("bond_memories").insert({
-            "bond_id": str(bond_id),
-            "memory_type": "farewell",
-            "description": "Bond ended",
-            "context": {"farewell_at": datetime.now(UTC).isoformat()},
-        }).execute()
+        await (
+            supabase.table("bond_memories")
+            .insert(
+                {
+                    "bond_id": str(bond_id),
+                    "memory_type": "farewell",
+                    "description": "Bond ended",
+                    "context": {"farewell_at": datetime.now(UTC).isoformat()},
+                }
+            )
+            .execute()
+        )
 
         logger.info("Bond farewell", extra={"bond_id": str(bond_id)})
         return data
@@ -798,12 +786,7 @@ class BondService:
         farewelled = extract_list(pre_resp)
         if farewelled:
             bond_ids = [b["id"] for b in farewelled]
-            await (
-                supabase.table("agent_bonds")
-                .update({"status": "farewell"})
-                .in_("id", bond_ids)
-                .execute()
-            )
+            await supabase.table("agent_bonds").update({"status": "farewell"}).in_("id", bond_ids).execute()
 
         # Create farewell memories for each bond
         if farewelled:

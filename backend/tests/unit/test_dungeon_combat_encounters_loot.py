@@ -87,6 +87,7 @@ def _shadow_loot_tier(tier):
 def _tower_loot_tier(tier):
     return get_loot_registry()["The Tower"][tier]
 
+
 # ══════════════════════════════════════════════════════════════════════════
 # ── dungeon_combat ────────────────────────────────────────────────────────
 # ══════════════════════════════════════════════════════════════════════════
@@ -99,8 +100,11 @@ class TestShadowEnemies:
         assert len(_shadow_enemies()) == 5
 
     EXPECTED_IDS = {
-        "shadow_wisp", "shadow_tendril", "shadow_echo_violence",
-        "shadow_paranoia_shade", "shadow_remnant",
+        "shadow_wisp",
+        "shadow_tendril",
+        "shadow_echo_violence",
+        "shadow_paranoia_shade",
+        "shadow_remnant",
     }
 
     def test_expected_ids(self):
@@ -881,20 +885,14 @@ class TestTowerEncounters:
         """Narrative encounter 'tower_confidence_game' has stability in effects."""
         enc = get_encounter_by_id("tower_confidence_game")
         assert enc is not None
-        stability_effects = [
-            c for c in enc.choices
-            if "stability" in c.success_effects
-        ]
+        stability_effects = [c for c in enc.choices if "stability" in c.success_effects]
         assert len(stability_effects) >= 1, "No stability effects in confidence_game"
 
     def test_the_ledger_has_stability_effects(self):
         """Narrative encounter 'tower_the_ledger' has stability in effects."""
         enc = get_encounter_by_id("tower_the_ledger")
         assert enc is not None
-        stability_effects = [
-            c for c in enc.choices
-            if "stability" in c.success_effects
-        ]
+        stability_effects = [c for c in enc.choices if "stability" in c.success_effects]
         assert len(stability_effects) >= 1, "No stability effects in the_ledger"
 
 
@@ -994,8 +992,14 @@ class TestSelectBanterTower:
     def test_standard_triggers_covered(self):
         """All standard triggers have at least one Tower banter template."""
         standard_triggers = {
-            "room_entered", "combat_won", "depth_change", "boss_approach",
-            "agent_stressed", "loot_found", "rest_start", "retreat",
+            "room_entered",
+            "combat_won",
+            "depth_change",
+            "boss_approach",
+            "agent_stressed",
+            "loot_found",
+            "rest_start",
+            "retreat",
             "dungeon_completed",
         }
         for trigger in standard_triggers:
@@ -1166,11 +1170,7 @@ class TestRollLootDifficultyQuality:
         shares = []
         for difficulty in (1, 3, 5):
             _random.seed(20260831)
-            upgraded = sum(
-                1
-                for _ in range(300)
-                if roll_loot(1, difficulty, 3, {}, "The Tower")[0].tier == 2
-            )
+            upgraded = sum(1 for _ in range(300) if roll_loot(1, difficulty, 3, {}, "The Tower")[0].tier == 2)
             shares.append(upgraded)
         assert shares == sorted(shares), f"Anteil steigt nicht mit der Stufe: {shares}"
         assert shares[2] > shares[0], f"Stufe 5 wie Stufe 1: {shares}"

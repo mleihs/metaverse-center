@@ -39,9 +39,7 @@ class TestItSendsNothing:
             elif isinstance(node, ast.Import):
                 imported |= {alias.name for alias in node.names}
         offenders = sorted(name for name in imported if "email_service" in name.lower())
-        assert not offenders, (
-            "Die Vorschau darf den Versanddienst nicht einmal kennen: " + ", ".join(offenders)
-        )
+        assert not offenders, "Die Vorschau darf den Versanddienst nicht einmal kennen: " + ", ".join(offenders)
 
     def test_no_endpoint_takes_a_recipient(self) -> None:
         """Checked on the CODE, not on the file.
@@ -60,19 +58,14 @@ class TestItSendsNothing:
         calls: set[str] = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.AsyncFunctionDef | ast.FunctionDef):
-                parameters |= {
-                    argument.arg
-                    for argument in list(node.args.args) + list(node.args.kwonlyargs)
-                }
+                parameters |= {argument.arg for argument in list(node.args.args) + list(node.args.kwonlyargs)}
             elif isinstance(node, ast.Call):
                 name = getattr(node.func, "attr", None) or getattr(node.func, "id", None)
                 if name:
                     calls.add(name)
 
         for forbidden in ("recipient", "recipient_email", "to_email", "email"):
-            assert forbidden not in parameters, (
-                f"Die Vorschau nimmt einen Empfänger entgegen: {forbidden}"
-            )
+            assert forbidden not in parameters, f"Die Vorschau nimmt einen Empfänger entgegen: {forbidden}"
         assert "send" not in calls, "Die Vorschau ruft send()"
 
 
@@ -84,9 +77,7 @@ class TestItIsClosed:
             "/api/v1/admin/emails/preview/welcome",
         ):
             response = client.get(url)
-            assert response.status_code in (401, 403, 422), (
-                f"{url} antwortete {response.status_code} ohne Anmeldung"
-            )
+            assert response.status_code in (401, 403, 422), f"{url} antwortete {response.status_code} ohne Anmeldung"
             assert response.status_code != 200, f"{url} ist offen"
 
     def test_the_routes_exist_at_all(self) -> None:

@@ -160,9 +160,7 @@ class AbilityItem(_StrictModel):
     effect_type: str = "damage"
     effect_params: dict = Field(default_factory=dict)
     is_ultimate: bool = False
-    targets: Literal[
-        "single_enemy", "all_enemies", "single_ally", "all_allies", "self"
-    ] = "single_enemy"
+    targets: Literal["single_enemy", "all_enemies", "single_ally", "all_allies", "self"] = "single_enemy"
 
 
 # ── Pack root types (one class per YAML file layout) ──────────────────────

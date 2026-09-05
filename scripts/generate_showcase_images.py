@@ -49,10 +49,10 @@ async def main(archetype_ids: list[str] | None = None) -> None:
             continue
 
         visual = ARCHETYPE_VISUALS[arch_id]
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"  {arch_id.upper()} — {visual.model}")
         print(f"  Prompt: {visual.prompt[:80]}...")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         try:
             raw_bytes = await generate_showcase_image(openrouter, arch_id)
@@ -80,6 +80,7 @@ async def main(archetype_ids: list[str] | None = None) -> None:
         except Exception as e:
             print(f"  ✗ FAILED: {e}")
             import traceback
+
             traceback.print_exc()
 
 

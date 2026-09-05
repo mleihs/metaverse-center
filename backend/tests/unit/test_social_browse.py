@@ -281,15 +281,13 @@ class TestGenerateReactionsHelper:
 
         mock_sb = MagicMock()
         # No agents found
-        mock_sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(return_value=MagicMock(
-            data=[]
-        ))
+        mock_sb.table.return_value.select.return_value.eq.return_value.limit.return_value.execute = AsyncMock(
+            return_value=MagicMock(data=[])
+        )
 
         event = {"id": str(uuid4()), "title": "Test", "description": "Test event"}
         mock_gen = MagicMock()
 
-        reactions = await EventService.generate_reactions(
-            mock_sb, MOCK_SIM_ID, event, mock_gen, max_agents=5
-        )
+        reactions = await EventService.generate_reactions(mock_sb, MOCK_SIM_ID, event, mock_gen, max_agents=5)
 
         assert reactions == []

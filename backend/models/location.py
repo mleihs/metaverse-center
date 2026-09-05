@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 # --- City ---
 
+
 class CityCreate(BaseModel):
     """Schema for creating a city."""
 
@@ -49,6 +50,7 @@ class CityResponse(BaseModel):
 
 # --- Zone ---
 
+
 class ZoneCreate(BaseModel):
     """Schema for creating a zone."""
 
@@ -90,6 +92,7 @@ class ZoneResponse(BaseModel):
 
 
 # --- Street ---
+
 
 class StreetCreate(BaseModel):
     """Schema for creating a street."""

@@ -58,7 +58,8 @@ def setup_logging() -> None:
 
     # Configure structlog itself (for code that uses structlog.get_logger())
     structlog.configure(
-        processors=shared_processors + [
+        processors=shared_processors
+        + [
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         logger_factory=structlog.stdlib.LoggerFactory(),
@@ -68,44 +69,46 @@ def setup_logging() -> None:
 
     # Configure stdlib logging via dictConfig so every existing
     # ``logging.getLogger(__name__)`` call routes through structlog processors.
-    logging.config.dictConfig({
-        "version": 1,
-        "disable_existing_loggers": False,
-        "formatters": {
-            "structlog": {
-                "()": structlog.stdlib.ProcessorFormatter,
-                "processors": [
-                    structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-                    renderer,
-                ],
-                "foreign_pre_chain": shared_processors,
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                "structlog": {
+                    "()": structlog.stdlib.ProcessorFormatter,
+                    "processors": [
+                        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                        renderer,
+                    ],
+                    "foreign_pre_chain": shared_processors,
+                },
             },
-        },
-        "handlers": {
-            "default": {
-                "()": _FlushingStreamHandler,
-                "stream": sys.stderr,
-                "formatter": "structlog",
+            "handlers": {
+                "default": {
+                    "()": _FlushingStreamHandler,
+                    "stream": sys.stderr,
+                    "formatter": "structlog",
+                },
             },
-        },
-        "loggers": {
-            # Root logger
-            "": {
-                "handlers": ["default"],
-                "level": log_level,
-                "propagate": True,
+            "loggers": {
+                # Root logger
+                "": {
+                    "handlers": ["default"],
+                    "level": log_level,
+                    "propagate": True,
+                },
+                # Uvicorn loggers — keep aligned with root level
+                "uvicorn": {"level": log_level},
+                "uvicorn.error": {"level": log_level},
+                "uvicorn.access": {"level": log_level},
+                # Noisy third-party loggers — suppress below WARNING
+                "httpx": {"level": "WARNING"},
+                "httpcore": {"level": "WARNING"},
+                "supabase": {"level": "WARNING"},
+                "hpack": {"level": "WARNING"},
             },
-            # Uvicorn loggers — keep aligned with root level
-            "uvicorn": {"level": log_level},
-            "uvicorn.error": {"level": log_level},
-            "uvicorn.access": {"level": log_level},
-            # Noisy third-party loggers — suppress below WARNING
-            "httpx": {"level": "WARNING"},
-            "httpcore": {"level": "WARNING"},
-            "supabase": {"level": "WARNING"},
-            "hpack": {"level": "WARNING"},
-        },
-    })
+        }
+    )
 
     # Flush all handlers on process exit (protects against --reload log loss)
     atexit.register(logging.shutdown)

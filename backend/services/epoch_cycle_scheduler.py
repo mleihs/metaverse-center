@@ -203,8 +203,11 @@ class EpochCycleScheduler(BaseSchedulerMixin):
             ok = await EmailService.send(
                 recipient["email"],
                 _nt(
-                    "deadline_subject", lang,
-                    hours=hours_left, epoch=str(epoch.get("name") or "Epoch"), cycle=cycle,
+                    "deadline_subject",
+                    lang,
+                    hours=hours_left,
+                    epoch=str(epoch.get("name") or "Epoch"),
+                    cycle=cycle,
                 ),
                 html,
                 unsubscribe_url=opt_out,
@@ -438,10 +441,13 @@ class EpochCycleScheduler(BaseSchedulerMixin):
                 ).execute()
 
                 await BattleLogService.log_event(
-                    admin, UUID(epoch_id), cycle,
+                    admin,
+                    UUID(epoch_id),
+                    cycle,
                     "player_afk_ai_takeover",
                     "AI has assumed control due to prolonged absence.",
-                    source_simulation_id=sim_id, is_public=True,
+                    source_simulation_id=sim_id,
+                    is_public=True,
                     metadata={
                         "consecutive": new_consecutive,
                         "personality": personality,
@@ -450,18 +456,24 @@ class EpochCycleScheduler(BaseSchedulerMixin):
                 )
             elif rp_loss > 0:
                 await BattleLogService.log_event(
-                    admin, UUID(epoch_id), cycle,
+                    admin,
+                    UUID(epoch_id),
+                    cycle,
                     "player_afk_penalty",
                     f"AFK penalty: -{rp_loss} RP (consecutive absence #{new_consecutive}).",
-                    source_simulation_id=sim_id, is_public=False,
+                    source_simulation_id=sim_id,
+                    is_public=False,
                     metadata={"rp_loss": rp_loss, "consecutive": new_consecutive},
                 )
             else:
                 await BattleLogService.log_event(
-                    admin, UUID(epoch_id), cycle,
+                    admin,
+                    UUID(epoch_id),
+                    cycle,
                     "player_afk",
                     f"Player absent for cycle {cycle}.",
-                    source_simulation_id=sim_id, is_public=False,
+                    source_simulation_id=sim_id,
+                    is_public=False,
                     metadata={"consecutive": new_consecutive},
                 )
 

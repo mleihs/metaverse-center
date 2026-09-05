@@ -19,6 +19,7 @@ from backend.services.scanning.base_adapter import ScanResult
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_result(
     title: str,
     source_name: str = "test",
@@ -40,6 +41,7 @@ def _make_result(
 # ---------------------------------------------------------------------------
 # Pre-filter
 # ---------------------------------------------------------------------------
+
 
 class TestPreFilter:
     """Unit tests for keyword-based pre-filter."""
@@ -75,11 +77,13 @@ class TestPreFilter:
         from backend.services.scanning.pre_filter import pre_filter
 
         # Even a celebrity headline passes if structured
-        results = [_make_result(
-            "Celebrity gossip roundup",
-            is_structured=True,
-            source_category="natural_disaster",
-        )]
+        results = [
+            _make_result(
+                "Celebrity gossip roundup",
+                is_structured=True,
+                source_category="natural_disaster",
+            )
+        ]
         filtered = pre_filter(results)
         assert len(filtered) == 1
 
@@ -122,16 +126,20 @@ class TestPreFilter:
 # Deduplicator — title similarity (pure functions, no DB)
 # ---------------------------------------------------------------------------
 
+
 class TestTitleSimilarity:
     """Tests for Jaccard title similarity helpers."""
 
     def test_identical_titles(self):
         from backend.services.scanning.deduplicator import _title_similarity
 
-        assert _title_similarity(
-            "Major earthquake strikes Turkey",
-            "Major earthquake strikes Turkey",
-        ) == 1.0
+        assert (
+            _title_similarity(
+                "Major earthquake strikes Turkey",
+                "Major earthquake strikes Turkey",
+            )
+            == 1.0
+        )
 
     def test_completely_different(self):
         from backend.services.scanning.deduplicator import _title_similarity
@@ -183,15 +191,14 @@ class TestTitleSimilarity:
 # Classifier — JSON extraction
 # ---------------------------------------------------------------------------
 
+
 class TestClassifierJsonExtraction:
     """Tests for _parse_json_from_text."""
 
     def test_plain_json(self):
         from backend.services.scanning.classifier import _parse_json_from_text
 
-        result = _parse_json_from_text(
-            '[{"index": 0, "category": "pandemic", "significance": 7, "reason": "test"}]'
-        )
+        result = _parse_json_from_text('[{"index": 0, "category": "pandemic", "significance": 7, "reason": "test"}]')
         assert isinstance(result, list)
         assert result[0]["category"] == "pandemic"
 
@@ -226,9 +233,7 @@ class TestClassifierJsonExtraction:
     def test_code_fence_without_json_label(self):
         from backend.services.scanning.classifier import _parse_json_from_text
 
-        result = _parse_json_from_text(
-            '```\n[{"index": 0, "category": "tech_breakthrough", "significance": 5}]\n```'
-        )
+        result = _parse_json_from_text('```\n[{"index": 0, "category": "tech_breakthrough", "significance": 5}]\n```')
         assert isinstance(result, list)
         assert result[0]["significance"] == 5
 
@@ -252,9 +257,14 @@ class TestSignificanceMapping:
         from backend.services.scanning.classifier import VALID_CATEGORIES
 
         expected = {
-            "economic_crisis", "military_conflict", "pandemic",
-            "natural_disaster", "political_upheaval", "tech_breakthrough",
-            "cultural_shift", "environmental_disaster",
+            "economic_crisis",
+            "military_conflict",
+            "pandemic",
+            "natural_disaster",
+            "political_upheaval",
+            "tech_breakthrough",
+            "cultural_shift",
+            "environmental_disaster",
         }
         assert VALID_CATEGORIES == expected
 
@@ -262,6 +272,7 @@ class TestSignificanceMapping:
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
+
 
 class TestRegistry:
     """Tests for adapter registry."""
@@ -273,9 +284,16 @@ class TestRegistry:
 
         names = get_adapter_names()
         expected = {
-            "usgs_earthquakes", "noaa_alerts", "nasa_eonet", "gdacs",
-            "disease_sh", "who_outbreaks", "guardian", "newsapi",
-            "gdelt", "hackernews",
+            "usgs_earthquakes",
+            "noaa_alerts",
+            "nasa_eonet",
+            "gdacs",
+            "disease_sh",
+            "who_outbreaks",
+            "guardian",
+            "newsapi",
+            "gdelt",
+            "hackernews",
             # Bluesky (02.09.2026): der Gegenweg zur Kreuzveroeffentlichung.
             # Nur verlinkte Artikel werden zu Signalen, siehe
             # `adapters/bluesky_social.py`.
@@ -345,6 +363,7 @@ class TestRegistry:
 # ScanResult dataclass
 # ---------------------------------------------------------------------------
 
+
 class TestScanResult:
     """Tests for ScanResult dataclass."""
 
@@ -374,6 +393,7 @@ class TestScanResult:
 # ---------------------------------------------------------------------------
 # External news errors — the upstream status must survive the raise
 # ---------------------------------------------------------------------------
+
 
 class TestExternalNewsError:
     """A provider that refuses our key is not a provider that is unwell.
@@ -434,6 +454,7 @@ class TestExternalNewsError:
 # Adapter isolation — one bad source must not end the cycle
 # ---------------------------------------------------------------------------
 
+
 class _AdminStub:
     """Admin client that refuses every query — templates fall back to inline."""
 
@@ -475,9 +496,7 @@ class TestAdapterIsolation:
                 return True
 
             async def fetch(self):
-                raise GuardianError(
-                    "Guardian API error 401: Unauthorized", status_code=401
-                )
+                raise GuardianError("Guardian API error 401: Unauthorized", status_code=401)
 
         class _Quiet:
             name = "usgs_earthquakes"
@@ -576,6 +595,7 @@ class TestAdapterIsolation:
 # The answer a caller gets — it must name the cause
 # ---------------------------------------------------------------------------
 
+
 class TestUpstreamNewsErrorMapping:
     """``502 "External API error. Please try again."`` was the answer to
     everything, including a dead key, where retrying is precisely the wrong
@@ -585,9 +605,7 @@ class TestUpstreamNewsErrorMapping:
         from backend.routers.social_trends import _upstream_news_error
         from backend.services.external.guardian import GuardianError
 
-        exc = _upstream_news_error(
-            "guardian", GuardianError("401: Unauthorized", status_code=401)
-        )
+        exc = _upstream_news_error("guardian", GuardianError("401: Unauthorized", status_code=401))
         assert exc.status_code == 502
         assert "guardian_api_key" in exc.detail
         assert "retrying will not help" in exc.detail
@@ -618,6 +636,7 @@ class TestUpstreamNewsErrorMapping:
 # ---------------------------------------------------------------------------
 # Bureau dispatch — a half dispatch is worse than none
 # ---------------------------------------------------------------------------
+
 
 class TestBureauDispatchBudget:
     """27 of the first 50 dispatches on production stopped mid-word, 7 were
@@ -660,9 +679,7 @@ class TestBureauDispatchBudget:
         from backend.services.scanning.scanner_service import ScannerService
 
         self._patch(monkeypatch, answer="  The ground remembers.  ", completion_tokens=264)
-        got = await ScannerService._generate_dispatch(
-            self._result(), {"openrouter_api_key": "k"}
-        )
+        got = await ScannerService._generate_dispatch(self._result(), {"openrouter_api_key": "k"})
         assert got == "The ground remembers."
 
     @pytest.mark.asyncio
@@ -675,9 +692,7 @@ class TestBureauDispatchBudget:
             answer="**Monitoring Classification:** SUB-SEISMIC / TREMOR-7741 / WATCH-",
             completion_tokens=ScannerService._DISPATCH_MAX_TOKENS,
         )
-        got = await ScannerService._generate_dispatch(
-            self._result(), {"openrouter_api_key": "k"}
-        )
+        got = await ScannerService._generate_dispatch(self._result(), {"openrouter_api_key": "k"})
         assert got is None
 
     @pytest.mark.asyncio
@@ -688,9 +703,7 @@ class TestBureauDispatchBudget:
         from backend.services.scanning.scanner_service import ScannerService
 
         self._patch(monkeypatch, answer="\n\n  \n", completion_tokens=12)
-        got = await ScannerService._generate_dispatch(
-            self._result(), {"openrouter_api_key": "k"}
-        )
+        got = await ScannerService._generate_dispatch(self._result(), {"openrouter_api_key": "k"})
         assert got is None
 
     @pytest.mark.asyncio
@@ -714,6 +727,7 @@ class TestBureauDispatchBudget:
 # ---------------------------------------------------------------------------
 # Die Linse erreicht das Modell (Luecke 4)
 # ---------------------------------------------------------------------------
+
 
 class TestLensDirectives:
     """Der Schmelztiegel stellt seit Schritt 3 Regler, die nichts bewegten.
@@ -778,6 +792,7 @@ class TestLensDirectives:
 # Protokoll und Kandidat teilen einen Schluessel (Luecke 7)
 # ---------------------------------------------------------------------------
 
+
 class _CandidateStub:
     """Antwortet auf die eine Abfrage, die `_attach_intake_status` stellt."""
 
@@ -833,9 +848,7 @@ class TestIntakeStatusOnTheScanLog:
         from backend.services.scanning.scanner_service import ScannerService
 
         rows = [{"source_name": "guardian", "source_id": "shared", "title": "A"}]
-        admin = _CandidateStub(
-            [{"source_adapter": "noaa_alerts", "source_id": "shared", "status": "pending"}]
-        )
+        admin = _CandidateStub([{"source_adapter": "noaa_alerts", "source_id": "shared", "status": "pending"}])
         await ScannerService._attach_intake_status(admin, rows)
         assert rows[0]["intake_status"] is None
 
@@ -879,6 +892,7 @@ class TestIntakeStatusOnTheScanLog:
 # ---------------------------------------------------------------------------
 # Story-Buendelung (Luecke 2)
 # ---------------------------------------------------------------------------
+
 
 class TestStoryBundling:
     """Drei Quellen ueber dasselbe Beben sind EINE Geschichte.
@@ -1041,6 +1055,7 @@ class TestStoryBundling:
 # ---------------------------------------------------------------------------
 # Die Passung (Luecke 3)
 # ---------------------------------------------------------------------------
+
 
 class TestSignatureFit:
     """Die Passung ist KEINE erfundene Formel.

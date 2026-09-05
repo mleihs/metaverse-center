@@ -72,14 +72,16 @@ async def receive_github_webhook(
     if not _verify_signature(raw_body, x_hub_signature_256):
         logger.warning(
             "GitHub webhook HMAC verification failed (delivery=%s, event=%s)",
-            x_github_delivery, x_github_event,
+            x_github_delivery,
+            x_github_event,
         )
         return Response(status_code=401, content="signature mismatch")
 
     if not x_github_delivery or not x_github_event:
         logger.warning(
             "GitHub webhook missing required headers (delivery=%r, event=%r)",
-            x_github_delivery, x_github_event,
+            x_github_delivery,
+            x_github_event,
         )
         return Response(status_code=400, content="missing required headers")
 
@@ -116,7 +118,10 @@ async def receive_github_webhook(
     error_message: str | None = None
     try:
         result = await _process_event(
-            admin_supabase, x_github_event, action, payload,
+            admin_supabase,
+            x_github_event,
+            action,
+            payload,
         )
     except Exception as exc:  # noqa: BLE001 — webhook handler swallows + reports
         with sentry_sdk.push_scope() as scope:
@@ -128,7 +133,8 @@ async def receive_github_webhook(
                     scope.set_tag("pr_number", pr.get("number"))
             sentry_sdk.capture_exception(exc)
         logger.exception(
-            "GitHub webhook processing failed (delivery=%s)", x_github_delivery,
+            "GitHub webhook processing failed (delivery=%s)",
+            x_github_delivery,
         )
         result = _PROCESSING_RESULT_ERROR
         error_message = str(exc)[:500]
@@ -160,7 +166,9 @@ def _verify_signature(body: bytes, header_value: str | None) -> bool:
     if not header_value.startswith(_SIGNATURE_PREFIX):
         return False
     expected = hmac.new(
-        secret.encode("utf-8"), body, hashlib.sha256,
+        secret.encode("utf-8"),
+        body,
+        hashlib.sha256,
     ).hexdigest()
     actual = header_value.removeprefix(_SIGNATURE_PREFIX)
     return hmac.compare_digest(expected, actual)
@@ -194,11 +202,13 @@ async def _process_event(
         return _PROCESSING_RESULT_IGNORED
 
     drafts = await ContentDraftsService.list_by_pr_number(
-        supabase, pr_number=pr_number,
+        supabase,
+        pr_number=pr_number,
     )
     if not drafts:
         logger.info(
-            "No content drafts attached to PR #%d – ignored", pr_number,
+            "No content drafts attached to PR #%d – ignored",
+            pr_number,
         )
         return _PROCESSING_RESULT_IGNORED
 
@@ -207,19 +217,23 @@ async def _process_event(
     if action == "closed":
         if merged:
             await ContentDraftsService.mark_merged_bulk(
-                supabase, draft_ids=draft_ids,
+                supabase,
+                draft_ids=draft_ids,
             )
             logger.info(
                 "Marked %d draft(s) as merged for PR #%d",
-                len(draft_ids), pr_number,
+                len(draft_ids),
+                pr_number,
             )
         else:
             await ContentDraftsService.revert_to_draft_bulk(
-                supabase, draft_ids=draft_ids,
+                supabase,
+                draft_ids=draft_ids,
             )
             logger.info(
                 "Reverted %d draft(s) to 'draft' for PR #%d (closed without merge)",
-                len(draft_ids), pr_number,
+                len(draft_ids),
+                pr_number,
             )
         return _PROCESSING_RESULT_SUCCESS
 
@@ -234,6 +248,8 @@ async def _process_event(
         return _PROCESSING_RESULT_IGNORED
 
     logger.info(
-        "Ignored pull_request action=%r for PR #%d", action, pr_number,
+        "Ignored pull_request action=%r for PR #%d",
+        action,
+        pr_number,
     )
     return _PROCESSING_RESULT_IGNORED

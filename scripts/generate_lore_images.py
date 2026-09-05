@@ -104,8 +104,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Directive 001 — Ministry of Information",
             "filename": "directive-001.avif",
             "prompt": (
-                VELGARIEN_STYLE
-                + "Massive brutalist government ministry building exterior, monolithic concrete "
+                VELGARIEN_STYLE + "Massive brutalist government ministry building exterior, monolithic concrete "
                 "facade stretching upward into grey sky, hundreds of identical windows, "
                 "giant surveillance cameras mounted on every corner, a single enormous loudspeaker "
                 "on the roof broadcasting to empty streets below, propaganda banners reading "
@@ -117,8 +116,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Bureau 7 — Filing Division",
             "filename": "bureaux-guide.avif",
             "prompt": (
-                VELGARIEN_STYLE
-                + "Vast bureaucratic office interior stretching into infinite distance, "
+                VELGARIEN_STYLE + "Vast bureaucratic office interior stretching into infinite distance, "
                 "rows upon rows of identical grey metal filing cabinets under flickering "
                 "fluorescent tube lighting, mountains of paper forms on every surface, "
                 "a single civil servant at a desk dwarfed by the scale, pneumatic tube "
@@ -130,8 +128,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Residential Block 7 — Life Under the Eye",
             "filename": "life-under-eye.avif",
             "prompt": (
-                VELGARIEN_STYLE
-                + "Residential district street scene, identical concrete apartment blocks "
+                VELGARIEN_STYLE + "Residential district street scene, identical concrete apartment blocks "
                 "lining both sides of a perfectly straight corridor-street, surveillance "
                 "cameras on every lamp post pointing downward, citizens in identical grey "
                 "clothing walking in orderly lines, a compliance kiosk booth at the corner, "
@@ -145,8 +142,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Unterzee — Vast Underground Sea",
             "filename": "nature-of-unterzee.avif",
             "prompt": (
-                GASLIT_REACH_STYLE
-                + "Vast underground sea stretching into darkness, bioluminescent organisms "
+                GASLIT_REACH_STYLE + "Vast underground sea stretching into darkness, bioluminescent organisms "
                 "glowing beneath dark water surface, massive stalactites descending from "
                 "an invisible ceiling hundreds of metres above, a small Victorian-era "
                 "wooden vessel with brass lanterns sailing across the still water, "
@@ -159,8 +155,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Cartography of Darkness — Subterranean Waterways",
             "filename": "cartography-of-darkness.avif",
             "prompt": (
-                GASLIT_REACH_STYLE
-                + "Subterranean waterway passage through carved stone arches, bioluminescent "
+                GASLIT_REACH_STYLE + "Subterranean waterway passage through carved stone arches, bioluminescent "
                 "fungi growing on wet stone walls casting teal and amber reflections on "
                 "the dark water, a narrow canal boat navigating between towering natural "
                 "rock pillars, glowing map symbols carved into the stone walls like ancient "
@@ -172,8 +167,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Founding Compact — Chamber of Accord",
             "filename": "founding-of-glimhaven.avif",
             "prompt": (
-                GASLIT_REACH_STYLE
-                + "Grand underground parliament chamber carved from natural cavern, "
+                GASLIT_REACH_STYLE + "Grand underground parliament chamber carved from natural cavern, "
                 "concentric rings of stone seating descending toward a central platform, "
                 "ambiguously non-human figures in Victorian-era formal attire seated throughout, "
                 "bioluminescent crystal chandeliers hanging from stalactites, ancient "
@@ -187,8 +181,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Station Null — Operational Status",
             "filename": "operational-status.avif",
             "prompt": (
-                STATION_NULL_STYLE
-                + "Derelict research space station exterior viewed from nearby, rotating "
+                STATION_NULL_STYLE + "Derelict research space station exterior viewed from nearby, rotating "
                 "habitation rings and antenna arrays, hull plates corroded and discolored, "
                 "organic growths visible through cracked viewports glowing faintly green, "
                 "a massive black hole in the background with a thin accretion disk casting "
@@ -201,8 +194,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Auge Gottes — The Anomaly",
             "filename": "auge-gottes.avif",
             "prompt": (
-                STATION_NULL_STYLE
-                + "View through a large observatory viewport looking directly at a gravitational "
+                STATION_NULL_STYLE + "View through a large observatory viewport looking directly at a gravitational "
                 "anomaly, the black hole Auge Gottes filling most of the view, not a standard "
                 "black hole but something that looks like an enormous dark eye with an accretion "
                 "disk forming an iris of impossible light — wavelengths that shift between "
@@ -216,8 +208,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Crew Manifest — Habitation Ring",
             "filename": "crew-manifest.avif",
             "prompt": (
-                STATION_NULL_STYLE
-                + "Long curved corridor of a space station habitation ring, dozens of "
+                STATION_NULL_STYLE + "Long curved corridor of a space station habitation ring, dozens of "
                 "identical crew quarter doors lining both sides, all sealed with red "
                 "indicator lights except one with a green light at the far end, "
                 "harsh fluorescent lighting casting sharp shadows, personal effects "
@@ -233,8 +224,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Subsidence — Toledo Falls",
             "filename": "the-subsidence.avif",
             "prompt": (
-                SPERANZA_STYLE
-                + "Massive limestone sinkhole formation swallowing a European city, buildings "
+                SPERANZA_STYLE + "Massive limestone sinkhole formation swallowing a European city, buildings "
                 "tilting and sliding into the earth, the ground cracking open in concentric "
                 "rings, dust and debris rising as structures collapse downward into caverns "
                 "below, dramatic amber sunset lighting cutting through the dust clouds, "
@@ -247,8 +237,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Year One — First Shelters",
             "filename": "year-one.avif",
             "prompt": (
-                SPERANZA_STYLE
-                + "Early underground settlement built into the walls of a collapsed limestone "
+                SPERANZA_STYLE + "Early underground settlement built into the walls of a collapsed limestone "
                 "sinkhole, shelters constructed from salvaged materials — car doors as walls, "
                 "highway signs as roofing, shipping containers stacked and reinforced with "
                 "concrete, string lights powered by jury-rigged generators casting warm amber "
@@ -261,8 +250,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Slingshot Hub — Electromagnetic Rail",
             "filename": "slingshot-and-tube.avif",
             "prompt": (
-                SPERANZA_STYLE
-                + "Underground electromagnetic rail launcher hub carved from limestone, "
+                SPERANZA_STYLE + "Underground electromagnetic rail launcher hub carved from limestone, "
                 "a massive tube tunnel stretching into darkness with electromagnetic coil "
                 "rings visible along its length glowing blue-white, a cargo pod being "
                 "loaded by workers in salvaged gear, control room with retrofitted "
@@ -291,8 +279,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Stones of the City — Women Who Became Walls",
             "filename": "the-stones-of-the-city.avif",
             "prompt": (
-                CITE_DES_DAMES_STYLE
-                + "Close view of honey-coloured limestone city walls with names inscribed in the "
+                CITE_DES_DAMES_STYLE + "Close view of honey-coloured limestone city walls with names inscribed in the "
                 "stone grain, medieval buttresses supporting Regency balustrades, Queen Anne "
                 "red-brick detailing framing Pre-Raphaelite stained glass windows depicting women "
                 "reading and writing, art nouveau ironwork gates with vine patterns of roses and "
@@ -318,8 +305,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Gate of Justice — Who May Enter",
             "filename": "the-gate-of-justice.avif",
             "prompt": (
-                CITE_DES_DAMES_STYLE
-                + "Great stone arch gate of medieval proportions, flanked by caryatids of women "
+                CITE_DES_DAMES_STYLE + "Great stone arch gate of medieval proportions, flanked by caryatids of women "
                 "in the act of speech with mouths open and hands raised, carved in motion of "
                 "forward movement, Latin inscription carved above the arch, a vast leather-bound "
                 "register on a podium inside the gatehouse, a tall dignified woman in light shawl "
@@ -332,8 +318,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Garden of Remembered Names",
             "filename": "the-garden-of-remembered-names.avif",
             "prompt": (
-                CITE_DES_DAMES_STYLE
-                + "Walled garden in the style of an English cottage garden, honey stone walls "
+                CITE_DES_DAMES_STYLE + "Walled garden in the style of an English cottage garden, honey stone walls "
                 "covered in climbing roses and wisteria, gravel paths edged with lavender, "
                 "meticulously labelled botanical specimens with copperplate handwriting on brass "
                 "plates, paper flower mosaics alongside living blooms indistinguishable at distance, "
@@ -362,8 +347,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "The Blazing World — What the Calculator Saw",
             "filename": "the-blazing-world.avif",
             "prompt": (
-                CITE_DES_DAMES_STYLE
-                + "Victorian observatory interior with domed ceiling and narrow slit revealing "
+                CITE_DES_DAMES_STYLE + "Victorian observatory interior with domed ceiling and narrow slit revealing "
                 "a brilliant night sky, at the centre a brass Analytical Engine mechanism with "
                 "interlocking gears and numbered wheels gleaming in candlelight, punched cards "
                 "threaded through the machine, a young woman in white satin dress seated at the "
@@ -393,8 +377,7 @@ SIMULATION_IMAGES: dict[str, list[dict]] = {
             "name": "Literate Contamination — Books Appearing Unbidden",
             "filename": "literate-contamination.avif",
             "prompt": (
-                CITE_DES_DAMES_STYLE
-                + "Palimpsest double-exposure scene showing two realities overlapping, in the "
+                CITE_DES_DAMES_STYLE + "Palimpsest double-exposure scene showing two realities overlapping, in the "
                 "foreground a dark institutional bookshelf in cold fluorescent light — brutalist "
                 "concrete or industrial metal — where several unfamiliar leather-bound volumes have "
                 "materialised among the ordinary books, each glowing faintly with warm amber light "
@@ -414,8 +397,7 @@ PLATFORM_IMAGES = [
         "name": "The Unnamed — The World Before",
         "filename": "the-unnamed.avif",
         "prompt": (
-            PLATFORM_STYLE
-            + "A unified primordial world before destruction, warm amber mist dissolving "
+            PLATFORM_STYLE + "A unified primordial world before destruction, warm amber mist dissolving "
             "into golden light, the sense of perfect wholeness about to shatter, a single "
             "vast landscape containing hints of all possible worlds — underground caverns, "
             "brutalist towers, starfields, gardens — all blended into one harmonious entity, "
@@ -426,8 +408,7 @@ PLATFORM_IMAGES = [
         "name": "The Fracture — The Breaking",
         "filename": "the-fracture.avif",
         "prompt": (
-            PLATFORM_STYLE
-            + "Reality shattering like a cosmic mirror, golden cracks splitting across a "
+            PLATFORM_STYLE + "Reality shattering like a cosmic mirror, golden cracks splitting across a "
             "black void, through each fragment a different world is visible — concrete "
             "dystopia, bioluminescent caverns, organic coral cities, deep space stations — "
             "the fragments are drifting apart, edges glowing with amber energy, dramatic "
@@ -438,8 +419,7 @@ PLATFORM_IMAGES = [
         "name": "The Bleed — Where Worlds Touch",
         "filename": "the-bleed.avif",
         "prompt": (
-            PLATFORM_STYLE
-            + "Two realities pressing together, a brutalist concrete corridor where the walls "
+            PLATFORM_STYLE + "Two realities pressing together, a brutalist concrete corridor where the walls "
             "are dissolving into bioluminescent fungi and dripping water, propaganda posters "
             "morphing into organic growths, a single glowing mushroom growing from a crack "
             "in the floor, the boundary between industrial dystopia and underground fantasy "
@@ -450,8 +430,7 @@ PLATFORM_IMAGES = [
         "name": "The Bureau — Impossible Geography",
         "filename": "the-bureau.avif",
         "prompt": (
-            PLATFORM_STYLE
-            + "An impossible office that spans multiple realities, filing cabinets stretching "
+            PLATFORM_STYLE + "An impossible office that spans multiple realities, filing cabinets stretching "
             "into non-Euclidean space, maps and cartographic instruments glowing with inner "
             "light, the walls are simultaneously stone, glass, coral, and concrete, a desk "
             "covered in charts that show impossible geographies, dim atmospheric lighting "

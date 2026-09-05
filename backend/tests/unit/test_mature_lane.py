@@ -34,9 +34,7 @@ def _resolver(einstellungen: dict[str, object]) -> ModelResolver:
             treffer = MagicMock()
             treffer.execute = AsyncMock(
                 return_value=MagicMock(
-                    data={"setting_value": einstellungen[schluessel]}
-                    if schluessel in einstellungen
-                    else None
+                    data={"setting_value": einstellungen[schluessel]} if schluessel in einstellungen else None
                 )
             )
             treffer.select.return_value = treffer
@@ -65,7 +63,7 @@ class TestWelchesModell:
     async def test_eine_nicht_eingerichtete_spur_gibt_leer_zurueck(self):
         # Leer heisst: der Aufruf faellt auf die jugendfreie Spur zurueck. Das
         # ist die richtige Richtung, in die eine fehlende Einstellung irrt.
-        assert await _resolver({}) ._mature_model("scene") == ""
+        assert await _resolver({})._mature_model("scene") == ""
         assert await _resolver({"image_models_mature": {}})._mature_model("scene") == ""
 
     @pytest.mark.asyncio

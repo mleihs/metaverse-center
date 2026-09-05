@@ -42,7 +42,10 @@ def _safe_jsonld(data: dict) -> str:
 
 
 def build_agent_detail(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
     entity_id: str,
 ) -> EntityDetailResult:
     """Build Person schema + entity-specific meta for an individual agent."""
@@ -71,7 +74,7 @@ def build_agent_detail(
 
     entity_html = (
         f"<h2>{_esc(name)}</h2>\n"
-        f"<p class=\"role\">{_esc(profession)}"
+        f'<p class="role">{_esc(profession)}'
         f"{f' · {_esc(gender)}' if gender else ''}</p>\n"
         f"<p>{_esc(_truncate(character, 500))}</p>\n"
         f"<p>From the simulation <em>{_esc(sim_name)}</em>.</p>"
@@ -93,13 +96,13 @@ def build_agent_detail(
 
     meta = EntityMeta(
         title=(
-            f"{name} – {sim_name} | metaverse.center" if name and sim_name
-            else f"{name} | metaverse.center" if name
+            f"{name} – {sim_name} | metaverse.center"
+            if name and sim_name
+            else f"{name} | metaverse.center"
+            if name
             else None
         ),
-        description=_truncate(character, 160) or (
-            f"Operative in {sim_name}" if sim_name else None
-        ),
+        description=_truncate(character, 160) or (f"Operative in {sim_name}" if sim_name else None),
         og_image=portrait,
         og_image_alt=f"{name} – portrait" if portrait and name else "",
         og_type="profile",
@@ -113,7 +116,10 @@ def build_agent_detail(
 
 
 def build_building_detail(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
     entity_id: str,
 ) -> EntityDetailResult:
     """Build Place schema + entity-specific meta for an individual building."""
@@ -141,7 +147,7 @@ def build_building_detail(
 
     entity_html = (
         f"<h2>{_esc(name)}</h2>\n"
-        f"<p class=\"type\">{_esc(btype)}</p>\n"
+        f'<p class="type">{_esc(btype)}</p>\n'
         f"<p>{_esc(_truncate(desc, 500))}</p>\n"
         f"<p>Located in <em>{_esc(sim_name)}</em>.</p>"
     )
@@ -160,15 +166,15 @@ def build_building_detail(
     # Open Graph has no "Place" type — stick with website. JSON-LD carries the
     # schema.org Place semantics for Google Knowledge Graph consumers.
     meta_description = _truncate(desc, 160) or (
-        f"{btype} in {sim_name}" if btype and sim_name
-        else f"Building in {sim_name}" if sim_name
-        else None
+        f"{btype} in {sim_name}" if btype and sim_name else f"Building in {sim_name}" if sim_name else None
     )
     og_image_alt_parts = [name, btype] if name and btype else [name] if name else []
     meta = EntityMeta(
         title=(
-            f"{name} – {sim_name} | metaverse.center" if name and sim_name
-            else f"{name} | metaverse.center" if name
+            f"{name} – {sim_name} | metaverse.center"
+            if name and sim_name
+            else f"{name} | metaverse.center"
+            if name
             else None
         ),
         description=meta_description,
@@ -184,7 +190,10 @@ def build_building_detail(
 
 
 def build_lore_detail(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
     entity_id: str,
 ) -> EntityDetailResult:
     """Build Article schema + entity-specific meta for an individual lore section."""
@@ -236,8 +245,10 @@ def build_lore_detail(
 
     meta = EntityMeta(
         title=(
-            f"{headline} – {sim_name} | metaverse.center" if headline and sim_name
-            else f"{headline} | metaverse.center" if headline
+            f"{headline} – {sim_name} | metaverse.center"
+            if headline and sim_name
+            else f"{headline} | metaverse.center"
+            if headline
             else None
         ),
         description=_truncate(body, 160) or epigraph or None,
@@ -252,7 +263,10 @@ def build_lore_detail(
 
 
 def build_agents_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     response = (
         client.table("agents")
@@ -270,46 +284,47 @@ def build_agents_view(
         profession = _esc(a.get("primary_profession"))
         char_text = a.get("character") or ""
         desc = _esc(_truncate(char_text))
-        parts.append(
-            f'<article><h3>{name}</h3>'
-            f'<p class="role">{profession}</p>'
-            f'<p>{desc}</p></article>'
-        )
+        parts.append(f'<article><h3>{name}</h3><p class="role">{profession}</p><p>{desc}</p></article>')
 
     entity_html = "\n".join(parts)
 
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": f"{sim_name} – Agents",
-        "url": f"{BASE_URL}/simulations/{slug}/agents",
-        "numberOfItems": len(agents),
-        "description": (
-            f"AI characters in the {sim_name} simulation"
-            f" – each with unique personalities, professions, and memories."
-        ),
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": i + 1,
-                "item": {
-                    "@type": "Person",
-                    "name": a.get("name", ""),
-                    "jobTitle": a.get("primary_profession", ""),
-                    "description": _truncate(a.get("character") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/agents/{a.get('slug', a.get('id', ''))}",
-                    **({"image": a["portrait_image_url"]} if a.get("portrait_image_url") else {}),
-                },
-            }
-            for i, a in enumerate(agents[:20])
-        ],
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": f"{sim_name} – Agents",
+            "url": f"{BASE_URL}/simulations/{slug}/agents",
+            "numberOfItems": len(agents),
+            "description": (
+                f"AI characters in the {sim_name} simulation"
+                f" – each with unique personalities, professions, and memories."
+            ),
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": i + 1,
+                    "item": {
+                        "@type": "Person",
+                        "name": a.get("name", ""),
+                        "jobTitle": a.get("primary_profession", ""),
+                        "description": _truncate(a.get("character") or "", 300),
+                        "url": f"{BASE_URL}/simulations/{slug}/agents/{a.get('slug', a.get('id', ''))}",
+                        **({"image": a["portrait_image_url"]} if a.get("portrait_image_url") else {}),
+                    },
+                }
+                for i, a in enumerate(agents[:20])
+            ],
+        }
+    )
 
     return entity_html, jsonld
 
 
 def build_buildings_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     response = (
         client.table("buildings")
@@ -326,51 +341,46 @@ def build_buildings_view(
         name = _esc(b.get("name"))
         btype = _esc(b.get("building_type"))
         desc = _esc(_truncate(b.get("description") or ""))
-        parts.append(
-            f'<article><h3>{name}</h3>'
-            f'<p class="type">{btype}</p>'
-            f'<p>{desc}</p></article>'
-        )
+        parts.append(f'<article><h3>{name}</h3><p class="type">{btype}</p><p>{desc}</p></article>')
 
     entity_html = "\n".join(parts)
 
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": f"{sim_name} – Buildings",
-        "url": f"{BASE_URL}/simulations/{slug}/buildings",
-        "numberOfItems": len(buildings),
-        "description": f"Architecture and infrastructure in the {sim_name} simulation.",
-        "itemListElement": [
-            {
-                "@type": "ListItem",
-                "position": i + 1,
-                "item": {
-                    "@type": "Place",
-                    "name": b.get("name", ""),
-                    "additionalType": b.get("building_type", ""),
-                    "description": _truncate(b.get("description") or "", 300),
-                    "url": f"{BASE_URL}/simulations/{slug}/buildings/{b.get('slug', b.get('id', ''))}",
-                    **({"image": b["image_url"]} if b.get("image_url") else {}),
-                },
-            }
-            for i, b in enumerate(buildings[:20])
-        ],
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": f"{sim_name} – Buildings",
+            "url": f"{BASE_URL}/simulations/{slug}/buildings",
+            "numberOfItems": len(buildings),
+            "description": f"Architecture and infrastructure in the {sim_name} simulation.",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": i + 1,
+                    "item": {
+                        "@type": "Place",
+                        "name": b.get("name", ""),
+                        "additionalType": b.get("building_type", ""),
+                        "description": _truncate(b.get("description") or "", 300),
+                        "url": f"{BASE_URL}/simulations/{slug}/buildings/{b.get('slug', b.get('id', ''))}",
+                        **({"image": b["image_url"]} if b.get("image_url") else {}),
+                    },
+                }
+                for i, b in enumerate(buildings[:20])
+            ],
+        }
+    )
 
     return entity_html, jsonld
 
 
 def build_lore_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
-    sim_resp = (
-        client.table("simulations")
-        .select("description,banner_url")
-        .eq("id", sim_id)
-        .limit(1)
-        .execute()
-    )
+    sim_resp = client.table("simulations").select("description,banner_url").eq("id", sim_id).limit(1).execute()
     sim = (sim_resp.data or [{}])[0]
     desc = sim.get("description") or ""
     banner = sim.get("banner_url") or ""
@@ -396,10 +406,7 @@ def build_lore_view(
         body = ch.get("body") or ""
         # First 300 chars of body as preview
         preview = _esc(_truncate(body, 300))
-        parts.append(
-            f'<article><h3>{chapter_name}: {title}</h3>'
-            f'<p>{preview}</p></article>'
-        )
+        parts.append(f"<article><h3>{chapter_name}: {title}</h3><p>{preview}</p></article>")
 
     entity_html = "\n".join(parts)
 
@@ -428,7 +435,10 @@ def build_lore_view(
 
 
 def build_chronicle_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     response = (
         client.table("chronicles")
@@ -479,7 +489,10 @@ def build_chronicle_view(
 
 
 def build_broadsheet_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     """Build HTML + JSON-LD for the latest broadsheet edition.
 
@@ -498,10 +511,7 @@ def build_broadsheet_view(
     editions = response.data or []
 
     if not editions:
-        entity_html = (
-            f"<h2>{_esc(sim_name)} – Broadsheet</h2>\n"
-            f"<p>No editions published yet.</p>"
-        )
+        entity_html = f"<h2>{_esc(sim_name)} – Broadsheet</h2>\n<p>No editions published yet.</p>"
         return entity_html, ""
 
     latest = editions[0]
@@ -523,9 +533,7 @@ def build_broadsheet_view(
 
     entity_html = "\n".join(parts)
 
-    article_body = "\n\n".join(
-        (a.get("content") or "")[:500] for a in articles[:3]
-    )
+    article_body = "\n\n".join((a.get("content") or "")[:500] for a in articles[:3])
     data: dict = {
         "@context": "https://schema.org",
         "@type": "Article",
@@ -548,7 +556,10 @@ def build_broadsheet_view(
 
 
 def build_social_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     """Build HTML + JSON-LD for the /social view (AI-integrated real-world trends).
 
@@ -562,37 +573,28 @@ def build_social_view(
         f"<p>Real-world news transformed into simulation events."
         f" AI-driven narrative integration for {_esc(sim_name)}.</p>"
     )
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": f"{sim_name} – Social Trends",
-        "url": f"{BASE_URL}/simulations/{slug}/social",
-        "description": (
-            f"Real-world news transformed into simulation events in {sim_name}."
-        ),
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": f"{sim_name} – Social Trends",
+            "url": f"{BASE_URL}/simulations/{slug}/social",
+            "description": (f"Real-world news transformed into simulation events in {sim_name}."),
+        }
+    )
     return entity_html, jsonld
 
 
 def build_locations_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
-    zones_resp = (
-        client.table("zones")
-        .select("name,description")
-        .eq("simulation_id", sim_id)
-        .limit(50)
-        .execute()
-    )
+    zones_resp = client.table("zones").select("name,description").eq("simulation_id", sim_id).limit(50).execute()
     zones = zones_resp.data or []
 
-    streets_resp = (
-        client.table("city_streets")
-        .select("name")
-        .eq("simulation_id", sim_id)
-        .limit(50)
-        .execute()
-    )
+    streets_resp = client.table("city_streets").select("name").eq("simulation_id", sim_id).limit(50).execute()
     streets = streets_resp.data or []
 
     parts = [f"<h2>{_esc(sim_name)} – Locations</h2>"]
@@ -609,20 +611,25 @@ def build_locations_view(
 
     entity_html = "\n".join(parts)
 
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": f"{sim_name} – Locations",
-        "url": f"{BASE_URL}/simulations/{slug}/locations",
-        "numberOfItems": len(zones) + len(streets),
-        "description": f"Zones and streets in the {sim_name} simulation.",
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": f"{sim_name} – Locations",
+            "url": f"{BASE_URL}/simulations/{slug}/locations",
+            "numberOfItems": len(zones) + len(streets),
+            "description": f"Zones and streets in the {sim_name} simulation.",
+        }
+    )
 
     return entity_html, jsonld
 
 
 def build_events_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     response = (
         client.table("events")
@@ -646,20 +653,25 @@ def build_events_view(
 
     entity_html = "\n".join(parts)
 
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": f"{sim_name} – Events",
-        "url": f"{BASE_URL}/simulations/{slug}/events",
-        "numberOfItems": len(events),
-        "description": f"Recent events in the {sim_name} simulation.",
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": f"{sim_name} – Events",
+            "url": f"{BASE_URL}/simulations/{slug}/events",
+            "numberOfItems": len(events),
+            "description": f"Recent events in the {sim_name} simulation.",
+        }
+    )
 
     return entity_html, jsonld
 
 
 def build_health_view(
-    client: Client, sim_id: str, sim_name: str, slug: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
 ) -> tuple[str, str]:
     entity_html = (
         f"<h2>{_esc(sim_name)} – Simulation Health</h2>\n"
@@ -667,15 +679,16 @@ def build_health_view(
         f" and overall health metrics for {_esc(sim_name)}.</p>"
     )
 
-    jsonld = _safe_jsonld({
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "name": f"{sim_name} – Simulation Health",
-        "url": f"{BASE_URL}/simulations/{slug}/health",
-        "description": (
-            f"Game metrics dashboard for {sim_name}:"
-            f" building readiness, zone stability, embassy effectiveness."
-        ),
-    })
+    jsonld = _safe_jsonld(
+        {
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            "name": f"{sim_name} – Simulation Health",
+            "url": f"{BASE_URL}/simulations/{slug}/health",
+            "description": (
+                f"Game metrics dashboard for {sim_name}: building readiness, zone stability, embassy effectiveness."
+            ),
+        }
+    )
 
     return entity_html, jsonld

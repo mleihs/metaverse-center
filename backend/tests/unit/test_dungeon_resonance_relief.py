@@ -79,8 +79,12 @@ class TestTheFormulaIsTheSpec:
 
 class TestTheGrantIsNarrow:
     def test_service_role_only(self, sql):
-        assert re.search(r"REVOKE EXECUTE ON FUNCTION fn_relieve_resonance_after_dungeon[^;]*"
-                         r"FROM PUBLIC, anon, authenticated", sql, re.S)
+        assert re.search(
+            r"REVOKE EXECUTE ON FUNCTION fn_relieve_resonance_after_dungeon[^;]*"
+            r"FROM PUBLIC, anon, authenticated",
+            sql,
+            re.S,
+        )
         assert "TO service_role" in sql
 
 
@@ -175,9 +179,7 @@ class TestTheCallSiteExists:
         # a test that fails for a reason unrelated to the claim it makes. The
         # first version of this test did exactly that and looked like a real
         # regression.
-        source = textwrap.dedent(
-            inspect.getsource(DungeonCombatService._handle_combat_victory.__func__)
-        )
+        source = textwrap.dedent(inspect.getsource(DungeonCombatService._handle_combat_victory.__func__))
         tree = ast.parse(source)
         called = {
             node.func.attr
@@ -197,9 +199,7 @@ class TestTheCallSiteExists:
         assert '"resonance_id": str(resonance_id) if resonance_id else None' in source, (
             "Der Lauf speichert seine Resonanz nicht — dann ist beim Sieg nichts zu lindern"
         )
-        assert '"available_dungeons"' in source, (
-            "Die Resonanz wird nirgends nachgeschlagen"
-        )
+        assert '"available_dungeons"' in source, "Die Resonanz wird nirgends nachgeschlagen"
 
 
 class TestTheRunRemembersItsResonance:
@@ -214,8 +214,7 @@ class TestTheRunRemembersItsResonance:
         restored = _make_instance()
         restored.restore_from_checkpoint(checkpoint)
         assert restored.resonance_id == resonance_id, (
-            "Nach einem Verbindungsabbruch wüsste der Lauf nicht mehr, "
-            "welche Resonanz er lindern soll"
+            "Nach einem Verbindungsabbruch wüsste der Lauf nicht mehr, welche Resonanz er lindern soll"
         )
 
     def test_no_resonance_survives_as_none(self):

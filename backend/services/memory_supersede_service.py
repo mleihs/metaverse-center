@@ -149,9 +149,7 @@ class MemorySupersedeService:
                 continue
 
             if not urteil.supersedes:
-                logger.debug(
-                    "kein Widerspruch (%s): %s", round(float(paar["abstand"]), 3), urteil.reason[:80]
-                )
+                logger.debug("kein Widerspruch (%s): %s", round(float(paar["abstand"]), 3), urteil.reason[:80])
                 continue
 
             # Das Fensterende ist der Zeitpunkt der NEUEREN Beobachtung, nicht
@@ -202,9 +200,7 @@ class MemorySupersedeService:
     # ── Die billige Stufe ─────────────────────────────────────────────────
 
     @staticmethod
-    async def _candidates(
-        admin: Client, simulation_id: UUID, *, budget: int
-    ) -> list[dict[str, Any]]:
+    async def _candidates(admin: Client, simulation_id: UUID, *, budget: int) -> list[dict[str, Any]]:
         """Die Paare, ueber die ueberhaupt geurteilt wird.
 
         EINE Abfrage. Der Vektorabstand ist ein Operator und gehoert in SQL;

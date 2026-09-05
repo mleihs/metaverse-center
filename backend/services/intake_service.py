@@ -42,8 +42,7 @@ class IntakeService:
         entry = CATEGORY_ARCHETYPE_MAP.get(source_category)
         if not entry:
             raise bad_request(
-                f"Unknown source category {source_category!r}. "
-                f"Allowed: {', '.join(sorted(SOURCE_CATEGORIES))}.",
+                f"Unknown source category {source_category!r}. Allowed: {', '.join(sorted(SOURCE_CATEGORIES))}.",
             )
         return entry[0]
 

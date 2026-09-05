@@ -87,7 +87,9 @@ def _section(title: str) -> None:
 
 
 async def _check_read_path(
-    client: GitHubAppClient, owner: str, repo: str,
+    client: GitHubAppClient,
+    owner: str,
+    repo: str,
 ) -> str:
     """Token exchange + REST + GraphQL round-trip, read-only.
 
@@ -128,8 +130,7 @@ async def _check_read_path(
     rate = gql_data["data"]["rateLimit"]
     _ok(f"viewer.login = {viewer}")
     _info(
-        f"rateLimit: {rate['remaining']}/{rate['limit']} "
-        f"remaining (resets at {rate['resetAt']})",
+        f"rateLimit: {rate['remaining']}/{rate['limit']} remaining (resets at {rate['resetAt']})",
     )
     return default_branch
 
@@ -163,7 +164,8 @@ async def _check_write_path(
     # `default_branch` is discovered in _check_read_path so we don't hardcode 'main' —
     # relevant if someone renames `main` to `trunk` or similar.
     default_ref = await client.rest(
-        "GET", f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
+        "GET",
+        f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
     )
     base_sha = default_ref["object"]["sha"]
     _info(f"{default_branch} @ {base_sha[:10]}")
@@ -243,8 +245,7 @@ async def _check_write_path(
             _ok(f"Branch {branch_name} deleted")
         except GitHubAPIError as exc:
             _fail(
-                f"Branch cleanup failed ({exc}); manual delete may be needed: "
-                f"{branch_name}",
+                f"Branch cleanup failed ({exc}); manual delete may be needed: {branch_name}",
             )
         if commit_oid:
             _info(

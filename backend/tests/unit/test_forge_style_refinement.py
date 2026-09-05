@@ -30,9 +30,7 @@ ALL_FOUR = {
 
 
 def _existing_styles() -> list[dict]:
-    return [
-        {"setting_key": key, "setting_value": "generic photography"} for key in sorted(ALL_FOUR)
-    ]
+    return [{"setting_key": key, "setting_value": "generic photography"} for key in sorted(ALL_FOUR)]
 
 
 async def _refine(model_output: str) -> dict[str, str]:
@@ -180,7 +178,11 @@ class TestJedeBildspurHatEinenStil:
     def test_das_modell_fuehrt_jede_spur(self):
         from backend.models.forge import ForgeThemeOutput
 
-        felder = {f[len("image_style_prompt_") :] for f in ForgeThemeOutput.model_fields if f.startswith("image_style_prompt_")}
+        felder = {
+            f[len("image_style_prompt_") :]
+            for f in ForgeThemeOutput.model_fields
+            if f.startswith("image_style_prompt_")
+        }
         assert felder == self.SPUREN
 
     def test_der_dienst_legt_jede_spur_unter_ai_ab(self):

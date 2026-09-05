@@ -130,9 +130,7 @@ class _Kette:
         return lambda *_a, **_k: self
 
 
-async def _schlussanweisung(
-    nachricht: str, idx: int, besetzung=BESETZUNG, *, bilanz: dict | None = None
-) -> str:
+async def _schlussanweisung(nachricht: str, idx: int, besetzung=BESETZUNG, *, bilanz: dict | None = None) -> str:
     """Die Schlussanweisung, die GENAU DIESE Figur bekommt.
 
     Ueber den echten Aufrufpfad (`_build_group_turn_context`), nicht ueber
@@ -471,9 +469,7 @@ class TestDieMessungKommtBeiDerFigurAn:
         assert ChatAIService._focalization_note({}, locale="de") == ""
 
     async def test_der_satz_steht_in_der_schlussanweisung(self):
-        schluss = await _schlussanweisung(
-            "Was geschieht hier?", 0, bilanz={"gemessen": 5, "allwissend": 3}
-        )
+        schluss = await _schlussanweisung("Was geschieht hier?", 0, bilanz={"gemessen": 5, "allwissend": 3})
         assert "aus deinem Blickwinkel herausgetreten" in schluss
 
     async def test_er_steht_zuletzt_vor_der_antwortzeile(self):
@@ -481,9 +477,7 @@ class TestDieMessungKommtBeiDerFigurAn:
         ist der seltenste von allen — er erscheint nur, wenn die Messung
         wirklich etwas gefunden hat. Was selten dasteht, gehoert an die
         staerkste Stelle."""
-        schluss = await _schlussanweisung(
-            "Marie, was siehst du?", 1, bilanz={"gemessen": 5, "allwissend": 3}
-        )
+        schluss = await _schlussanweisung("Marie, was siehst du?", 1, bilanz={"gemessen": 5, "allwissend": 3})
         assert schluss.index("spricht in seiner letzten Zeile") < schluss.index("Blickwinkel")
 
     async def test_ohne_bilanz_bleibt_die_anweisung_ohne_luecke(self):

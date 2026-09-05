@@ -411,9 +411,7 @@ class TestDerKorpusStelltSeineBedingungHer:
         enthaelt.
         """
         mit_fremden = [
-            t
-            for t, u, _, _ in FALLENKORPUS
-            if u == "internal" and any(n.split()[0] in t for n in BESETZUNG[1:])
+            t for t, u, _, _ in FALLENKORPUS if u == "internal" and any(n.split()[0] in t for n in BESETZUNG[1:])
         ]
         assert len(mit_fremden) >= 5, f"nur {len(mit_fremden)} Gegenproben nennen eine andere Figur"
 
@@ -424,7 +422,7 @@ class TestDerKorpusStelltSeineBedingungHer:
         gefunden — und alle Zahlen dieses Detektors bis zum 05.09.2026 tragen
         ihn.
         """
-        mit_rede = [t for t, *_ in FALLENKORPUS if any(z in t for z in "„“”«»\"")]
+        mit_rede = [t for t, *_ in FALLENKORPUS if any(z in t for z in '„“”«»"')]
         assert len(mit_rede) >= 4
 
 

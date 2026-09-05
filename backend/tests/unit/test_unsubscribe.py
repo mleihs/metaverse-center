@@ -71,7 +71,9 @@ class TestHeaders:
         ):
             mock_settings.resend_api_key = "re_test"
             await EmailService.send(
-                "to@example.com", "Subject", "<p>Hi</p>",
+                "to@example.com",
+                "Subject",
+                "<p>Hi</p>",
                 unsubscribe_url="https://metaverse.center/api/v1/unsubscribe?token=t",
             )
 

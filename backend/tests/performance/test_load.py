@@ -73,14 +73,10 @@ class TestConcurrentReads:
 
         # All should succeed
         for i, resp in enumerate(responses):
-            assert resp.status_code == 200, (
-                f"Request {i} returned {resp.status_code}"
-            )
+            assert resp.status_code == 200, f"Request {i} returned {resp.status_code}"
 
         # Total wall-clock time should be reasonable
-        assert elapsed < 5.0, (
-            f"50 concurrent requests took {elapsed:.2f}s, expected < 5s"
-        )
+        assert elapsed < 5.0, f"50 concurrent requests took {elapsed:.2f}s, expected < 5s"
 
     async def test_concurrent_openapi_requests(self):
         """20 concurrent GET /openapi.json requests should all return 200."""
@@ -94,9 +90,7 @@ class TestConcurrentReads:
             responses = await asyncio.gather(*[_hit_openapi() for _ in range(20)])
 
         for i, resp in enumerate(responses):
-            assert resp.status_code == 200, (
-                f"Request {i} returned {resp.status_code}"
-            )
+            assert resp.status_code == 200, f"Request {i} returned {resp.status_code}"
             data = resp.json()
             assert "paths" in data
 
@@ -120,9 +114,7 @@ class TestResponseTimes:
             elapsed = time.monotonic() - start
 
         assert resp.status_code == 200
-        assert elapsed < 0.1, (
-            f"Health check took {elapsed * 1000:.1f}ms, expected < 100ms"
-        )
+        assert elapsed < 0.1, f"Health check took {elapsed * 1000:.1f}ms, expected < 100ms"
 
     async def test_openapi_spec_under_500ms(self):
         """GET /openapi.json should respond in under 500ms."""
@@ -134,9 +126,7 @@ class TestResponseTimes:
             elapsed = time.monotonic() - start
 
         assert resp.status_code == 200
-        assert elapsed < 0.5, (
-            f"OpenAPI spec took {elapsed * 1000:.1f}ms, expected < 500ms"
-        )
+        assert elapsed < 0.5, f"OpenAPI spec took {elapsed * 1000:.1f}ms, expected < 500ms"
 
     async def test_docs_under_500ms(self):
         """GET /api/docs should respond in under 500ms."""
@@ -148,9 +138,7 @@ class TestResponseTimes:
             elapsed = time.monotonic() - start
 
         assert resp.status_code == 200
-        assert elapsed < 0.5, (
-            f"Swagger docs took {elapsed * 1000:.1f}ms, expected < 500ms"
-        )
+        assert elapsed < 0.5, f"Swagger docs took {elapsed * 1000:.1f}ms, expected < 500ms"
 
     async def test_health_average_over_10_requests(self):
         """Average response time over 10 sequential health requests should be < 50ms."""
@@ -166,9 +154,7 @@ class TestResponseTimes:
                 times.append(elapsed)
 
         avg_ms = (sum(times) / len(times)) * 1000
-        assert avg_ms < 50, (
-            f"Average health response time was {avg_ms:.1f}ms, expected < 50ms"
-        )
+        assert avg_ms < 50, f"Average health response time was {avg_ms:.1f}ms, expected < 50ms"
 
 
 # ===========================================================================
@@ -215,14 +201,10 @@ class TestRateLimiting:
         transport = ASGITransport(app=app)
 
         async with AsyncClient(transport=transport, base_url=BASE_URL) as client:
-            responses = await asyncio.gather(
-                *[client.get("/api/v1/health") for _ in range(100)]
-            )
+            responses = await asyncio.gather(*[client.get("/api/v1/health") for _ in range(100)])
 
         success_count = sum(1 for r in responses if r.status_code == 200)
-        assert success_count == 100, (
-            f"Expected all 100 health requests to succeed, got {success_count}"
-        )
+        assert success_count == 100, f"Expected all 100 health requests to succeed, got {success_count}"
 
     async def test_rate_limit_returns_429_or_allows(self):
         """When rate limiting is active, exceeding the limit should return 429.

@@ -212,7 +212,9 @@ class ContentPacksPublishService:
         drafts = await cls._fetch_publishable_drafts(supabase, draft_ids)
         _validate_no_duplicate_resources(drafts)
         default_branch, head_oid = await cls._discover_default_head(
-            client, owner, repo,
+            client,
+            owner,
+            repo,
         )
         # Build ALL file changes BEFORE the branch — keeps any failure
         # (invalid path, schema error, migration-number lookup) from
@@ -229,16 +231,23 @@ class ContentPacksPublishService:
         yaml_changes = [_build_file_change(d) for d in drafts]
         migration_sql = _generate_migration_sql(drafts)
         next_migration_num = await cls._discover_next_migration_number(
-            client, owner, repo, default_branch,
+            client,
+            owner,
+            repo,
+            default_branch,
         )
         migration_change = _build_migration_file_change(
-            next_migration_num, migration_sql,
+            next_migration_num,
+            migration_sql,
         )
         file_changes = [*yaml_changes, migration_change]
         branch_name = _make_branch_name()
         logger.info(
             "Publishing %d draft(s) + migration %s as branch %s (head=%s)",
-            len(drafts), migration_change[0], branch_name, head_oid[:8],
+            len(drafts),
+            migration_change[0],
+            branch_name,
+            head_oid[:8],
         )
 
         await cls._create_branch(client, owner, repo, branch_name, head_oid)
@@ -262,7 +271,8 @@ class ContentPacksPublishService:
                     len(drafts),
                 )
                 await ContentDraftsService.mark_conflict_bulk(
-                    supabase, draft_ids=draft_ids,
+                    supabase,
+                    draft_ids=draft_ids,
                 )
                 raise conflict(
                     "Default branch moved during publish – drafts marked as "
@@ -298,10 +308,7 @@ class ContentPacksPublishService:
             pr_url=pr_data["html_url"],
             branch_name=branch_name,
             draft_count=len(published_drafts),
-            drafts=[
-                ContentDraftSummary.model_validate(d.model_dump())
-                for d in published_drafts
-            ],
+            drafts=[ContentDraftSummary.model_validate(d.model_dump()) for d in published_drafts],
         )
 
     # ── Internals ─────────────────────────────────────────────────────
@@ -322,7 +329,8 @@ class ContentPacksPublishService:
             HTTPException 409: any draft is not in 'draft' status.
         """
         rows = await ContentDraftsService.list_by_ids(
-            supabase, draft_ids=draft_ids,
+            supabase,
+            draft_ids=draft_ids,
         )
         by_id = {d.id: d for d in rows}
 
@@ -335,16 +343,11 @@ class ContentPacksPublishService:
             )
 
         drafts = [by_id[d] for d in draft_ids]
-        not_publishable = [
-            d for d in drafts if d.status != ContentDraftStatus.DRAFT
-        ]
+        not_publishable = [d for d in drafts if d.status != ContentDraftStatus.DRAFT]
         if not_publishable:
-            statuses = ", ".join(
-                f"{d.id}={d.status.value}" for d in not_publishable
-            )
+            statuses = ", ".join(f"{d.id}={d.status.value}" for d in not_publishable)
             raise conflict(
-                f"All drafts must be in 'draft' status to publish. "
-                f"Not publishable: {statuses}",
+                f"All drafts must be in 'draft' status to publish. Not publishable: {statuses}",
             )
         return drafts
 
@@ -397,7 +400,9 @@ class ContentPacksPublishService:
     ) -> dict:
         """Run createCommitOnBranch with all draft file changes."""
         headline, body = _make_commit_message(
-            drafts, custom_headline, migration_path=migration_path,
+            drafts,
+            custom_headline,
+            migration_path=migration_path,
         )
         variables = {
             "input": {
@@ -407,10 +412,7 @@ class ContentPacksPublishService:
                 },
                 "expectedHeadOid": head_oid,
                 "fileChanges": {
-                    "additions": [
-                        {"path": path, "contents": contents_b64}
-                        for path, contents_b64 in file_changes
-                    ],
+                    "additions": [{"path": path, "contents": contents_b64} for path, contents_b64 in file_changes],
                 },
                 "message": {"headline": headline, "body": body},
             }
@@ -437,7 +439,9 @@ class ContentPacksPublishService:
         because the publish unit IS the commit (one batch, one commit, one PR).
         """
         title, body = _make_commit_message(
-            drafts, custom_headline, migration_path=migration_path,
+            drafts,
+            custom_headline,
+            migration_path=migration_path,
         )
         return await client.rest(
             "POST",
@@ -503,7 +507,9 @@ def get_github_repo_config() -> tuple[str, str]:
 
 
 async def discover_default_head(
-    client: GitHubAppClient, owner: str, repo: str,
+    client: GitHubAppClient,
+    owner: str,
+    repo: str,
 ) -> tuple[str, str]:
     """Return (default_branch_name, head_sha) for the repo.
 
@@ -515,7 +521,8 @@ async def discover_default_head(
     repo_info = await client.rest("GET", f"/repos/{owner}/{repo}")
     default_branch = repo_info["default_branch"]
     ref_info = await client.rest(
-        "GET", f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
+        "GET",
+        f"/repos/{owner}/{repo}/git/ref/heads/{default_branch}",
     )
     head_oid = ref_info["object"]["sha"]
     return default_branch, head_oid
@@ -548,7 +555,8 @@ def build_file_path(pack_slug: str, resource_path: str) -> str:
     if pack_slug == ABILITY_PACK_SLUG:
         return _ABILITIES_FILE_TEMPLATE.format(resource_path=resource_path)
     return _PACK_FILE_TEMPLATE.format(
-        pack_slug=pack_slug, resource_path=resource_path,
+        pack_slug=pack_slug,
+        resource_path=resource_path,
     )
 
 
@@ -604,9 +612,7 @@ def _validate_no_duplicate_resources(drafts: list[ContentDraft]) -> None:
 
 def _build_overlay(drafts: list[ContentDraft]) -> OverlayMap:
     """Map drafts onto an overlay suitable for `load_packs_with_overlay`."""
-    return {
-        (d.pack_slug, d.resource_path): d.working_content for d in drafts
-    }
+    return {(d.pack_slug, d.resource_path): d.working_content for d in drafts}
 
 
 def _generate_migration_sql(drafts: list[ContentDraft]) -> str:
@@ -626,10 +632,7 @@ def _generate_migration_sql(drafts: list[ContentDraft]) -> str:
     try:
         result = load_packs_with_overlay(overlay=overlay)
     except ValidationError as exc:
-        errs = "; ".join(
-            f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}"
-            for err in exc.errors()[:5]
-        )
+        errs = "; ".join(f"{'.'.join(str(p) for p in err['loc'])}: {err['msg']}" for err in exc.errors()[:5])
         remaining = max(0, len(exc.errors()) - 5)
         if remaining:
             errs += f" (+{remaining} more)"
@@ -653,7 +656,8 @@ def _build_migration_filename(sequence_number: int) -> str:
 
 
 def _build_migration_file_change(
-    sequence_number: int, sql: str,
+    sequence_number: int,
+    sql: str,
 ) -> tuple[str, str]:
     """Build the (path, base64_contents) pair for the migration addition."""
     filename = _build_migration_filename(sequence_number)
@@ -706,16 +710,18 @@ def _make_commit_message(
         path = build_file_path(d.pack_slug, d.resource_path)
         body_lines.append(f"- {path} (draft {d.id})")
     if migration_path:
-        body_lines.extend([
-            "",
-            f"Auto-generated migration: {migration_path}",
-            "",
-            "The migration file is derived from the YAML changes via "
-            "`backend.services.content_packs.generate_migration`. Review "
-            "the YAML files only – the migration is regenerated "
-            "deterministically and TRUNCATE+re-inserts the full content "
-            "seed. Applied by CI on merge.",
-        ])
+        body_lines.extend(
+            [
+                "",
+                f"Auto-generated migration: {migration_path}",
+                "",
+                "The migration file is derived from the YAML changes via "
+                "`backend.services.content_packs.generate_migration`. Review "
+                "the YAML files only – the migration is regenerated "
+                "deterministically and TRUNCATE+re-inserts the full content "
+                "seed. Applied by CI on merge.",
+            ]
+        )
     return headline, "\n".join(body_lines)
 
 

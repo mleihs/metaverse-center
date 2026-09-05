@@ -44,8 +44,17 @@ def _mock_supabase_with_rpc(rpc_payload=None, table_exec_data=None):
     rpc_chain.execute = AsyncMock(return_value=rpc_result)
 
     for method in (
-        "select", "eq", "neq", "insert", "update", "delete", "upsert",
-        "limit", "order", "in_", "gte",
+        "select",
+        "eq",
+        "neq",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
+        "limit",
+        "order",
+        "in_",
+        "gte",
     ):
         getattr(chain, method).return_value = chain
     mock.table.return_value = chain
@@ -93,7 +102,10 @@ class TestPreCheck:
 
         # Should not raise
         await BudgetEnforcementService.pre_check(
-            mock, purpose="forge", simulation_id=SIM_ID, user_id=USER_ID,
+            mock,
+            purpose="forge",
+            simulation_id=SIM_ID,
+            user_id=USER_ID,
         )
 
     @pytest.mark.asyncio
@@ -183,7 +195,9 @@ class TestPreCheck:
         mock2, _, _ = _mock_supabase_with_rpc(rpc_payload=rows)
         with pytest.raises(BudgetExceededError):
             await BudgetEnforcementService.pre_check(
-                mock2, purpose="forge", simulation_id=SIM_ID,
+                mock2,
+                purpose="forge",
+                simulation_id=SIM_ID,
             )
 
 
@@ -207,7 +221,9 @@ class TestUpsertBudget:
 
         with pytest.raises(HTTPException) as exc_info:
             await BudgetEnforcementService.upsert_budget(
-                mock, actor_id=USER_ID, body=body,
+                mock,
+                actor_id=USER_ID,
+                body=body,
             )
         assert exc_info.value.status_code == 400
 

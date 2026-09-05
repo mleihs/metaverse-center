@@ -15,7 +15,9 @@ class TestScoringRPC:
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
         scores = await ScoringService.compute_cycle_scores(
-            async_admin_client, epoch.epoch_id, cycle_number=3,
+            async_admin_client,
+            epoch.epoch_id,
+            cycle_number=3,
         )
 
         # Should have 1 score row per participant
@@ -38,11 +40,14 @@ class TestScoringRPC:
 
         # Generate scores first
         await ScoringService.compute_cycle_scores(
-            async_admin_client, epoch.epoch_id, cycle_number=3,
+            async_admin_client,
+            epoch.epoch_id,
+            cycle_number=3,
         )
 
         leaderboard = await ScoringService.get_leaderboard(
-            async_admin_client, epoch.epoch_id,
+            async_admin_client,
+            epoch.epoch_id,
         )
 
         assert len(leaderboard) == len(epoch.participants)

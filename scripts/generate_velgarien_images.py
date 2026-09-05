@@ -90,30 +90,46 @@ def main():
 
     # Building images (4 missing)
     buildings = [
-        ("80906ca3-3753-4921-914b-ab9dbf528495", "Militaerakademie Wolf", {
-            "building_type": "government",
-            "building_condition": "good",
-            "description": "Ausbildungsstaette der velgarischen Streitkraefte",
-            "zone_name": "Regierungsviertel",
-        }),
-        ("e0ccf60b-71d0-4ac2-93c3-53b62a39e829", "Steinfeld-Redaktion", {
-            "building_type": "commercial",
-            "building_condition": "fair",
-            "description": "Bueros der unabhaengigen Zeitung",
-            "zone_name": "Altstadt",
-        }),
-        ("90fe6137-8668-497f-a286-15cb8b73cfa4", "Voss-Industriewerk", {
-            "building_type": "commercial",
-            "building_condition": "good",
-            "description": "Das Flaggschiff der Voss-Industriegruppe",
-            "zone_name": "Industriegebiet Nord",
-        }),
-        ("23425980-f031-401e-9d9f-05303e92038d", "Wohnhaus am Markt", {
-            "building_type": "residential",
-            "building_condition": "poor",
-            "description": "Von Schwester Irma gefuehrte Unterkunft fuer Obdachlose",
-            "zone_name": "Altstadt",
-        }),
+        (
+            "80906ca3-3753-4921-914b-ab9dbf528495",
+            "Militaerakademie Wolf",
+            {
+                "building_type": "government",
+                "building_condition": "good",
+                "description": "Ausbildungsstaette der velgarischen Streitkraefte",
+                "zone_name": "Regierungsviertel",
+            },
+        ),
+        (
+            "e0ccf60b-71d0-4ac2-93c3-53b62a39e829",
+            "Steinfeld-Redaktion",
+            {
+                "building_type": "commercial",
+                "building_condition": "fair",
+                "description": "Bueros der unabhaengigen Zeitung",
+                "zone_name": "Altstadt",
+            },
+        ),
+        (
+            "90fe6137-8668-497f-a286-15cb8b73cfa4",
+            "Voss-Industriewerk",
+            {
+                "building_type": "commercial",
+                "building_condition": "good",
+                "description": "Das Flaggschiff der Voss-Industriegruppe",
+                "zone_name": "Industriegebiet Nord",
+            },
+        ),
+        (
+            "23425980-f031-401e-9d9f-05303e92038d",
+            "Wohnhaus am Markt",
+            {
+                "building_type": "residential",
+                "building_condition": "poor",
+                "description": "Von Schwester Irma gefuehrte Unterkunft fuer Obdachlose",
+                "zone_name": "Altstadt",
+            },
+        ),
     ]
 
     print("\n--- Building Images (4) ---")

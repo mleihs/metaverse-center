@@ -174,19 +174,28 @@ class TestGenerateSolidBackground:
 class TestCreateGradient:
     def test_dimensions(self):
         gradient = InstagramImageService._create_gradient(
-            200, 100, (255, 0, 0, 255), (0, 0, 255, 255),
+            200,
+            100,
+            (255, 0, 0, 255),
+            (0, 0, 255, 255),
         )
         assert gradient.size == (200, 100)
 
     def test_rgba_mode(self):
         gradient = InstagramImageService._create_gradient(
-            50, 50, (0, 0, 0, 255), (255, 255, 255, 255),
+            50,
+            50,
+            (0, 0, 0, 255),
+            (255, 255, 255, 255),
         )
         assert gradient.mode == "RGBA"
 
     def test_top_bottom_colors(self):
         gradient = InstagramImageService._create_gradient(
-            10, 100, (255, 0, 0, 255), (0, 0, 255, 255),
+            10,
+            100,
+            (255, 0, 0, 255),
+            (0, 0, 255, 255),
         )
         # Top pixel should be close to red
         r, g, b, a = gradient.getpixel((5, 0))
@@ -272,7 +281,12 @@ class TestDrawArchetypeSymbol:
         draw = ImageDraw.Draw(img)
         # Should not raise
         InstagramImageService._draw_archetype_symbol(
-            draw, 200, 200, 160, archetype, (255, 100, 50, 200),
+            draw,
+            200,
+            200,
+            160,
+            archetype,
+            (255, 100, 50, 200),
         )
 
     def test_unknown_archetype_falls_back(self):
@@ -281,7 +295,12 @@ class TestDrawArchetypeSymbol:
         img = Image.new("RGBA", (400, 400), (0, 0, 0, 255))
         draw = ImageDraw.Draw(img)
         InstagramImageService._draw_archetype_symbol(
-            draw, 200, 200, 160, "Unknown Archetype", (200, 200, 200, 200),
+            draw,
+            200,
+            200,
+            160,
+            "Unknown Archetype",
+            (200, 200, 200, 200),
         )
 
 
@@ -293,7 +312,13 @@ class TestDrawMagnitudeArc:
         img = Image.new("RGBA", (400, 400), (0, 0, 0, 255))
         draw = ImageDraw.Draw(img)
         InstagramImageService._draw_magnitude_arc(
-            draw, 200, 200, 100, 12, magnitude, (255, 100, 50),
+            draw,
+            200,
+            200,
+            100,
+            12,
+            magnitude,
+            (255, 100, 50),
         )
 
 
@@ -304,7 +329,12 @@ class TestDrawCornerBrackets:
         img = Image.new("RGBA", (400, 400), (0, 0, 0, 255))
         draw = ImageDraw.Draw(img)
         InstagramImageService._draw_corner_brackets(
-            draw, 20, 20, 360, 360, (200, 200, 200, 160),
+            draw,
+            20,
+            20,
+            360,
+            360,
+            (200, 200, 200, 160),
         )
 
 

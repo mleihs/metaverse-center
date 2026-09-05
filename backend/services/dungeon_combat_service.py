@@ -399,9 +399,7 @@ class DungeonCombatService:
             # before D3 that earlier loot was shown to the player and dropped.
             boss_loot = [item.model_dump(mode="json") for item in loot]
             all_loot = instance.run_loot + boss_loot
-            distributable = [
-                item for item in all_loot if item.get("effect_type") not in AUTO_APPLY_EFFECT_TYPES
-            ]
+            distributable = [item for item in all_loot if item.get("effect_type") not in AUTO_APPLY_EFFECT_TYPES]
             operational_count = sum(1 for a in instance.party if can_act(a.condition))
 
             if not distributable or operational_count <= 1:
@@ -625,7 +623,10 @@ class DungeonCombatService:
     ) -> dict:
         """Set up combat encounter for a combat/elite/boss room."""
         encounter = select_encounter(
-            room.room_type, instance.depth, instance.difficulty, instance.archetype,
+            room.room_type,
+            instance.depth,
+            instance.difficulty,
+            instance.archetype,
             used_ids=instance.used_encounter_ids,
         )
         spawn_id = encounter.combat_encounter_id if encounter else None

@@ -57,9 +57,7 @@ def advance_cooldowns(
         # Tick down, dropping anything that reached zero so the dict does not
         # grow a permanent entry per ability ever used.
         agent.cooldowns = {
-            ability_id: remaining - 1
-            for ability_id, remaining in agent.cooldowns.items()
-            if remaining - 1 > 0
+            ability_id: remaining - 1 for ability_id, remaining in agent.cooldowns.items() if remaining - 1 > 0
         }
 
         for ability_id in used_by_agent.get(str(agent.agent_id), ()):

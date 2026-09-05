@@ -48,9 +48,9 @@ class TestFinalStandings:
     async def test_rejects_non_completed_epoch(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition", "config": {}}
-        ))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "competition", "config": {}})
+        )
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -63,9 +63,9 @@ class TestFinalStandings:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 5}
-        ))
+        epoch_chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 5})
+        )
 
         scores_chain = _make_chain()
         scores_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
@@ -86,9 +86,9 @@ class TestFinalStandings:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}, "current_cycle": 3}
-        ))
+        epoch_chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}, "current_cycle": 3})
+        )
 
         scores_chain = _make_chain()
         scores_chain.execute = AsyncMock(return_value=MagicMock(data=[]))

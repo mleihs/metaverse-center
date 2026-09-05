@@ -190,7 +190,11 @@ class TestListEventEchoes:
 class TestTriggerEcho:
     @patch("backend.routers.echoes.AuditService.log_action", new_callable=AsyncMock)
     @patch("backend.routers.echoes.EchoService.create_echo", new_callable=AsyncMock)
-    @patch("backend.routers.echoes.EchoService.compute_strength_for_manual_trigger", new_callable=AsyncMock, return_value=0.75)
+    @patch(
+        "backend.routers.echoes.EchoService.compute_strength_for_manual_trigger",
+        new_callable=AsyncMock,
+        return_value=0.75,
+    )
     def test_triggers_echo_successfully(self, mock_strength, mock_create, mock_audit, client):
         # Override supabase to return role + event data
         mock_supabase = MagicMock()
@@ -303,9 +307,7 @@ class TestApproveEcho:
     @patch("backend.routers.echoes.GameMechanicsService.build_generation_context", new_callable=AsyncMock)
     @patch("backend.routers.echoes._get_generation_service", new_callable=AsyncMock)
     @patch("backend.routers.echoes.EchoService.get", new_callable=AsyncMock)
-    def test_approves_successfully(
-        self, mock_get, mock_gen_svc, mock_ctx, mock_transform, mock_audit, client
-    ):
+    def test_approves_successfully(self, mock_get, mock_gen_svc, mock_ctx, mock_transform, mock_audit, client):
         mock_get.return_value = MOCK_ECHO  # status: "pending"
         mock_gen_svc.return_value = AsyncMock()
         mock_ctx.return_value = {"simulation_health": 0.5}

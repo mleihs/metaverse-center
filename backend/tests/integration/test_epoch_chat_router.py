@@ -75,6 +75,7 @@ class TestEpochChatModels:
 
     def test_message_create_validation(self):
         from backend.models.epoch_chat import EpochChatMessageCreate
+
         msg = EpochChatMessageCreate(
             content="Test message",
             channel_type="epoch",
@@ -86,6 +87,7 @@ class TestEpochChatModels:
 
     def test_message_create_rejects_empty_content(self):
         from backend.models.epoch_chat import EpochChatMessageCreate
+
         with pytest.raises(ValueError):
             EpochChatMessageCreate(
                 content="",
@@ -95,6 +97,7 @@ class TestEpochChatModels:
 
     def test_message_create_rejects_long_content(self):
         from backend.models.epoch_chat import EpochChatMessageCreate
+
         with pytest.raises(ValueError):
             EpochChatMessageCreate(
                 content="x" * 2001,
@@ -104,6 +107,7 @@ class TestEpochChatModels:
 
     def test_message_create_accepts_team_channel(self):
         from backend.models.epoch_chat import EpochChatMessageCreate
+
         msg = EpochChatMessageCreate(
             content="Team only",
             channel_type="team",
@@ -115,6 +119,7 @@ class TestEpochChatModels:
 
     def test_message_create_rejects_invalid_channel(self):
         from backend.models.epoch_chat import EpochChatMessageCreate
+
         with pytest.raises(ValueError):
             EpochChatMessageCreate(
                 content="Test",
@@ -124,6 +129,7 @@ class TestEpochChatModels:
 
     def test_ready_signal_validation(self):
         from backend.models.epoch_chat import ReadySignal
+
         signal = ReadySignal(
             simulation_id="00000000-0000-0000-0000-000000000001",
             ready=True,
@@ -132,6 +138,7 @@ class TestEpochChatModels:
 
     def test_ready_signal_false(self):
         from backend.models.epoch_chat import ReadySignal
+
         signal = ReadySignal(
             simulation_id="00000000-0000-0000-0000-000000000001",
             ready=False,

@@ -117,8 +117,7 @@ async def test_undeclared_rows_are_surfaced_not_swallowed():
 
     keys = [row["key"] for row in result["undeclared"]]
     assert keys == ["brandneues_tor_enabled"], (
-        "Nur '*_enabled'-Zeilen ohne Erklärung gehören in die Warnung — "
-        f"cache_map_data_ttl ist keine. Gefunden: {keys}"
+        f"Nur '*_enabled'-Zeilen ohne Erklärung gehören in die Warnung — cache_map_data_ttl ist keine. Gefunden: {keys}"
     )
     assert result["undeclared"][0]["enabled"] is True
 

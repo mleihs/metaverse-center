@@ -27,7 +27,8 @@ DEFAULT_SIM_ID = "ef22df3e-8c19-48b1-b068-5e3f97221c30"
 def get_prod_key() -> str:
     result = subprocess.run(
         ["railway", "variables", "--json"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     data = json.loads(result.stdout)
     return data["SUPABASE_SERVICE_ROLE_KEY"]
@@ -56,19 +57,28 @@ async def main():
 
     logger.info("Connecting to production Supabase...")
     from supabase import create_client
+
     supabase = create_client(PROD_URL, prod_key)
 
     # Verify simulation exists
-    sim_resp = supabase.table("simulations").select(
-        "id, name, description, description_de"
-    ).eq("id", sim_id).single().execute()
+    sim_resp = (
+        supabase.table("simulations")
+        .select("id, name, description, description_de")
+        .eq("id", sim_id)
+        .single()
+        .execute()
+    )
     sim = sim_resp.data
     logger.info("Simulation: %s", sim["name"])
 
     # ── 1. Lore translations ──
-    lore_resp = supabase.table("simulation_lore").select(
-        "id, title, epigraph, body, image_caption, title_de"
-    ).eq("simulation_id", sim_id).order("sort_order").execute()
+    lore_resp = (
+        supabase.table("simulation_lore")
+        .select("id, title, epigraph, body, image_caption, title_de")
+        .eq("simulation_id", sim_id)
+        .order("sort_order")
+        .execute()
+    )
     lore_sections = lore_resp.data or []
 
     untranslated_lore = [s for s in lore_sections if not s.get("title_de")]
@@ -76,6 +86,7 @@ async def main():
 
     if untranslated_lore:
         from backend.services.forge_lore_service import ForgeLoreService
+
         translations = await ForgeLoreService.translate_lore(untranslated_lore, openrouter_key=or_key)
 
         for idx, section in enumerate(untranslated_lore):
@@ -91,29 +102,36 @@ async def main():
                 if tr.get("image_caption"):
                     update["image_caption_de"] = tr["image_caption"]
                 if update:
-                    supabase.table("simulation_lore").update(update).eq(
-                        "id", section["id"]
-                    ).execute()
+                    supabase.table("simulation_lore").update(update).eq("id", section["id"]).execute()
         logger.info("Lore translations persisted: %d sections", len(translations))
     else:
         logger.info("All lore already translated, skipping")
 
     # ── 2. Entity translations ──
-    agents = (supabase.table("agents").select(
-        "name, character, background, primary_profession, character_de"
-    ).eq("simulation_id", sim_id).execute()).data or []
+    agents = (
+        supabase.table("agents")
+        .select("name, character, background, primary_profession, character_de")
+        .eq("simulation_id", sim_id)
+        .execute()
+    ).data or []
 
-    buildings = (supabase.table("buildings").select(
-        "name, description, building_type, building_condition, description_de"
-    ).eq("simulation_id", sim_id).execute()).data or []
+    buildings = (
+        supabase.table("buildings")
+        .select("name, description, building_type, building_condition, description_de")
+        .eq("simulation_id", sim_id)
+        .execute()
+    ).data or []
 
-    zones = (supabase.table("zones").select(
-        "name, description, zone_type, description_de"
-    ).eq("simulation_id", sim_id).execute()).data or []
+    zones = (
+        supabase.table("zones")
+        .select("name, description, zone_type, description_de")
+        .eq("simulation_id", sim_id)
+        .execute()
+    ).data or []
 
-    streets = (supabase.table("city_streets").select(
-        "name, street_type, street_type_de"
-    ).eq("simulation_id", sim_id).execute()).data or []
+    streets = (
+        supabase.table("city_streets").select("name, street_type, street_type_de").eq("simulation_id", sim_id).execute()
+    ).data or []
 
     untranslated_agents = [a for a in agents if not a.get("character_de")]
     untranslated_buildings = [b for b in buildings if not b.get("description_de")]
@@ -121,15 +139,16 @@ async def main():
     untranslated_streets = [s for s in streets if not s.get("street_type_de")]
 
     total_untranslated = (
-        len(untranslated_agents) + len(untranslated_buildings)
-        + len(untranslated_zones) + len(untranslated_streets)
+        len(untranslated_agents) + len(untranslated_buildings) + len(untranslated_zones) + len(untranslated_streets)
     )
     sim_needs_description_de = not sim.get("description_de")
 
     logger.info(
         "Entities needing translation: %d agents, %d buildings, %d zones, %d streets | description_de missing: %s",
-        len(untranslated_agents), len(untranslated_buildings),
-        len(untranslated_zones), len(untranslated_streets),
+        len(untranslated_agents),
+        len(untranslated_buildings),
+        len(untranslated_zones),
+        len(untranslated_streets),
         sim_needs_description_de,
     )
 
@@ -151,7 +170,9 @@ async def main():
             openrouter_key=or_key,
         )
         await ForgeEntityTranslationService.persist_translations(
-            supabase, sim_id, entity_translations,
+            supabase,
+            sim_id,
+            entity_translations,
         )
         logger.info("Entity translations persisted")
 

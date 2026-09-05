@@ -67,10 +67,7 @@ class ContentDraftCreate(BaseModel):
         min_length=1,
         max_length=128,
         pattern=r"^[a-z][a-z0-9_]{0,127}$",
-        description=(
-            "Lowercase pack identifier. Must start with a letter; allows "
-            "letters, digits, and underscores."
-        ),
+        description=("Lowercase pack identifier. Must start with a letter; allows letters, digits, and underscores."),
     )
     resource_path: str = Field(
         ...,
@@ -78,8 +75,7 @@ class ContentDraftCreate(BaseModel):
         max_length=512,
         pattern=r"^[a-zA-Z0-9_./\[\]]{1,512}$",
         description=(
-            "Addressable path within the pack (e.g. `banter[ab_01]`). "
-            "Must not contain `..` or start with `/`."
+            "Addressable path within the pack (e.g. `banter[ab_01]`). Must not contain `..` or start with `/`."
         ),
     )
     base_content: dict[str, Any]

@@ -190,7 +190,10 @@ async def test_unlock_returns_true_when_row_inserted():
     }
     admin = _scripted([inserted_row])
     newly = await AttunementService.unlock(
-        admin, USER_ID, UUID(inserted_row["attunement_id"]), UUID(inserted_row["constellation_id"]),
+        admin,
+        USER_ID,
+        UUID(inserted_row["attunement_id"]),
+        UUID(inserted_row["constellation_id"]),
     )
     assert newly is True
 
@@ -199,7 +202,10 @@ async def test_unlock_returns_true_when_row_inserted():
 async def test_unlock_returns_false_when_already_present():
     admin = _scripted([])  # conflict silenced → empty representation
     newly = await AttunementService.unlock(
-        admin, USER_ID, uuid4(), uuid4(),
+        admin,
+        USER_ID,
+        uuid4(),
+        uuid4(),
     )
     assert newly is False
 

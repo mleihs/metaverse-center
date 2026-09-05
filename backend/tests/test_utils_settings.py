@@ -55,7 +55,7 @@ class TestParseSettingBool:
             (False, False),
             (1, True),
             (0, False),
-            (2, False),    # non-canonical int → False (fail-closed)
+            (2, False),  # non-canonical int → False (fail-closed)
             (-1, False),
             (1.0, False),  # float stringifies to "1.0", not "1" → False
             (0.0, False),
@@ -67,16 +67,16 @@ class TestParseSettingBool:
     @pytest.mark.parametrize(
         "raw",
         [
-            None,          # jsonb null / missing row — the F32 bug
-            "null",        # literal "null" string (postgrest sometimes)
-            '"null"',      # JSON-quoted null (strip('"') unwraps it)
-            "None",        # Python-repr leaking through str()
-            '"None"',      # JSON-quoted Python-repr
-            "enabled",     # unknown string — fail-closed tightening
-            '"enabled"',   # JSON-quoted unknown — same fail-closed path
+            None,  # jsonb null / missing row — the F32 bug
+            "null",  # literal "null" string (postgrest sometimes)
+            '"null"',  # JSON-quoted null (strip('"') unwraps it)
+            "None",  # Python-repr leaking through str()
+            '"None"',  # JSON-quoted Python-repr
+            "enabled",  # unknown string — fail-closed tightening
+            '"enabled"',  # JSON-quoted unknown — same fail-closed path
             "on-standby",  # typo / custom value
-            "foo",         # unrecognised
-            object(),      # unexpected type
+            "foo",  # unrecognised
+            object(),  # unexpected type
         ],
     )
     def test_non_canonical_fails_closed(self, raw: object):
@@ -139,7 +139,10 @@ class TestUpsertPlatformSetting:
         admin_id = UUID("11111111-2222-3333-4444-555555555555")
 
         await upsert_platform_setting(
-            admin, "byok_bypass_enabled", True, updated_by_id=admin_id,
+            admin,
+            "byok_bypass_enabled",
+            True,
+            updated_by_id=admin_id,
         )
 
         chain.upsert.assert_called_once_with(
@@ -172,7 +175,10 @@ class TestUpsertPlatformSetting:
         admin.table.return_value = chain
 
         await upsert_platform_setting(
-            admin, "k", "v", updated_by_id="already-stringified",
+            admin,
+            "k",
+            "v",
+            updated_by_id="already-stringified",
         )
 
         payload = chain.upsert.call_args.args[0]

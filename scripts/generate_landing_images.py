@@ -41,7 +41,8 @@ def get_service_key() -> str:
 
     result = subprocess.run(
         ["supabase", "status"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     for line in result.stdout.splitlines():
         if "Secret" in line and "sb_secret_" in line:

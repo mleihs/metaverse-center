@@ -203,9 +203,7 @@ class TestDieSchweigedauerKommtAusDemVerlauf:
 
     def test_zwei_geschwiegene_runden(self):
         verlauf = (
-            self._runde(["id-marie", "id-suse", "id-benno"])
-            + self._runde(["id-marie"])
-            + self._runde(["id-marie"])
+            self._runde(["id-marie", "id-suse", "id-benno"]) + self._runde(["id-marie"]) + self._runde(["id-marie"])
         )
         assert schweigerunden(verlauf, IDS) == [0, 2, 2]
 
@@ -217,9 +215,7 @@ class TestDieSchweigedauerKommtAusDemVerlauf:
     def test_systemzeilen_eroeffnen_keine_runde(self):
         """Ein Fluestern oder ein Beitritt ist kein Zug. Er darf ein
         Schweigen weder beenden noch verlaengern."""
-        verlauf = self._runde(["id-marie", "id-suse", "id-benno"]) + [
-            {"sender_role": "system", "content": "x"}
-        ]
+        verlauf = self._runde(["id-marie", "id-suse", "id-benno"]) + [{"sender_role": "system", "content": "x"}]
         assert schweigerunden(verlauf, IDS) == [0, 0, 0]
 
     def test_das_fenster_begrenzt_die_zahl(self):
@@ -291,9 +287,7 @@ async def _vorlauf(*, tor: bool, nachricht: str):
     agenten = [{"id": i, "name": n} for i, n in zip(IDS, NAMEN, strict=True)]
     tabellen = {
         "chat_conversation_agents": [{"agents": a} for a in agenten],
-        "chat_messages": [
-            {"sender_role": "user", "content": nachricht, "agent_id": None, "created_at": "2026-09-05"}
-        ],
+        "chat_messages": [{"sender_role": "user", "content": nachricht, "agent_id": None, "created_at": "2026-09-05"}],
     }
     if tor:
         tabellen["platform_settings"] = [{"setting_value": True}]

@@ -120,7 +120,9 @@ class ContentPacksConflictService:
         owner, repo = get_github_repo_config()
 
         default_branch, head_sha = await discover_default_head(
-            client, owner, repo,
+            client,
+            owner,
+            repo,
         )
         theirs = await _fetch_main_content(
             client,
@@ -139,7 +141,9 @@ class ContentPacksConflictService:
 
         logger.info(
             "Conflict preview for draft %s: %d conflicts, %d auto-resolved",
-            draft_id, len(result.conflicts), result.auto_resolved_count,
+            draft_id,
+            len(result.conflicts),
+            result.auto_resolved_count,
         )
         return _to_preview(draft, result, theirs, head_sha)
 
@@ -178,7 +182,9 @@ async def _fetch_main_content(
         if exc.status == 404:
             logger.info(
                 "Resource %s not on %s@%s – treating as empty (new-resource add)",
-                file_path, repo, ref,
+                file_path,
+                repo,
+                ref,
             )
             return {}
         raise bad_gateway(

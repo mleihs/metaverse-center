@@ -92,12 +92,16 @@ class TestLeaderboardDenseRanking:
 
         # epoch_participants query (team assignments)
         participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-            {"simulation_id": SIM_ID_B, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-            {"simulation_id": SIM_ID_C, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-            {"simulation_id": SIM_ID_D, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-        ]))
+        participants_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                    {"simulation_id": SIM_ID_B, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                    {"simulation_id": SIM_ID_C, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                    {"simulation_id": SIM_ID_D, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                ]
+            )
+        )
 
         def table_router(name):
             if name == "epoch_scores":
@@ -155,9 +159,13 @@ class TestLeaderboardDenseRanking:
         scores_chain.execute = AsyncMock(return_value=MagicMock(data=scores_data))
 
         participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-        ]))
+        participants_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                ]
+            )
+        )
 
         def table_router(name):
             if name == "epoch_scores":
@@ -210,11 +218,15 @@ class TestLeaderboardDenseRanking:
         scores_chain.execute = AsyncMock(return_value=MagicMock(data=scores_data))
 
         participants_chain = _make_chain()
-        participants_chain.execute = AsyncMock(return_value=MagicMock(data=[
-            {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-            {"simulation_id": SIM_ID_B, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-            {"simulation_id": SIM_ID_C, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
-        ]))
+        participants_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {"simulation_id": SIM_ID_A, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                    {"simulation_id": SIM_ID_B, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                    {"simulation_id": SIM_ID_C, "team_id": None, "betrayal_penalty": 0, "epoch_teams": None},
+                ]
+            )
+        )
 
         def table_router(name):
             if name == "epoch_scores":

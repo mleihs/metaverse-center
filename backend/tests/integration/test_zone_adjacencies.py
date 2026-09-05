@@ -66,7 +66,7 @@ class TestApplyZoneAdjacencies:
                 {"zone_a": ZONE_A2, "zone_b": ZONE_A1, "derivation": "geometry"},  # reversed
                 {"zone_a": ZONE_A1, "zone_b": ZONE_A2, "derivation": "geometry"},  # dup of above
                 {"zone_a": ZONE_A1, "zone_b": ZONE_A1, "derivation": "geometry"},  # self → dropped
-                {"zone_a": ZONE_A2, "zone_b": ZONE_A3, "derivation": "transit"},   # distinct
+                {"zone_a": ZONE_A2, "zone_b": ZONE_A3, "derivation": "transit"},  # distinct
             ]
             result = admin_client.rpc(
                 "fn_apply_zone_adjacencies",
@@ -88,9 +88,9 @@ class TestApplyZoneAdjacencies:
             ], f"rows not canonical/deduped: {rows}"
 
             # bump=False must NOT advance the version.
-            before = (
-                admin_client.table("simulations").select("map_geometry_version").eq("id", sim).execute()
-            ).data[0]["map_geometry_version"]
+            before = (admin_client.table("simulations").select("map_geometry_version").eq("id", sim).execute()).data[0][
+                "map_geometry_version"
+            ]
             nobump = admin_client.rpc(
                 "fn_apply_zone_adjacencies",
                 {"p_simulation_id": sim, "p_pairs": [], "p_bump_version": False},

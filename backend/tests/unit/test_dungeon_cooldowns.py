@@ -41,8 +41,11 @@ class TestTheContentIsStillThere:
         with_cd = [
             aid
             for aid in (
-                "guardian_fortify", "saboteur_detonate", "spy_counter_intel",
-                "propagandist_rally", "assassin_ambush_strike",
+                "guardian_fortify",
+                "saboteur_detonate",
+                "spy_counter_intel",
+                "propagandist_rally",
+                "assassin_ambush_strike",
             )
             if (a := get_ability_by_id(aid)) and a.cooldown > 0
         ]
@@ -88,10 +91,7 @@ class TestAdvanceCooldowns:
 
     def test_an_ability_without_a_cooldown_stamps_nothing(self):
         agent = _agent()
-        free = next(
-            aid for aid in ("basic_attack", "defend")
-            if (a := get_ability_by_id(aid)) and a.cooldown == 0
-        )
+        free = next(aid for aid in ("basic_attack", "defend") if (a := get_ability_by_id(aid)) and a.cooldown == 0)
         advance_cooldowns([agent], [(agent.agent_id, free)])
         assert agent.cooldowns == {}
 
@@ -168,8 +168,12 @@ class TestTheServiceEnforcesThem:
                 patch("backend.services.dungeon_combat_service.resolve_combat_round") as resolve,
             ):
                 resolve.return_value = CombatRoundResult(
-                    round_num=1, events=[], combat_over=False,
-                    victory=False, party_wipe=False, stalemate=False,
+                    round_num=1,
+                    events=[],
+                    combat_over=False,
+                    victory=False,
+                    party_wipe=False,
+                    stalemate=False,
                 )
                 await DungeonEngineService.submit_combat_actions(
                     make_async_supabase_mock(), instance.run_id, player, submission
@@ -179,10 +183,7 @@ class TestTheServiceEnforcesThem:
             # auto-defend. What must NOT be in it is the blocked ability.
             submitted_actions = resolve.call_args[0][1]
             blocked = [a for a in submitted_actions if a.ability_id == "guardian_fortify"]
-            assert not blocked, (
-                "Die Fähigkeit auf Abklingzeit hat die Runde erreicht — "
-                "die Prüfung greift nicht"
-            )
+            assert not blocked, "Die Fähigkeit auf Abklingzeit hat die Runde erreicht — die Prüfung greift nicht"
 
         finally:
             _store.remove(instance.run_id)
@@ -221,8 +222,12 @@ class TestTheServiceEnforcesThem:
                 patch("backend.services.dungeon_combat_service.resolve_combat_round") as resolve,
             ):
                 resolve.return_value = CombatRoundResult(
-                    round_num=1, events=[], combat_over=False,
-                    victory=False, party_wipe=False, stalemate=False,
+                    round_num=1,
+                    events=[],
+                    combat_over=False,
+                    victory=False,
+                    party_wipe=False,
+                    stalemate=False,
                 )
                 await DungeonEngineService.submit_combat_actions(
                     make_async_supabase_mock(), instance.run_id, player, submission
@@ -267,11 +272,7 @@ class TestTheServiceEnforcesThem:
         agent = instance.party[0]
         agent.aptitudes = {"assassin": 6, "infiltrator": 6, "spy": 6}
 
-        blocked = {
-            a.id: 3
-            for a in get_agent_all_abilities(agent.aptitudes, instance.archetype)
-            if a.cooldown > 0
-        }
+        blocked = {a.id: 3 for a in get_agent_all_abilities(agent.aptitudes, instance.archetype) if a.cooldown > 0}
         assert len(blocked) >= 3, f"Fixture greift nicht: nur {blocked}"
         agent.cooldowns = dict(blocked)
         _store.put(instance.run_id, instance)
@@ -302,18 +303,18 @@ class TestTheServiceEnforcesThem:
                     patch("backend.services.dungeon_combat_service.resolve_combat_round") as resolve,
                 ):
                     resolve.return_value = CombatRoundResult(
-                        round_num=round_num, events=[], combat_over=False,
-                        victory=False, party_wipe=False, stalemate=False,
+                        round_num=round_num,
+                        events=[],
+                        combat_over=False,
+                        victory=False,
+                        party_wipe=False,
+                        stalemate=False,
                     )
                     await DungeonEngineService.submit_combat_actions(
                         make_async_supabase_mock(), instance.run_id, player, submission
                     )
 
-                chosen.extend(
-                    a.ability_id
-                    for a in resolve.call_args[0][1]
-                    if str(a.agent_id) == str(agent.agent_id)
-                )
+                chosen.extend(a.ability_id for a in resolve.call_args[0][1] if str(a.agent_id) == str(agent.agent_id))
 
             assert chosen, "Auto-Verteidigen hat gar nichts gewählt"
             for ability_id in chosen:

@@ -131,18 +131,26 @@ def main():
 
     # Step 4: Regenerate building images
     buildings = [
-        ("6c8947a3-1fdb-4e38-910b-c223d6ad0006", "Kanzlerpalast", {
-            "building_type": "government",
-            "building_condition": "excellent",
-            "description": "Der Kanzlerpalast erhebt sich wie ein monolithisches Grabmal aus grauem Sichtbeton ueber die restliche Stadt.",
-            "zone_name": "Regierungsviertel",
-        }),
-        ("c966ea5d-02c7-44bb-93fb-f32bffd3bab6", "Kathedrale des Lichts", {
-            "building_type": "cultural",
-            "building_condition": "good",
-            "description": "Die Kathedrale des Lichts erhebt sich als monumentaler Betonklotz ueber dem grauen Stadtviertel.",
-            "zone_name": "Altstadt",
-        }),
+        (
+            "6c8947a3-1fdb-4e38-910b-c223d6ad0006",
+            "Kanzlerpalast",
+            {
+                "building_type": "government",
+                "building_condition": "excellent",
+                "description": "Der Kanzlerpalast erhebt sich wie ein monolithisches Grabmal aus grauem Sichtbeton ueber die restliche Stadt.",
+                "zone_name": "Regierungsviertel",
+            },
+        ),
+        (
+            "c966ea5d-02c7-44bb-93fb-f32bffd3bab6",
+            "Kathedrale des Lichts",
+            {
+                "building_type": "cultural",
+                "building_condition": "good",
+                "description": "Die Kathedrale des Lichts erhebt sich als monumentaler Betonklotz ueber dem grauen Stadtviertel.",
+                "zone_name": "Altstadt",
+            },
+        ),
     ]
 
     print("\n--- Generating new building images (2) ---")

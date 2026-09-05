@@ -123,13 +123,7 @@ def map_world(admin_client, _draft_owner_id):
 
 
 def _sim_state(admin_client, sim_id: str) -> dict:
-    return (
-        admin_client.table("simulations")
-        .select("map_geometry_version, map_seed")
-        .eq("id", sim_id)
-        .execute()
-        .data[0]
-    )
+    return admin_client.table("simulations").select("map_geometry_version, map_seed").eq("id", sim_id).execute().data[0]
 
 
 def _geometry(ids: dict, street_id: str) -> dict:
@@ -181,13 +175,7 @@ class TestApplyMapGeometryHappyPath:
         assert after["map_geometry_version"] == before["map_geometry_version"] + 1
         assert after["map_seed"] == "test-seed-271"
 
-        streets = (
-            admin_client.table("city_streets")
-            .select("id")
-            .eq("simulation_id", map_world["sim"])
-            .execute()
-            .data
-        )
+        streets = admin_client.table("city_streets").select("id").eq("simulation_id", map_world["sim"]).execute().data
         assert [s["id"] for s in streets] == [new_street], (
             "street set must be fully replaced (old street gone, new street present)"
         )
@@ -217,13 +205,7 @@ class TestApplyMapGeometryHappyPath:
             }
         ]
 
-        draft = (
-            admin_client.table("forge_drafts")
-            .select("map_status")
-            .eq("id", map_world["draft"])
-            .execute()
-            .data[0]
-        )
+        draft = admin_client.table("forge_drafts").select("map_status").eq("id", map_world["draft"]).execute().data[0]
         assert draft["map_status"] == "succeeded"
 
     def test_unknown_simulation_raises(self, admin_client):
@@ -256,22 +238,10 @@ class TestApplyMapGeometryRollback:
         after = _sim_state(admin_client, map_world["sim"])
         assert after == before, "version/seed must be untouched after rollback"
 
-        zone = (
-            admin_client.table("zones")
-            .select("geojson")
-            .eq("id", map_world["zone"])
-            .execute()
-            .data[0]
-        )
+        zone = admin_client.table("zones").select("geojson").eq("id", map_world["zone"]).execute().data[0]
         assert zone["geojson"] is None, "zone geojson update must be rolled back"
 
-        streets = (
-            admin_client.table("city_streets")
-            .select("id")
-            .eq("simulation_id", map_world["sim"])
-            .execute()
-            .data
-        )
+        streets = admin_client.table("city_streets").select("id").eq("simulation_id", map_world["sim"]).execute().data
         assert [s["id"] for s in streets] == [map_world["old_street"]], (
             "the street DELETE preceding the failed INSERT must be rolled back"
         )
@@ -285,13 +255,5 @@ class TestApplyMapGeometryRollback:
         )
         assert not lives_at, "no lives_at relation may survive the rollback"
 
-        draft = (
-            admin_client.table("forge_drafts")
-            .select("map_status")
-            .eq("id", map_world["draft"])
-            .execute()
-            .data[0]
-        )
-        assert draft["map_status"] == "generating", (
-            "draft must not flip to succeeded on a failed apply"
-        )
+        draft = admin_client.table("forge_drafts").select("map_status").eq("id", map_world["draft"]).execute().data[0]
+        assert draft["map_status"] == "generating", "draft must not flip to succeeded on a failed apply"

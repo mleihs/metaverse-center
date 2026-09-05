@@ -73,9 +73,7 @@ class TestListManifest:
 
         # Shadow/banter is guaranteed to exist (it's the pilot pack); it
         # should carry entries > 0 so the UI can preview counts.
-        shadow_banter = [
-            r for r in rows if r["pack_slug"] == "shadow" and r["resource_path"] == "banter"
-        ]
+        shadow_banter = [r for r in rows if r["pack_slug"] == "shadow" and r["resource_path"] == "banter"]
         assert len(shadow_banter) == 1
         assert shadow_banter[0]["entry_count"] > 0
 
@@ -201,6 +199,4 @@ class TestAbilityPacks:
         # hint. The context is free to mention "abilities" or omit a root
         # entirely; only the wrong-root leak is a regression.
         detail = (r.json().get("detail") or "").lower()
-        assert "archetypes" not in detail, (
-            f"404 detail names the wrong root: {detail!r}"
-        )
+        assert "archetypes" not in detail, f"404 detail names the wrong root: {detail!r}"

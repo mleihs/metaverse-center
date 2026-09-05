@@ -69,7 +69,7 @@ def extract_storage_path(url: str, bucket: str) -> str | None:
     idx = url.find(marker)
     if idx < 0:
         return None
-    return url[idx + len(marker):]
+    return url[idx + len(marker) :]
 
 
 def get_content_type(path: str) -> str:
@@ -180,22 +180,26 @@ async def main() -> None:
         url = a.get("portrait_image_url")
         if url and url not in seen_urls:
             seen_urls.add(url)
-            agent_items.append((
-                f"[{a['sim_name']}] {a['name']}",
-                url,
-                "agent.portraits",
-            ))
+            agent_items.append(
+                (
+                    f"[{a['sim_name']}] {a['name']}",
+                    url,
+                    "agent.portraits",
+                )
+            )
 
     building_items: list[tuple[str, str, str]] = []
     for b in buildings:
         url = b.get("image_url")
         if url and url not in seen_urls:
             seen_urls.add(url)
-            building_items.append((
-                f"[{b['sim_name']}] {b['name']}",
-                url,
-                "building.images",
-            ))
+            building_items.append(
+                (
+                    f"[{b['sim_name']}] {b['name']}",
+                    url,
+                    "building.images",
+                )
+            )
 
     # Simulation banners
     banner_items: list[tuple[str, str, str]] = []
@@ -203,16 +207,20 @@ async def main() -> None:
         banner_url = f"{PROD_STORAGE}/simulation.assets/{sim_id}/banner.webp"
         if banner_url not in seen_urls:
             seen_urls.add(banner_url)
-            banner_items.append((
-                f"Banner: {sim_id[:8]}...",
-                banner_url,
-                "simulation.assets",
-            ))
+            banner_items.append(
+                (
+                    f"Banner: {sim_id[:8]}...",
+                    banner_url,
+                    "simulation.assets",
+                )
+            )
 
     total = len(agent_items) + len(building_items) + len(banner_items)
-    print(f"Found {len(agent_items)} unique agent portraits, "
-          f"{len(building_items)} unique building images, "
-          f"{len(banner_items)} simulation banners")
+    print(
+        f"Found {len(agent_items)} unique agent portraits, "
+        f"{len(building_items)} unique building images, "
+        f"{len(banner_items)} simulation banners"
+    )
     print(f"Total images to sync: {total}\n")
 
     # ── Sync all ────────────────────────────────────────────────────

@@ -216,20 +216,13 @@ def compute_zone_adjacencies(
         for i in range(len(zlist)):
             for j in range(i + 1, len(zlist)):
                 if _zones_share_border(zlist[i][1], zlist[j][1]):
-                    pairs.append(
-                        ZoneAdjacencyPair(zone_a=zlist[i][0], zone_b=zlist[j][0], derivation="geometry")
-                    )
+                    pairs.append(ZoneAdjacencyPair(zone_a=zlist[i][0], zone_b=zlist[j][0], derivation="geometry"))
 
     # Inter-city transit: anchor zone (lowest id) per city, all city pairs.
-    anchors = [
-        (city_id, min(zone_id for zone_id, _ in zones_by_city[city_id]))
-        for city_id in sorted(zones_by_city)
-    ]
+    anchors = [(city_id, min(zone_id for zone_id, _ in zones_by_city[city_id])) for city_id in sorted(zones_by_city)]
     for i in range(len(anchors)):
         for j in range(i + 1, len(anchors)):
-            pairs.append(
-                ZoneAdjacencyPair(zone_a=anchors[i][1], zone_b=anchors[j][1], derivation="transit")
-            )
+            pairs.append(ZoneAdjacencyPair(zone_a=anchors[i][1], zone_b=anchors[j][1], derivation="transit"))
 
     return pairs
 

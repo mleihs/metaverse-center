@@ -135,11 +135,7 @@ class LandingService:
             (" ".join((row.get("seed_prompt") or "").split()), row.get("simulation_id"))
             for row in extract_list(response)
         ]
-        fitting = [
-            (text, sim)
-            for text, sim in saetze
-            if cls._PROMPT_MIN_CHARS <= len(text) <= cls._PROMPT_MAX_CHARS
-        ]
+        fitting = [(text, sim) for text, sim in saetze if cls._PROMPT_MIN_CHARS <= len(text) <= cls._PROMPT_MAX_CHARS]
         # Zweisprachig ist das Feld nicht: ein Ausgangssatz wurde in einer
         # Sprache geschrieben und bleibt darin. `text_de` bleibt leer, und
         # `t(prompt, 'text')` fällt dann auf `text` zurück — richtig so, denn
@@ -150,8 +146,7 @@ class LandingService:
         # aus einer anderen Welt. Mit der simulation_id kann die Seite zeigen,
         # WEN dieser Satz hervorgebracht hat.
         return [
-            {"text": text, "simulation_id": str(sim) if sim else None}
-            for text, sim in fitting[: cls._PROMPT_COUNT]
+            {"text": text, "simulation_id": str(sim) if sim else None} for text, sim in fitting[: cls._PROMPT_COUNT]
         ]
 
     @staticmethod

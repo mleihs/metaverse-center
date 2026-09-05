@@ -25,9 +25,7 @@ ERLAUBT = {"image/png", "image/avif"}
 class TestWelcheFassung:
     async def test_die_grosse_wird_zuerst_versucht(self):
         with patch.object(modul, "safe_download", new=AsyncMock(return_value=(b"gross", "image/avif"))) as lade:
-            daten, _ = await modul._lade_beste_aufloesung(
-                "https://speicher.invalid/x/marie.avif", ERLAUBT
-            )
+            daten, _ = await modul._lade_beste_aufloesung("https://speicher.invalid/x/marie.avif", ERLAUBT)
         assert daten == b"gross"
         assert lade.await_args.args[0] == "https://speicher.invalid/x/marie.full.avif"
         assert lade.await_count == 1
@@ -40,9 +38,7 @@ class TestWelcheFassung:
             return (b"klein", "image/avif")
 
         with patch.object(modul, "safe_download", new=AsyncMock(side_effect=antwort)) as lade:
-            daten, _ = await modul._lade_beste_aufloesung(
-                "https://speicher.invalid/x/marie.avif", ERLAUBT
-            )
+            daten, _ = await modul._lade_beste_aufloesung("https://speicher.invalid/x/marie.avif", ERLAUBT)
         assert daten == b"klein"
         assert lade.await_count == 2
 

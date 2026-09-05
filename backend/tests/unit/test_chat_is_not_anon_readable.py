@@ -138,9 +138,7 @@ class TestDieGegenrichtlinienBleiben:
         assert "RAISE" in zweig, "Der leere Fall wird stillschweigend durchgewunken"
 
         # 3. Und was er sagt, darf nicht nach Bestehen klingen.
-        assert re.search(r"nichts zu verbergen", zweig, re.IGNORECASE), (
-            "Der leere Fall wird nicht beim Namen genannt"
-        )
+        assert re.search(r"nichts zu verbergen", zweig, re.IGNORECASE), "Der leere Fall wird nicht beim Namen genannt"
         assert re.search(r"AUSGESETZT|nicht bestanden|Erwartet|Nichts zu verbergen", zweig), (
             "Die Meldung sagt nicht, dass hier NICHT gemessen wurde"
         )

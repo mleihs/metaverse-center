@@ -33,7 +33,14 @@ _EXPECTED = ("confirmation", "recovery", "magic_link", "email_change", "invite")
 #: GoTrue substitutes exactly these. Anything else renders literally, and a
 #: literal `{{ .Foo }}` in a security mail reads as a broken or forged message.
 _KNOWN_PLACEHOLDERS = {
-    "ConfirmationURL", "Token", "TokenHash", "SiteURL", "Email", "NewEmail", "RedirectTo", "Data",
+    "ConfirmationURL",
+    "Token",
+    "TokenHash",
+    "SiteURL",
+    "Email",
+    "NewEmail",
+    "RedirectTo",
+    "Data",
 }
 
 
@@ -66,10 +73,7 @@ class TestEveryAccountMailIsWired:
 
     def test_no_template_file_is_left_unwired(self, config):
         """A file on disk that config does not name is dead weight that looks live."""
-        wired = {
-            Path(entry["content_path"]).stem
-            for entry in config["auth"]["email"]["template"].values()
-        }
+        wired = {Path(entry["content_path"]).stem for entry in config["auth"]["email"]["template"].values()}
         on_disk = {path.stem for path in _templates()}
         assert on_disk <= wired, f"nicht verdrahtet: {sorted(on_disk - wired)}"
 
@@ -79,9 +83,7 @@ class TestSecurityMailSaysWhatItMust:
     def test_it_offers_the_link_as_plain_text(self, path):
         """Many people never click a button in an email, and rightly so."""
         text = path.read_text(encoding="utf-8")
-        assert re.search(r">\s*\{\{ \.ConfirmationURL \}\}\s*<", text), (
-            "kein Klartext-Link zum Kopieren"
-        )
+        assert re.search(r">\s*\{\{ \.ConfirmationURL \}\}\s*<", text), "kein Klartext-Link zum Kopieren"
 
     @pytest.mark.parametrize("path", _templates(), ids=lambda p: p.stem)
     def test_it_states_how_long_the_link_lasts(self, path):
@@ -91,9 +93,9 @@ class TestSecurityMailSaysWhatItMust:
     @pytest.mark.parametrize("path", _templates(), ids=lambda p: p.stem)
     def test_it_says_doing_nothing_is_safe(self, path):
         text = path.read_text(encoding="utf-8")
-        assert re.search(
-            r"do not need to do anything|did not ask for this|do NOT confirm|ignore this message", text
-        ), "sagt nicht, was passiert, wenn man nichts tut"
+        assert re.search(r"do not need to do anything|did not ask for this|do NOT confirm|ignore this message", text), (
+            "sagt nicht, was passiert, wenn man nichts tut"
+        )
 
     @pytest.mark.parametrize("path", _templates(), ids=lambda p: p.stem)
     def test_it_is_not_unsubscribable_and_says_so(self, path):
@@ -117,9 +119,7 @@ class TestNothingRendersLiterally:
     def test_only_known_placeholders_are_used(self, path):
         used = set(re.findall(r"\{\{\s*\.(\w+)\s*\}\}", path.read_text(encoding="utf-8")))
         unknown = sorted(used - _KNOWN_PLACEHOLDERS)
-        assert not unknown, (
-            f"GoTrue ersetzt diese nicht: {unknown} — sie stünden wörtlich in der Mail"
-        )
+        assert not unknown, f"GoTrue ersetzt diese nicht: {unknown} — sie stünden wörtlich in der Mail"
 
     @pytest.mark.parametrize("path", _templates(), ids=lambda p: p.stem)
     def test_no_em_dash(self, path):

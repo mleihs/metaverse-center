@@ -40,6 +40,7 @@ def _mock_supabase(data=None, count=None):
 
 # ── list_for_agent ─────────────────────────────────────────────────────
 
+
 class TestListForAgent:
     @pytest.mark.asyncio
     async def test_returns_both_directions(self):
@@ -115,6 +116,7 @@ class TestListForAgent:
 
 # ── list_for_simulation ────────────────────────────────────────────────
 
+
 class TestListForSimulation:
     @pytest.mark.asyncio
     async def test_returns_data_and_total(self):
@@ -125,7 +127,10 @@ class TestListForSimulation:
         mock, builder, response = _mock_supabase(data=rows, count=10)
 
         data, total = await RelationshipService.list_for_simulation(
-            mock, SIM_ID, limit=25, offset=0,
+            mock,
+            SIM_ID,
+            limit=25,
+            offset=0,
         )
         assert data == rows
         assert total == 10
@@ -135,7 +140,10 @@ class TestListForSimulation:
         mock, builder, response = _mock_supabase(data=[], count=0)
 
         await RelationshipService.list_for_simulation(
-            mock, SIM_ID, limit=50, offset=10,
+            mock,
+            SIM_ID,
+            limit=50,
+            offset=10,
         )
         builder.range.assert_called_once_with(10, 59)
 
@@ -149,6 +157,7 @@ class TestListForSimulation:
 
 
 # ── create_relationship ───────────────────────────────────────────────
+
 
 class TestCreateRelationship:
     @pytest.mark.asyncio
@@ -164,7 +173,9 @@ class TestCreateRelationship:
         mock, builder, response = _mock_supabase(data=[created])
 
         result = await RelationshipService.create_relationship(
-            mock, SIM_ID, AGENT_A,
+            mock,
+            SIM_ID,
+            AGENT_A,
             {"target_agent_id": str(AGENT_B), "relationship_type": "ally", "intensity": 7},
         )
         assert result["id"] == str(REL_ID)
@@ -176,13 +187,16 @@ class TestCreateRelationship:
 
         with pytest.raises(HTTPException) as exc:
             await RelationshipService.create_relationship(
-                mock, SIM_ID, AGENT_A,
+                mock,
+                SIM_ID,
+                AGENT_A,
                 {"target_agent_id": str(AGENT_B), "relationship_type": "ally"},
             )
         assert exc.value.status_code == 400
 
 
 # ── update_relationship ───────────────────────────────────────────────
+
 
 class TestUpdateRelationship:
     @pytest.mark.asyncio
@@ -191,7 +205,10 @@ class TestUpdateRelationship:
         mock, builder, response = _mock_supabase(data=[updated])
 
         result = await RelationshipService.update_relationship(
-            mock, SIM_ID, REL_ID, {"intensity": 9},
+            mock,
+            SIM_ID,
+            REL_ID,
+            {"intensity": 9},
         )
         assert result["intensity"] == 9
         builder.update.assert_called_once()
@@ -210,12 +227,16 @@ class TestUpdateRelationship:
 
         with pytest.raises(HTTPException) as exc:
             await RelationshipService.update_relationship(
-                mock, SIM_ID, REL_ID, {"intensity": 5},
+                mock,
+                SIM_ID,
+                REL_ID,
+                {"intensity": 5},
             )
         assert exc.value.status_code == 404
 
 
 # ── delete_relationship ───────────────────────────────────────────────
+
 
 class TestDeleteRelationship:
     @pytest.mark.asyncio

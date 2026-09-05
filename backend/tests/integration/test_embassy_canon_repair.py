@@ -26,11 +26,7 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 
 def _embassies_with_ambassadors(admin_client) -> list[dict]:
-    resp = (
-        admin_client.table("embassies")
-        .select("id,simulation_a_id,simulation_b_id,embassy_metadata")
-        .execute()
-    )
+    resp = admin_client.table("embassies").select("id,simulation_a_id,simulation_b_id,embassy_metadata").execute()
     rows = [
         e
         for e in (resp.data or [])
@@ -65,9 +61,7 @@ class TestBackfillCorrectness:
             pytest.skip("no ambassador slots carry an agent_id (migration 244 not applied?)")
 
         agent_ids = list({aid for aid, _ in refs})
-        agents_resp = (
-            admin_client.table("agents").select("id,simulation_id,name").in_("id", agent_ids).execute()
-        )
+        agents_resp = admin_client.table("agents").select("id,simulation_id,name").in_("id", agent_ids).execute()
         sim_by_agent = {a["id"]: a["simulation_id"] for a in (agents_resp.data or [])}
 
         for agent_id, expected_sim in refs:
@@ -81,9 +75,7 @@ class TestBackfillCorrectness:
         # Sanity: the back-fill resolved a real majority of slots (not a no-op).
         embassies = _embassies_with_ambassadors(admin_client)
         total_slots = sum(
-            bool((e["embassy_metadata"] or {}).get(s))
-            for e in embassies
-            for s in ("ambassador_a", "ambassador_b")
+            bool((e["embassy_metadata"] or {}).get(s)) for e in embassies for s in ("ambassador_a", "ambassador_b")
         )
         resolved = len(_slot_refs(embassies))
         assert resolved >= total_slots // 2, f"only {resolved}/{total_slots} ambassador slots resolved"
@@ -95,9 +87,7 @@ class TestLacewingCanon:
     def test_no_stale_mossback_where_lacewing_lives(self, admin_client):
         embassies = _embassies_with_ambassadors(admin_client)
         # Which sims have a Madam Lacewing agent?
-        lacewing = (
-            admin_client.table("agents").select("simulation_id").eq("name", "Madam Lacewing").execute()
-        )
+        lacewing = admin_client.table("agents").select("simulation_id").eq("name", "Madam Lacewing").execute()
         lacewing_sims = {a["simulation_id"] for a in (lacewing.data or [])}
         if not lacewing_sims:
             pytest.skip("no Madam Lacewing agent seeded")
@@ -116,9 +106,7 @@ class TestLacewingCanon:
         embassies = _embassies_with_ambassadors(admin_client)
         lacewing_agent_ids = {
             a["id"]
-            for a in (
-                admin_client.table("agents").select("id").eq("name", "Madam Lacewing").execute().data or []
-            )
+            for a in (admin_client.table("agents").select("id").eq("name", "Madam Lacewing").execute().data or [])
         }
         if not lacewing_agent_ids:
             pytest.skip("no Madam Lacewing agent seeded")

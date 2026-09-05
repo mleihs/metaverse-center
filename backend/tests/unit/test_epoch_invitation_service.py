@@ -137,9 +137,7 @@ class TestAcceptEndpointExists:
 
         invitation = {"id": "inv-1", "epoch_id": str(uuid4())}
         with (
-            patch.object(
-                EpochInvitationService, "mark_accepted", new=AsyncMock(return_value=invitation)
-            ) as marked,
+            patch.object(EpochInvitationService, "mark_accepted", new=AsyncMock(return_value=invitation)) as marked,
             patch("backend.routers.epoch_invitations.AuditService.safe_log", new=AsyncMock()) as audit,
         ):
             response = await accept_invitation.__wrapped__(

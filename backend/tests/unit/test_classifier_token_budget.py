@@ -65,8 +65,7 @@ def _openrouter(answer: str):
 
 def _valid_answer(n: int) -> str:
     entries = ", ".join(
-        f'{{"index": {i}, "category": "natural_disaster", "significance": 5, "reason": "x"}}'
-        for i in range(n)
+        f'{{"index": {i}, "category": "natural_disaster", "significance": 5, "reason": "x"}}' for i in range(n)
     )
     return f"[{entries}]"
 
@@ -171,8 +170,7 @@ class TestDieFormDerAntwortIstNichtVerlaesslich:
     @pytest.mark.asyncio
     async def test_the_wrapped_shape_classifies_end_to_end(self):
         entries = ", ".join(
-            f'{{"index": {i}, "category": "pandemic", "significance": 5, "reason": "x"}}'
-            for i in range(3)
+            f'{{"index": {i}, "category": "pandemic", "significance": 5, "reason": "x"}}' for i in range(3)
         )
         wrapped = f'```json\n{{"classifications": [{entries}]}}\n```'
         svc, _ = _openrouter(wrapped)

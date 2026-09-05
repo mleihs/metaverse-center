@@ -77,7 +77,7 @@ class PromptTemplateService:
                 "omits placeholders the code fills and the character needs "
                 f"({', '.join(fehlend)}). Put each of them somewhere in the template"
             )
-        raise bad_request(f"Template '{template_type}' " + "; and it " .join(teile) + ".")
+        raise bad_request(f"Template '{template_type}' " + "; and it ".join(teile) + ".")
 
     @classmethod
     async def list_templates(

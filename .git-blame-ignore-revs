@@ -1,0 +1,14 @@
+# Commits, die `git blame` ueberspringen soll: reine Formatierung, keine
+# Bedeutungsaenderung. Anwenden mit
+#
+#     git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# GitHub liest die Datei von sich aus, lokal muss die Zeile oben einmal
+# gesetzt werden. Hier gehoert NUR hinein, was nachweislich den Syntaxbaum
+# nicht aendert.
+
+# Umstellung auf `ruff format` (05.09.2026) — 349 Dateien, gemessen am
+# tatsaechlichen Baum: 6498 von 6499 Python-Dateien mit bitgleichem
+# Syntaxbaum. Die eine Ausnahme ist Leerraum in einem Docstring
+# (backend/services/journal/fragment_service.py).
+# SHA wird direkt nach dem Commit nachgetragen.

@@ -96,25 +96,15 @@ async def _connect(target: str) -> tuple[object, str]:
 
 
 async def _agents_without_personality(supabase, simulation_id: str | None) -> list[dict]:
-    query = (
-        supabase.table("agents")
-        .select("id, name, simulation_id, personality_profile")
-        .is_("deleted_at", "null")
-    )
+    query = supabase.table("agents").select("id, name, simulation_id, personality_profile").is_("deleted_at", "null")
     if simulation_id:
         query = query.eq("simulation_id", simulation_id)
     rows = extract_list(await query.execute())
-    return [
-        row
-        for row in rows
-        if not (row.get("personality_profile") or {}).get("openness")
-    ]
+    return [row for row in rows if not (row.get("personality_profile") or {}).get("openness")]
 
 
 async def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument(
         "--target",
         choices=("env", "production"),
@@ -123,9 +113,7 @@ async def main() -> int:
     )
     parser.add_argument("--apply", action="store_true", help="spend the calls (default: dry run)")
     parser.add_argument("--simulation", help="restrict to one simulation id")
-    parser.add_argument(
-        "--limit", type=int, help="process at most N agents — for a first, cheap trial"
-    )
+    parser.add_argument("--limit", type=int, help="process at most N agents — for a first, cheap trial")
     args = parser.parse_args()
 
     if args.apply and args.target is None:
@@ -175,9 +163,7 @@ async def main() -> int:
     done = failed = 0
     for row in pending:
         try:
-            await PersonalityExtractionService.initialize_agent_autonomy(
-                supabase, row["id"], row["simulation_id"]
-            )
+            await PersonalityExtractionService.initialize_agent_autonomy(supabase, row["id"], row["simulation_id"])
             done += 1
             print(f"  ✓ {row.get('name', row['id'])}")
         except Exception as exc:  # noqa: BLE001 — a single agent must not stop the run
@@ -186,8 +172,7 @@ async def main() -> int:
 
     print(f"\nFertig: {done} erledigt, {failed} fehlgeschlagen.")
     print(
-        "Nachmessen:  select count(distinct resilience), count(distinct sociability) "
-        "from agent_mood;   — vorher 1, 1"
+        "Nachmessen:  select count(distinct resilience), count(distinct sociability) from agent_mood;   — vorher 1, 1"
     )
     return 1 if failed else 0
 

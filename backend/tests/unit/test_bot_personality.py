@@ -597,10 +597,7 @@ class TestHelperMethods:
     def test_pick_agent_returns_none_when_all_deployed(self):
         """_pick_agent returns None when no agents available."""
         p = create_personality("sentinel", "medium")
-        missions = [
-            {"agent_id": f"agent-{i}", "status": "active", "operative_type": "spy"}
-            for i in range(6)
-        ]
+        missions = [{"agent_id": f"agent-{i}", "status": "active", "operative_type": "spy"} for i in range(6)]
         state = _make_state(own_missions=missions)
 
         agent = p._pick_agent(state)

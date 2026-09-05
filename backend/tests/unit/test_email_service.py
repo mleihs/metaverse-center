@@ -75,9 +75,7 @@ class TestEmailServiceResend:
             mock_settings.resend_api_key = "re_test"
             mock_settings.smtp_from = "metaverse.center <info@metaverse.center>"
 
-            result = await EmailService._send_via_resend(
-                "to@example.com", "Subject", "<p>Hi</p>"
-            )
+            result = await EmailService._send_via_resend("to@example.com", "Subject", "<p>Hi</p>")
 
         assert result is True
         # The bounded timeout is load-bearing (it caps the ambiguous-send window).
@@ -233,9 +231,7 @@ class TestEmailServiceSendRouting:
             result = await EmailService.send("to@example.com", "Test", "<p>Hi</p>")
 
         assert result is True
-        m.assert_awaited_once_with(
-            "to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={}
-        )
+        m.assert_awaited_once_with("to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={})
         m_smtp.assert_not_called()
 
     @pytest.mark.asyncio
@@ -271,9 +267,7 @@ class TestEmailServiceSendRouting:
             result = await EmailService.send("to@example.com", "Test", "<p>Hi</p>")
 
         assert result is True
-        mock_sync.assert_called_once_with(
-            "to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={}
-        )
+        mock_sync.assert_called_once_with("to@example.com", "Test", "<p>Hi</p>", text_body="Hi", extra_headers={})
 
     @pytest.mark.asyncio
     async def test_send_returns_false_when_no_transport(self):
@@ -292,9 +286,7 @@ class TestEmailServiceLogging:
     @pytest.mark.asyncio
     async def test_resend_success_logs_info(self, mock_httpx_client, caplog):
         _, mock_instance = mock_httpx_client
-        mock_instance.post.return_value = _mock_response(
-            status=200, json_data={"id": "msg-9"}, text='{"id":"msg-9"}'
-        )
+        mock_instance.post.return_value = _mock_response(status=200, json_data={"id": "msg-9"}, text='{"id":"msg-9"}')
         with patch("backend.services.email_service.settings") as mock_settings:
             mock_settings.resend_api_key = "re_test"
             mock_settings.smtp_from = "Test <test@example.com>"
@@ -381,7 +373,9 @@ class TestEmailLog:
         ):
             mock_settings.resend_api_key = "re_test"
             await EmailService.send(
-                "to@example.com", "Subject", "<p>Hi</p>",
+                "to@example.com",
+                "Subject",
+                "<p>Hi</p>",
                 record=MailRecord(template="cycle_briefing", user_id="u1", epoch_id="e1", cycle_number=7),
             )
 

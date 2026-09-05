@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 # -- Embassy CRUD --
 
+
 class EmbassyCreate(BaseModel):
     """Schema for creating an embassy between two buildings."""
 
@@ -18,10 +19,18 @@ class EmbassyCreate(BaseModel):
     connection_type: str = "embassy"
     description: str | None = None
     established_by: str | None = None
-    bleed_vector: Literal[
-        "commerce", "language", "memory", "resonance",
-        "architecture", "dream", "desire",
-    ] | None = None
+    bleed_vector: (
+        Literal[
+            "commerce",
+            "language",
+            "memory",
+            "resonance",
+            "architecture",
+            "dream",
+            "desire",
+        ]
+        | None
+    ) = None
     event_propagation: bool = True
     embassy_metadata: dict | None = None
 
@@ -31,10 +40,18 @@ class EmbassyUpdate(BaseModel):
 
     description: str | None = None
     established_by: str | None = None
-    bleed_vector: Literal[
-        "commerce", "language", "memory", "resonance",
-        "architecture", "dream", "desire",
-    ] | None = None
+    bleed_vector: (
+        Literal[
+            "commerce",
+            "language",
+            "memory",
+            "resonance",
+            "architecture",
+            "dream",
+            "desire",
+        ]
+        | None
+    ) = None
     event_propagation: bool | None = None
     embassy_metadata: dict | None = None
 
@@ -71,6 +88,7 @@ class EmbassyResponse(BaseModel):
 
 # -- Embassy Event Propagation --
 
+
 class EmbassyEventPropagation(BaseModel):
     """Schema for manually propagating an event through an embassy."""
 
@@ -80,13 +98,19 @@ class EmbassyEventPropagation(BaseModel):
 
 # -- Generate Partner --
 
+
 class EmbassyGeneratePair(BaseModel):
     """Schema for AI-generating a partner building for an embassy."""
 
     source_building_id: UUID
     target_simulation_id: UUID
     bleed_vector: Literal[
-        "commerce", "language", "memory", "resonance",
-        "architecture", "dream", "desire",
+        "commerce",
+        "language",
+        "memory",
+        "resonance",
+        "architecture",
+        "dream",
+        "desire",
     ]
     name_hint: str | None = Field(None, max_length=100)

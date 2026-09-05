@@ -65,9 +65,7 @@ class TestTheConstantFollowsTheModel:
 
     def test_the_response_model_carries_the_same_fields(self):
         """A preference that can be set but not read back is half a preference."""
-        assert set(NotificationPreferencesResponse.model_fields) == set(
-            NotificationPreferencesUpdate.model_fields
-        )
+        assert set(NotificationPreferencesResponse.model_fields) == set(NotificationPreferencesUpdate.model_fields)
 
     def test_the_toggles_are_the_booleans(self):
         assert "email_locale" not in NOTIFICATION_TOGGLE_COLUMNS
@@ -89,7 +87,7 @@ class TestNoReaderSpellsTheListByHand:
         for literal in _selects_on_the_table(path):
             named = [column for column in NOTIFICATION_TOGGLE_COLUMNS if column in literal]
             assert not named, (
-                f"{path}: `.select(\"{literal}\")` schreibt Präferenzspalten aus "
+                f'{path}: `.select("{literal}")` schreibt Präferenzspalten aus '
                 f"({', '.join(named)}). Genau so ist `deadline_reminder` "
                 f"verlorengegangen — NOTIFICATION_PREFERENCE_COLUMNS benutzen."
             )

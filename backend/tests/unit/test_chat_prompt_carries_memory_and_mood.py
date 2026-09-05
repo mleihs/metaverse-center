@@ -63,11 +63,7 @@ def _platform_template_statements(path: Path) -> list[str]:
     # Der DO-Block der Abnahme enthält eigene Semikolons und ist keine
     # schreibende Anweisung — vor dem Zerlegen heraus.
     sql = re.sub(r"DO \$\$.*?\$\$;", "", sql, flags=re.DOTALL)
-    return [
-        stmt
-        for stmt in sql.split(";")
-        if "prompt_templates" in stmt and "chat_system_prompt" in stmt
-    ]
+    return [stmt for stmt in sql.split(";") if "prompt_templates" in stmt and "chat_system_prompt" in stmt]
 
 
 def _sql_without_comments(path: Path) -> str:
@@ -125,8 +121,7 @@ def test_the_migration_puts_both_into_the_platform_templates() -> None:
     """Glied 4, der eigentliche Fix. Beide Sprachen, beide Platzhalter."""
     statements = _platform_template_statements(_MIGRATION)
     assert len(statements) == 2, (
-        f"{len(statements)} Anweisungen schreiben die Plattform-Chatvorlagen — "
-        "erwartet werden zwei (de und en)"
+        f"{len(statements)} Anweisungen schreiben die Plattform-Chatvorlagen — erwartet werden zwei (de und en)"
     )
 
     for locale in ("'en'", "'de'"):

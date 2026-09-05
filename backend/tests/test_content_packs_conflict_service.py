@@ -125,7 +125,9 @@ async def test_generate_preview_success_with_conflict(supabase):
         new=AsyncMock(return_value=draft),
     ):
         preview = await ContentPacksConflictService.generate_preview(
-            supabase, draft_id=draft.id, github_client=client,
+            supabase,
+            draft_id=draft.id,
+            github_client=client,
         )
 
     assert preview.draft_id == draft.id
@@ -154,7 +156,9 @@ async def test_generate_preview_resource_not_on_main_treats_as_empty(supabase):
         new=AsyncMock(return_value=draft),
     ):
         preview = await ContentPacksConflictService.generate_preview(
-            supabase, draft_id=draft.id, github_client=client,
+            supabase,
+            draft_id=draft.id,
+            github_client=client,
         )
 
     assert preview.theirs == {}  # 404 → empty dict
@@ -175,7 +179,9 @@ async def test_generate_preview_non_conflict_status_raises_409(supabase):
     ):
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksConflictService.generate_preview(
-                supabase, draft_id=draft.id, github_client=client,
+                supabase,
+                draft_id=draft.id,
+                github_client=client,
             )
     assert exc_info.value.status_code == 409
     assert "'draft'" in exc_info.value.detail  # current status surfaced
@@ -192,7 +198,9 @@ async def test_generate_preview_missing_env_raises_400(supabase, monkeypatch):
     ):
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksConflictService.generate_preview(
-                supabase, draft_id=draft.id, github_client=client,
+                supabase,
+                draft_id=draft.id,
+                github_client=client,
             )
     assert exc_info.value.status_code == 400
     assert "GITHUB_REPO_OWNER" in exc_info.value.detail
@@ -209,7 +217,9 @@ async def test_generate_preview_non_404_github_error_raises_502(supabase):
     ):
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksConflictService.generate_preview(
-                supabase, draft_id=draft.id, github_client=client,
+                supabase,
+                draft_id=draft.id,
+                github_client=client,
             )
     assert exc_info.value.status_code == 502
 
@@ -226,7 +236,9 @@ async def test_generate_preview_invalid_yaml_on_main_raises_400(supabase):
     ):
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksConflictService.generate_preview(
-                supabase, draft_id=draft.id, github_client=client,
+                supabase,
+                draft_id=draft.id,
+                github_client=client,
             )
     assert exc_info.value.status_code == 400
     assert "not a mapping" in exc_info.value.detail
@@ -244,7 +256,9 @@ async def test_generate_preview_unparseable_yaml_on_main_raises_400(supabase):
     ):
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksConflictService.generate_preview(
-                supabase, draft_id=draft.id, github_client=client,
+                supabase,
+                draft_id=draft.id,
+                github_client=client,
             )
     assert exc_info.value.status_code == 400
     assert "failed to parse" in exc_info.value.detail
@@ -263,7 +277,9 @@ async def test_generate_preview_empty_file_on_main_treats_as_empty_dict(supabase
         new=AsyncMock(return_value=draft),
     ):
         preview = await ContentPacksConflictService.generate_preview(
-            supabase, draft_id=draft.id, github_client=client,
+            supabase,
+            draft_id=draft.id,
+            github_client=client,
         )
     assert preview.theirs == {}
     assert preview.merged == {"banter": [{"id": "a", "text_de": "x"}]}

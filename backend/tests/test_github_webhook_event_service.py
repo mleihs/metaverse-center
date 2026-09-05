@@ -48,9 +48,7 @@ async def test_record_delivery_inserts_and_returns_true() -> None:
 
 @pytest.mark.asyncio
 async def test_record_delivery_returns_false_on_unique_violation() -> None:
-    duplicate = PostgrestAPIError(
-        {"code": "23505", "message": "duplicate key value violates unique constraint"}
-    )
+    duplicate = PostgrestAPIError({"code": "23505", "message": "duplicate key value violates unique constraint"})
     admin, _chain = _admin(AsyncMock(side_effect=duplicate))
     is_new = await GithubWebhookEventService.record_delivery(
         admin, delivery_id="d-1", event_type="pull_request", action=None, payload={}
@@ -71,9 +69,7 @@ async def test_record_delivery_propagates_other_db_errors() -> None:
 @pytest.mark.asyncio
 async def test_finalize_delivery_stamps_result_on_the_delivery_row() -> None:
     admin, chain = _admin(AsyncMock(return_value=MagicMock(data=[{}])))
-    await GithubWebhookEventService.finalize_delivery(
-        admin, delivery_id="d-9", result="error", error_message="boom"
-    )
+    await GithubWebhookEventService.finalize_delivery(admin, delivery_id="d-9", result="error", error_message="boom")
     payload = chain.update.call_args.args[0]
     assert payload["processing_result"] == "error"
     assert payload["error_message"] == "boom"

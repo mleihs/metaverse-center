@@ -88,7 +88,7 @@ class TestApplyDriftEffectsCore:
         at the traveller's own anchor (no self-echo, §19.4 home exclusion). The event
         carries the source='zerfaserung' + run_id provenance that marks a scatter echo."""
         owner = test_user_ids[0]
-        anchor = _sim_id(admin_client, "Velgarien")          # nur_echos, the home anchor here
+        anchor = _sim_id(admin_client, "Velgarien")  # nur_echos, the home anchor here
         foreign = _sim_id(admin_client, "The Gaslit Reach")  # standard, ≥ nur_echos
         assert anchor and foreign, "P0 corridor sims (Velgarien / The Gaslit Reach) must be seeded"
         ref = uuid4()
@@ -146,15 +146,24 @@ class TestScatterCargo:
 
         # status='abandoned' avoids the single-active-run unique index; the scatter reads
         # cargo regardless of status.
-        run = admin_client.table("travel_runs").insert(
-            {"user_id": str(owner), "status": "abandoned"}
-        ).execute().data[0]["id"]
-        inst_foreign = admin_client.table("travel_quest_instances").insert(
-            {"template_key": "test_scatter", "owner_user_id": str(owner), "simulation_id": foreign}
-        ).execute().data[0]["id"]
-        inst_home = admin_client.table("travel_quest_instances").insert(
-            {"template_key": "test_scatter", "owner_user_id": str(owner), "simulation_id": anchor}
-        ).execute().data[0]["id"]
+        run = (
+            admin_client.table("travel_runs")
+            .insert({"user_id": str(owner), "status": "abandoned"})
+            .execute()
+            .data[0]["id"]
+        )
+        inst_foreign = (
+            admin_client.table("travel_quest_instances")
+            .insert({"template_key": "test_scatter", "owner_user_id": str(owner), "simulation_id": foreign})
+            .execute()
+            .data[0]["id"]
+        )
+        inst_home = (
+            admin_client.table("travel_quest_instances")
+            .insert({"template_key": "test_scatter", "owner_user_id": str(owner), "simulation_id": anchor})
+            .execute()
+            .data[0]["id"]
+        )
         for inst in (inst_foreign, inst_home):
             admin_client.table("travel_cargo").insert(
                 {
@@ -178,18 +187,19 @@ class TestScatterCargo:
         finally:
             _delete_echoes(admin_client, run)
             admin_client.table("travel_cargo").delete().eq("run_id", run).execute()
-            admin_client.table("travel_quest_instances").delete().in_(
-                "id", [inst_foreign, inst_home]
-            ).execute()
+            admin_client.table("travel_quest_instances").delete().in_("id", [inst_foreign, inst_home]).execute()
             admin_client.table("travel_runs").delete().eq("id", run).execute()
 
     def test_empty_manifest_scatters_nothing(self, admin_client, test_user_ids):
         """A run carrying no cargo → scattered=0, no echoes (the empty-Zerfaserung floor)."""
         owner = test_user_ids[0]
         anchor = _sim_id(admin_client, "Velgarien")
-        run = admin_client.table("travel_runs").insert(
-            {"user_id": str(owner), "status": "abandoned"}
-        ).execute().data[0]["id"]
+        run = (
+            admin_client.table("travel_runs")
+            .insert({"user_id": str(owner), "status": "abandoned"})
+            .execute()
+            .data[0]["id"]
+        )
         try:
             r = _scatter(admin_client, run, owner, anchor)
             assert r.data["scattered"] == 0

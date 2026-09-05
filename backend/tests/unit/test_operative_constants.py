@@ -60,6 +60,7 @@ class TestOperativeTypesEndpoint:
     @pytest.fixture(autouse=True)
     def _client(self):
         from backend.app import app
+
         self.client = TestClient(app)
 
     def test_returns_all_operative_types(self):

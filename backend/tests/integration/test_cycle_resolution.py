@@ -22,23 +22,12 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 def _get_epoch(client, epoch_id):
     """Read epoch row from DB."""
-    return (
-        client.table("game_epochs")
-        .select("*")
-        .eq("id", str(epoch_id))
-        .single()
-        .execute()
-    ).data
+    return (client.table("game_epochs").select("*").eq("id", str(epoch_id)).single().execute()).data
 
 
 def _get_participants(client, epoch_id):
     """Read all participants for an epoch."""
-    return (
-        client.table("epoch_participants")
-        .select("*")
-        .eq("epoch_id", str(epoch_id))
-        .execute()
-    ).data or []
+    return (client.table("epoch_participants").select("*").eq("epoch_id", str(epoch_id)).execute()).data or []
 
 
 def _get_participant_rp(client, epoch_id, simulation_id):
@@ -70,7 +59,11 @@ class TestResolveCycle:
     @pytest.mark.asyncio
     async def test_grants_rp_to_all_participants(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
-            status="competition", cycle=1, rp=10, rp_per_cycle=8, rp_cap=40,
+            status="competition",
+            cycle=1,
+            rp=10,
+            rp_per_cycle=8,
+            rp_cap=40,
         )
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
@@ -82,7 +75,11 @@ class TestResolveCycle:
     @pytest.mark.asyncio
     async def test_respects_rp_cap(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
-            status="competition", cycle=1, rp=35, rp_per_cycle=10, rp_cap=40,
+            status="competition",
+            cycle=1,
+            rp=35,
+            rp_per_cycle=10,
+            rp_cap=40,
         )
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
@@ -95,7 +92,11 @@ class TestResolveCycle:
     async def test_foundation_bonus(self, admin_client, async_admin_client, epoch_factory):
         """Foundation phase grants int(rp_per_cycle * 1.5) RP."""
         epoch: EpochFixture = epoch_factory(
-            status="foundation", cycle=1, rp=0, rp_per_cycle=12, rp_cap=40,
+            status="foundation",
+            cycle=1,
+            rp=0,
+            rp_per_cycle=12,
+            rp_cap=40,
         )
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
@@ -110,9 +111,9 @@ class TestResolveCycle:
 
         # Set some participants to ready
         for p in epoch.participants[:2]:
-            admin_client.table("epoch_participants").update(
-                {"cycle_ready": True}
-            ).eq("id", str(p.participant_id)).execute()
+            admin_client.table("epoch_participants").update({"cycle_ready": True}).eq(
+                "id", str(p.participant_id)
+            ).execute()
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
@@ -123,39 +124,46 @@ class TestResolveCycle:
     @pytest.mark.asyncio
     async def test_advances_mission_timers(self, admin_client, async_admin_client, epoch_factory):
         epoch: EpochFixture = epoch_factory(
-            status="competition", cycle=2, cycle_hours=8,
+            status="competition",
+            cycle=2,
+            cycle_hours=8,
         )
 
         # Look up a real agent from Velgarien for the FK constraint
-        agent_resp = admin_client.table("agents").select("id").eq(
-            "simulation_id", str(SIM_VELGARIEN),
-        ).limit(1).execute()
+        agent_resp = (
+            admin_client.table("agents")
+            .select("id")
+            .eq(
+                "simulation_id",
+                str(SIM_VELGARIEN),
+            )
+            .limit(1)
+            .execute()
+        )
         agent_id = agent_resp.data[0]["id"]
 
         # Insert a test mission with known resolves_at
         resolves_at = datetime.now(UTC) + timedelta(hours=24)
         mission_id = uuid4()
-        admin_client.table("operative_missions").insert({
-            "id": str(mission_id),
-            "epoch_id": str(epoch.epoch_id),
-            "agent_id": agent_id,
-            "operative_type": "spy",
-            "source_simulation_id": str(SIM_VELGARIEN),
-            "target_simulation_id": str(SIM_GASLIT_REACH),
-            "status": "active",
-            "cost_rp": 3,
-            "deployed_at": datetime.now(UTC).isoformat(),
-            "resolves_at": resolves_at.isoformat(),
-        }).execute()
+        admin_client.table("operative_missions").insert(
+            {
+                "id": str(mission_id),
+                "epoch_id": str(epoch.epoch_id),
+                "agent_id": agent_id,
+                "operative_type": "spy",
+                "source_simulation_id": str(SIM_VELGARIEN),
+                "target_simulation_id": str(SIM_GASLIT_REACH),
+                "status": "active",
+                "cost_rp": 3,
+                "deployed_at": datetime.now(UTC).isoformat(),
+                "resolves_at": resolves_at.isoformat(),
+            }
+        ).execute()
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
         mission = (
-            admin_client.table("operative_missions")
-            .select("resolves_at")
-            .eq("id", str(mission_id))
-            .single()
-            .execute()
+            admin_client.table("operative_missions").select("resolves_at").eq("id", str(mission_id)).single().execute()
         ).data
         new_resolves = datetime.fromisoformat(mission["resolves_at"])
         expected = resolves_at - timedelta(hours=8)
@@ -173,9 +181,11 @@ class TestResolveCycle:
             cycle_hours=8,
             duration_days=14,
         )
-        admin_client.table("game_epochs").update({
-            "config": {**epoch.config, "foundation_cycles": 3},
-        }).eq("id", str(epoch.epoch_id)).execute()
+        admin_client.table("game_epochs").update(
+            {
+                "config": {**epoch.config, "foundation_cycles": 3},
+            }
+        ).eq("id", str(epoch.epoch_id)).execute()
 
         await CycleResolutionService.resolve_cycle(async_admin_client, epoch.epoch_id)
 
@@ -192,7 +202,10 @@ class TestSpendRP:
         epoch: EpochFixture = epoch_factory(rp=20)
 
         remaining = await CycleResolutionService.spend_rp(
-            async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
+            async_admin_client,
+            epoch.epoch_id,
+            SIM_VELGARIEN,
+            5,
         )
 
         assert remaining == 15
@@ -205,7 +218,10 @@ class TestSpendRP:
 
         with pytest.raises(HTTPException) as exc:
             await CycleResolutionService.spend_rp(
-                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 10,
+                async_admin_client,
+                epoch.epoch_id,
+                SIM_VELGARIEN,
+                10,
             )
         assert exc.value.status_code == 400
         # RP should be unchanged
@@ -219,12 +235,18 @@ class TestSpendRP:
 
         # First spend succeeds
         await CycleResolutionService.spend_rp(
-            async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 8,
+            async_admin_client,
+            epoch.epoch_id,
+            SIM_VELGARIEN,
+            8,
         )
 
         # Second spend should fail (only 2 RP left)
         with pytest.raises(HTTPException) as exc:
             await CycleResolutionService.spend_rp(
-                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, 5,
+                async_admin_client,
+                epoch.epoch_id,
+                SIM_VELGARIEN,
+                5,
             )
         assert exc.value.status_code == 400

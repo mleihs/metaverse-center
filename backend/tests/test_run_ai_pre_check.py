@@ -59,7 +59,10 @@ async def test_admin_supabase_triggers_pre_check_with_full_context() -> None:
             user_id=_USER,
         )
     pre_check_mock.assert_awaited_once_with(
-        admin, purpose="forge", simulation_id=_SIM, user_id=_USER,
+        admin,
+        purpose="forge",
+        simulation_id=_SIM,
+        user_id=_USER,
     )
 
 

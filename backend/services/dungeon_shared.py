@@ -158,7 +158,6 @@ async def rpc_with_retry(
     raise last_exc  # type: ignore[misc]  # unreachable, satisfies type checker
 
 
-
 # Badge awarding logic has been centralized in DungeonAchievementService
 # (backend/services/dungeon/dungeon_achievements.py). The award_badge()
 # helper that previously lived here was removed — all callers now use

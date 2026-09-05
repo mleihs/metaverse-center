@@ -113,10 +113,10 @@ class TestEpochConfigPhaseBudget:
     @pytest.mark.parametrize(
         ("duration_days", "cycle_hours", "foundation", "reckoning"),
         [
-            (1, 2, 1, 2),      # blitz preset
-            (3, 4, 2, 3),      # sprint preset
-            (14, 8, 4, 8),     # standard preset
-            (28, 8, 6, 12),    # marathon preset
+            (1, 2, 1, 2),  # blitz preset
+            (3, 4, 2, 3),  # sprint preset
+            (14, 8, 4, 8),  # standard preset
+            (28, 8, 6, 12),  # marathon preset
         ],
     )
     def test_shipped_presets_are_valid(self, duration_days, cycle_hours, foundation, reckoning):

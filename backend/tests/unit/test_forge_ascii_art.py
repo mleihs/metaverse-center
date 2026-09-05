@@ -115,7 +115,7 @@ class TestValidateAsciiArt:
         assert "wide" in reason.lower()
 
     def test_non_ascii_character_fails(self):
-        art = "Hello\u00E9World\n###\n###\n"  # é is non-ASCII
+        art = "Hello\u00e9World\n###\n###\n"  # é is non-ASCII
         valid, reason = ForgeAsciiArtService.validate_ascii_art(art)
         assert valid is False
         assert "non-ASCII" in reason

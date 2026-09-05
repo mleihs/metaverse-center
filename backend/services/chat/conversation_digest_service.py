@@ -109,9 +109,7 @@ class ConversationDigestService:
 
     # ── Lesen ─────────────────────────────────────────────────────────────
 
-    async def load_digest_text(
-        self, conversation_id: UUID, locale: str = "de", *, since: str | None = None
-    ) -> str:
+    async def load_digest_text(self, conversation_id: UUID, locale: str = "de", *, since: str | None = None) -> str:
         """Die vorhandenen Verdichtungen als ein Block für den System-Prompt.
 
         Der bequeme Weg für den EINZELCHAT, wo es nur eine Perspektive gibt.
@@ -186,11 +184,7 @@ class ConversationDigestService:
             return ""
 
         geteilt = [r for r in rows if not r.get("agent_id")]
-        eigen = (
-            [r for r in rows if agent_id and str(r.get("agent_id") or "") == str(agent_id)]
-            if agent_id
-            else []
-        )
+        eigen = [r for r in rows if agent_id and str(r.get("agent_id") or "") == str(agent_id)] if agent_id else []
 
         en = locale == "en"
         bloecke: list[str] = []
@@ -213,9 +207,7 @@ class ConversationDigestService:
             bloecke.append(
                 cls._block(
                     eigen,
-                    "What you yourself remember of it:"
-                    if en
-                    else "Woran DU dich davon erinnerst:",
+                    "What you yourself remember of it:" if en else "Woran DU dich davon erinnerst:",
                 )
             )
         return "\n\n".join(bloecke)
@@ -225,9 +217,7 @@ class ConversationDigestService:
         rows = rows[-MAX_DIGESTS_IN_PROMPT:]
         teile = [kopf]
         for row in rows:
-            teile.append(
-                f"\n[{str(row['covers_from'])[:10]} – {str(row['covers_to'])[:10]}]\n{row['summary']}"
-            )
+            teile.append(f"\n[{str(row['covers_from'])[:10]} – {str(row['covers_to'])[:10]}]\n{row['summary']}")
         return "\n".join(teile)
 
     async def _load_digests(self, conversation_id: UUID) -> list[dict[str, Any]]:
@@ -289,17 +279,12 @@ class ConversationDigestService:
         # vorhandenes Protokoll den Abschnitt fuer erledigt und keine Figur
         # bekaeme je eine eigene Erinnerung (Migration 373).
         hat_protokoll = {r["segment_index"] for r in zeilen if not r.get("agent_id")}
-        hat_episode = {
-            (r["segment_index"], str(r["agent_id"])) for r in zeilen if r.get("agent_id")
-        }
+        hat_episode = {(r["segment_index"], str(r["agent_id"])) for r in zeilen if r.get("agent_id")}
         fehlend = [i for i in range(vollstaendig) if i not in hat_protokoll]
 
         besetzung = [a for a in (participants or []) if a.get("id")]
         fehlende_episoden = [
-            (i, a)
-            for i in range(vollstaendig)
-            for a in besetzung
-            if (i, str(a["id"])) not in hat_episode
+            (i, a) for i in range(vollstaendig) for a in besetzung if (i, str(a["id"])) not in hat_episode
         ]
         if not fehlend and not fehlende_episoden:
             return 0

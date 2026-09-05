@@ -83,12 +83,7 @@ class TestSingleActiveRun:
             _insert_run(admin_client, user_id, status="completed")
             _insert_run(admin_client, user_id, status="abandoned")
             _insert_run(admin_client, user_id, status="active")  # the single live run
-            resp = (
-                admin_client.table("travel_runs")
-                .select("id", count="exact")
-                .eq("user_id", str(user_id))
-                .execute()
-            )
+            resp = admin_client.table("travel_runs").select("id", count="exact").eq("user_id", str(user_id)).execute()
             assert resp.count == 4, f"Expected 4 runs (3 terminal + 1 active), got {resp.count}"
         finally:
             _cleanup_runs(admin_client, user_id)

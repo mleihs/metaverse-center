@@ -291,9 +291,7 @@ class ContinuationService:
             #
             # Ein misslungener Wortwechsel kostet den Takt NICHT. Beim
             # naechsten ist der Faden immer noch faellig.
-            logger.warning(
-                "Wortwechsel in %s: Modellaufruf fehlgeschlagen", conversation_id, exc_info=True
-            )
+            logger.warning("Wortwechsel in %s: Modellaufruf fehlgeschlagen", conversation_id, exc_info=True)
             return None
 
         await AIUsageService.log(

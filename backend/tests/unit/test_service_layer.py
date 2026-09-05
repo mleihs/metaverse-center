@@ -75,14 +75,16 @@ class TestSerializeForJson:
 
         uid = uuid4()
         dt = datetime(2026, 1, 1, tzinfo=UTC)
-        result = serialize_for_json({
-            "id": uid,
-            "created_at": dt,
-            "name": "Test",
-            "level": 5,
-            "tags": ["x"],
-            "extra": None,
-        })
+        result = serialize_for_json(
+            {
+                "id": uid,
+                "created_at": dt,
+                "name": "Test",
+                "level": 5,
+                "tags": ["x"],
+                "extra": None,
+            }
+        )
         assert result["id"] == str(uid)
         assert isinstance(result["created_at"], str)
         assert result["name"] == "Test"
@@ -117,12 +119,7 @@ class TestGetUserMemberships:
             },
         ]
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         chain.execute = AsyncMock(return_value=MagicMock(data=rows))
 
         result = await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
@@ -143,12 +140,7 @@ class TestGetUserMemberships:
         from backend.services.member_service import MemberService
 
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         chain.execute = AsyncMock(return_value=MagicMock(data=None))
 
         result = await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
@@ -159,18 +151,14 @@ class TestGetUserMemberships:
         from backend.services.member_service import MemberService
 
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await MemberService.get_user_memberships(mock_sb, MOCK_USER_ID)
 
         mock_sb.table.return_value.select.return_value.eq.assert_called_once_with(
-            "user_id", str(MOCK_USER_ID),
+            "user_id",
+            str(MOCK_USER_ID),
         )
 
 
@@ -187,12 +175,7 @@ class TestLocationServiceFacade:
 
         cities = [{"id": str(uuid4()), "name": "Metropolis"}]
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         chain.range.return_value.execute = AsyncMock(return_value=MagicMock(data=cities, count=1))
 
         data, total = await LocationService.list_cities(mock_sb, MOCK_SIM_ID)
@@ -207,13 +190,7 @@ class TestLocationServiceFacade:
         city_id = uuid4()
         city = {"id": str(city_id), "name": "Metropolis"}
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .eq.return_value
-            .limit.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.eq.return_value.limit.return_value
         chain.execute = AsyncMock(return_value=MagicMock(data=[city]))
 
         result = await LocationService.get_city(mock_sb, MOCK_SIM_ID, city_id)
@@ -242,12 +219,7 @@ class TestLocationServiceFacade:
         city_id = uuid4()
         zones = [{"id": str(uuid4()), "name": "Zone A", "city_id": str(city_id)}]
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         # BaseService.list applies filters then range
         chain.eq.return_value.range.return_value.execute = AsyncMock(return_value=MagicMock(data=zones, count=1))
 
@@ -260,12 +232,7 @@ class TestLocationServiceFacade:
         from backend.services.location_service import LocationService
 
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .select.return_value
-            .eq.return_value
-            .order.return_value
-        )
+        chain = mock_sb.table.return_value.select.return_value.eq.return_value.order.return_value
         chain.range.return_value.execute = AsyncMock(return_value=MagicMock(data=[], count=0))
 
         await LocationService.list_streets(mock_sb, MOCK_SIM_ID)
@@ -280,7 +247,9 @@ class TestLocationServiceFacade:
         mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(data=[street]))
 
         result = await LocationService.create_street(
-            mock_sb, MOCK_SIM_ID, {"name": "Main St"},
+            mock_sb,
+            MOCK_SIM_ID,
+            {"name": "Main St"},
         )
 
         assert result["name"] == "Main St"
@@ -292,16 +261,14 @@ class TestLocationServiceFacade:
         city_id = uuid4()
         updated = {"id": str(city_id), "name": "Renamed City"}
         mock_sb = MagicMock()
-        chain = (
-            mock_sb.table.return_value
-            .update.return_value
-            .eq.return_value
-            .eq.return_value
-        )
+        chain = mock_sb.table.return_value.update.return_value.eq.return_value.eq.return_value
         chain.execute = AsyncMock(return_value=MagicMock(data=[updated]))
 
         result = await LocationService.update_city(
-            mock_sb, MOCK_SIM_ID, city_id, {"name": "Renamed City"},
+            mock_sb,
+            MOCK_SIM_ID,
+            city_id,
+            {"name": "Renamed City"},
         )
 
         assert result["name"] == "Renamed City"

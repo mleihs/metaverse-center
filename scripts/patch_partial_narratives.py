@@ -350,8 +350,12 @@ def yaml_single_quote(s: str) -> str:
 
 
 def _patch_choice_block(
-    text: str, choice_id: str, partial_en: str | None, partial_de: str | None,
-    fail_en: str | None = None, fail_de: str | None = None,
+    text: str,
+    choice_id: str,
+    partial_en: str | None,
+    partial_de: str | None,
+    fail_en: str | None = None,
+    fail_de: str | None = None,
 ) -> tuple[str, int]:
     """Locate ``- id: <choice_id>`` and, within the block up to the next
     ``- id:`` or end of file, replace the ``partial_narrative_en: ''`` /
@@ -361,13 +365,17 @@ def _patch_choice_block(
     Returns (new_text, replacements_made).
     """
     anchor = re.search(
-        rf"^([ \t]+)- id: {re.escape(choice_id)}\s*$", text, flags=re.MULTILINE,
+        rf"^([ \t]+)- id: {re.escape(choice_id)}\s*$",
+        text,
+        flags=re.MULTILINE,
     )
     if not anchor:
         raise RuntimeError(f"choice-id anchor not found: {choice_id}")
     block_start = anchor.end()
     next_anchor = re.search(
-        r"^[ \t]+- id: ", text[block_start:], flags=re.MULTILINE,
+        r"^[ \t]+- id: ",
+        text[block_start:],
+        flags=re.MULTILINE,
     )
     block_end = block_start + (next_anchor.start() if next_anchor else len(text) - block_start)
     block = text[block_start:block_end]
@@ -385,9 +393,7 @@ def _patch_choice_block(
             block,
         )
         if n != 1:
-            raise RuntimeError(
-                f"partial_narrative_en placeholder not found in block for {choice_id}"
-            )
+            raise RuntimeError(f"partial_narrative_en placeholder not found in block for {choice_id}")
         replacements += n
 
     if partial_de is not None:
@@ -397,9 +403,7 @@ def _patch_choice_block(
             block,
         )
         if n != 1:
-            raise RuntimeError(
-                f"partial_narrative_de placeholder not found in block for {choice_id}"
-            )
+            raise RuntimeError(f"partial_narrative_de placeholder not found in block for {choice_id}")
         replacements += n
 
     if fail_en is not None:
@@ -409,9 +413,7 @@ def _patch_choice_block(
             block,
         )
         if n != 1:
-            raise RuntimeError(
-                f"fail_narrative_en placeholder not found in block for {choice_id}"
-            )
+            raise RuntimeError(f"fail_narrative_en placeholder not found in block for {choice_id}")
         replacements += n
 
     if fail_de is not None:
@@ -421,9 +423,7 @@ def _patch_choice_block(
             block,
         )
         if n != 1:
-            raise RuntimeError(
-                f"fail_narrative_de placeholder not found in block for {choice_id}"
-            )
+            raise RuntimeError(f"fail_narrative_de placeholder not found in block for {choice_id}")
         replacements += n
 
     return text[:block_start] + block + text[block_end:], replacements

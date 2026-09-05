@@ -84,8 +84,7 @@ def test_no_orphan_budget_rows() -> None:
         if key.startswith(prefix) and key.removeprefix(prefix) not in AI_PURPOSES
     ]
     assert not orphans, (
-        "migration 283 seeds rows for purposes ai_purposes.AI_PURPOSES does not declare: "
-        f"{', '.join(sorted(orphans))}"
+        f"migration 283 seeds rows for purposes ai_purposes.AI_PURPOSES does not declare: {', '.join(sorted(orphans))}"
     )
 
 
@@ -97,6 +96,5 @@ def test_forecast_model_row_matches_the_code_default() -> None:
     """
     for key in ("model_forecast", "model_forecast_dev"):
         assert SEEDED.get(key) == f'"{HARDCODED_DEFAULTS[key]}"', (
-            f"{key}: migration 283 says {SEEDED.get(key)}, "
-            f"HARDCODED_DEFAULTS says {HARDCODED_DEFAULTS[key]!r}"
+            f"{key}: migration 283 says {SEEDED.get(key)}, HARDCODED_DEFAULTS says {HARDCODED_DEFAULTS[key]!r}"
         )

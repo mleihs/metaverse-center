@@ -14,6 +14,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import matplotlib as mpl
+
 mpl.use("Agg")  # headless
 import matplotlib.pyplot as plt
 import nashpy as nash
@@ -30,30 +31,37 @@ OUT = Path("/tmp/epoch-analysis")
 OUT.mkdir(exist_ok=True)
 
 # ── Simulation metadata ──
-SIM_TAGS = {"V": "Velgarien", "GR": "The Gaslit Reach", "SN": "Station Null",
-            "SP": "Speranza", "NM": "Nova Meridian"}
-SIM_COLORS = {"Velgarien": "#c0392b", "The Gaslit Reach": "#27ae60",
-              "Station Null": "#8e44ad", "Speranza": "#d4a017", "Nova Meridian": "#2980b9"}
+SIM_TAGS = {"V": "Velgarien", "GR": "The Gaslit Reach", "SN": "Station Null", "SP": "Speranza", "NM": "Nova Meridian"}
+SIM_COLORS = {
+    "Velgarien": "#c0392b",
+    "The Gaslit Reach": "#27ae60",
+    "Station Null": "#8e44ad",
+    "Speranza": "#d4a017",
+    "Nova Meridian": "#2980b9",
+}
 
 # ── Style ──
-plt.rcParams.update({
-    "figure.facecolor": "#0d1117",
-    "axes.facecolor": "#161b22",
-    "axes.edgecolor": "#30363d",
-    "axes.labelcolor": "#c9d1d9",
-    "text.color": "#c9d1d9",
-    "xtick.color": "#8b949e",
-    "ytick.color": "#8b949e",
-    "grid.color": "#21262d",
-    "figure.dpi": 150,
-    "font.family": "monospace",
-    "font.size": 10,
-})
+plt.rcParams.update(
+    {
+        "figure.facecolor": "#0d1117",
+        "axes.facecolor": "#161b22",
+        "axes.edgecolor": "#30363d",
+        "axes.labelcolor": "#c9d1d9",
+        "text.color": "#c9d1d9",
+        "xtick.color": "#8b949e",
+        "ytick.color": "#8b949e",
+        "grid.color": "#21262d",
+        "figure.dpi": 150,
+        "font.family": "monospace",
+        "font.size": 10,
+    }
+)
 
 
 # ═══════════════════════════════════════════════════════════════════════
 # 1. PARSE MARKDOWN DATA
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def parse_analysis_file(filepath, player_count):
     """Parse an epoch analysis markdown file into structured game data."""
@@ -70,22 +78,24 @@ def parse_analysis_file(filepath, player_count):
         players_str = m.group(2)
         players = players_str.split("+")
         player_names = [SIM_TAGS.get(p, p) for p in players]
-        games.append({
-            "game_num": int(m.group(1)),
-            "player_count": player_count,
-            "players": player_names,
-            "player_tags": players,
-            "w_stability": int(m.group(3)),
-            "w_influence": int(m.group(4)),
-            "w_sovereignty": int(m.group(5)),
-            "w_diplomatic": int(m.group(6)),
-            "w_military": int(m.group(7)),
-            "winner": m.group(8).strip(),
-            "winner_score": float(m.group(9)),
-            "runner_up": m.group(10).strip(),
-            "runner_up_score": float(m.group(11)),
-            "margin": float(m.group(12)),
-        })
+        games.append(
+            {
+                "game_num": int(m.group(1)),
+                "player_count": player_count,
+                "players": player_names,
+                "player_tags": players,
+                "w_stability": int(m.group(3)),
+                "w_influence": int(m.group(4)),
+                "w_sovereignty": int(m.group(5)),
+                "w_diplomatic": int(m.group(6)),
+                "w_military": int(m.group(7)),
+                "winner": m.group(8).strip(),
+                "winner_score": float(m.group(9)),
+                "runner_up": m.group(10).strip(),
+                "runner_up_score": float(m.group(11)),
+                "margin": float(m.group(12)),
+            }
+        )
 
     # Parse strategy effectiveness table
     # | balanced | 8 | 6 | 75% |
@@ -170,8 +180,12 @@ def parse_analysis_file(filepath, player_count):
 def load_all_data():
     base = Path("/Users/mleihs/Dev/velgarien-rebuild")
     data = {}
-    for pc, fname in [(2, "epoch-2p-analysis.md"), (3, "epoch-3p-analysis.md"),
-                       (4, "epoch-4p-analysis.md"), (5, "epoch-5p-analysis.md")]:
+    for pc, fname in [
+        (2, "epoch-2p-analysis.md"),
+        (3, "epoch-3p-analysis.md"),
+        (4, "epoch-4p-analysis.md"),
+        (5, "epoch-5p-analysis.md"),
+    ]:
         data[pc] = parse_analysis_file(base / fname, pc)
     return data
 
@@ -179,6 +193,7 @@ def load_all_data():
 # ═══════════════════════════════════════════════════════════════════════
 # 2. ELO RATINGS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def compute_elo(all_data, k=32, initial=1500):
     """Compute Elo ratings from all game outcomes.
@@ -225,10 +240,8 @@ def plot_elo(elo, history, game_labels):
     for pc in [2, 3, 4]:
         game_idx += 50  # 50 games per player count
         ax1.axvline(x=game_idx, color="#30363d", linestyle="--", alpha=0.5)
-        ax1.text(game_idx - 25, ax1.get_ylim()[0] + 10, f"{pc}P", color="#8b949e",
-                 ha="center", fontsize=8)
-    ax1.text(game_idx + 25, ax1.get_ylim()[0] + 10, "5P", color="#8b949e",
-             ha="center", fontsize=8)
+        ax1.text(game_idx - 25, ax1.get_ylim()[0] + 10, f"{pc}P", color="#8b949e", ha="center", fontsize=8)
+    ax1.text(game_idx + 25, ax1.get_ylim()[0] + 10, "5P", color="#8b949e", ha="center", fontsize=8)
 
     ax1.set_xlabel("Games Played (chronological)")
     ax1.set_ylabel("Elo Rating")
@@ -248,8 +261,14 @@ def plot_elo(elo, history, game_labels):
     ax2.set_title("FINAL RATINGS", fontweight="bold", fontsize=12)
     ax2.axvline(x=1500, color="#8b949e", linestyle="--", alpha=0.5, label="Starting (1500)")
     for bar, rating in zip(bars, ratings, strict=False):
-        ax2.text(bar.get_width() + 5, bar.get_y() + bar.get_height() / 2,
-                 f"{rating:.0f}", va="center", fontsize=9, color="#c9d1d9")
+        ax2.text(
+            bar.get_width() + 5,
+            bar.get_y() + bar.get_height() / 2,
+            f"{rating:.0f}",
+            va="center",
+            fontsize=9,
+            color="#c9d1d9",
+        )
     ax2.invert_yaxis()
     ax2.grid(True, alpha=0.3, axis="x")
 
@@ -262,6 +281,7 @@ def plot_elo(elo, history, game_labels):
 # ═══════════════════════════════════════════════════════════════════════
 # 3. CHI-SQUARED TESTS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def chi_squared_tests(all_data):
     """Test whether win rate differences are statistically significant."""
@@ -282,8 +302,7 @@ def chi_squared_tests(all_data):
     expected_wins = total_games_per_sim * (observed_wins.sum() / total_games_per_sim.sum())
 
     chi2, p_value = stats.chisquare(observed_wins, expected_wins)
-    results.append(("Overall win distribution (all sims equal?)", chi2, p_value,
-                     len(sims) - 1, p_value < 0.05))
+    results.append(("Overall win distribution (all sims equal?)", chi2, p_value, len(sims) - 1, p_value < 0.05))
 
     # Pairwise Fisher's exact tests (2x2: sim A vs rest)
     pairwise = []
@@ -321,21 +340,24 @@ def chi_squared_tests(all_data):
 # 4. PCA ON SCORE WEIGHTS → WIN PREDICTION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 def pca_analysis(all_data):
     """PCA on score weight configurations, colored by winner."""
     rows = []
     for pc in [2, 3, 4, 5]:
         for game in all_data[pc]["games"]:
-            rows.append({
-                "stability": game["w_stability"],
-                "influence": game["w_influence"],
-                "sovereignty": game["w_sovereignty"],
-                "diplomatic": game["w_diplomatic"],
-                "military": game["w_military"],
-                "winner": game["winner"],
-                "player_count": pc,
-                "margin": game["margin"],
-            })
+            rows.append(
+                {
+                    "stability": game["w_stability"],
+                    "influence": game["w_influence"],
+                    "sovereignty": game["w_sovereignty"],
+                    "diplomatic": game["w_diplomatic"],
+                    "military": game["w_military"],
+                    "winner": game["winner"],
+                    "player_count": pc,
+                    "margin": game["margin"],
+                }
+            )
 
     df = pd.DataFrame(rows)
     features = ["stability", "influence", "sovereignty", "diplomatic", "military"]
@@ -352,8 +374,9 @@ def pca_analysis(all_data):
     # PCA scatter colored by winner
     for sim, color in SIM_COLORS.items():
         mask = df["winner"] == sim
-        ax1.scatter(X_pca[mask, 0], X_pca[mask, 1], c=color, label=sim,
-                    alpha=0.65, s=40, edgecolors="#0d1117", linewidth=0.5)
+        ax1.scatter(
+            X_pca[mask, 0], X_pca[mask, 1], c=color, label=sim, alpha=0.65, s=40, edgecolors="#0d1117", linewidth=0.5
+        )
 
     ax1.set_xlabel(f"PC1 ({pca.explained_variance_ratio_[0]:.1%} variance)")
     ax1.set_ylabel(f"PC2 ({pca.explained_variance_ratio_[1]:.1%} variance)")
@@ -364,10 +387,26 @@ def pca_analysis(all_data):
     # Loading vectors
     loadings = pca.components_.T * np.sqrt(pca.explained_variance_)
     for i, feat in enumerate(features):
-        ax2.arrow(0, 0, loadings[i, 0], loadings[i, 1],
-                  head_width=0.05, head_length=0.03, fc="#e6db74", ec="#e6db74", alpha=0.8)
-        ax2.text(loadings[i, 0] * 1.15, loadings[i, 1] * 1.15, feat.upper(),
-                 fontsize=9, ha="center", color="#e6db74", fontweight="bold")
+        ax2.arrow(
+            0,
+            0,
+            loadings[i, 0],
+            loadings[i, 1],
+            head_width=0.05,
+            head_length=0.03,
+            fc="#e6db74",
+            ec="#e6db74",
+            alpha=0.8,
+        )
+        ax2.text(
+            loadings[i, 0] * 1.15,
+            loadings[i, 1] * 1.15,
+            feat.upper(),
+            fontsize=9,
+            ha="center",
+            color="#e6db74",
+            fontweight="bold",
+        )
 
     circle = plt.Circle((0, 0), 1, fill=False, color="#8b949e", linestyle="--", alpha=0.5)
     ax2.add_patch(circle)
@@ -390,22 +429,25 @@ def pca_analysis(all_data):
 # 5. LOGISTIC REGRESSION — WIN PREDICTION
 # ═══════════════════════════════════════════════════════════════════════
 
+
 def logistic_regression_analysis(all_data):
     """Predict whether a sim wins based on score weights, player count, and sim identity."""
     rows = []
     for pc in [2, 3, 4, 5]:
         for game in all_data[pc]["games"]:
             for player in game["players"]:
-                rows.append({
-                    "sim": player,
-                    "w_stability": game["w_stability"],
-                    "w_influence": game["w_influence"],
-                    "w_sovereignty": game["w_sovereignty"],
-                    "w_diplomatic": game["w_diplomatic"],
-                    "w_military": game["w_military"],
-                    "player_count": pc,
-                    "won": 1 if player == game["winner"] else 0,
-                })
+                rows.append(
+                    {
+                        "sim": player,
+                        "w_stability": game["w_stability"],
+                        "w_influence": game["w_influence"],
+                        "w_sovereignty": game["w_sovereignty"],
+                        "w_diplomatic": game["w_diplomatic"],
+                        "w_military": game["w_military"],
+                        "player_count": pc,
+                        "won": 1 if player == game["winner"] else 0,
+                    }
+                )
 
     df = pd.DataFrame(rows)
 
@@ -423,11 +465,13 @@ def logistic_regression_analysis(all_data):
     model.fit(X_scaled, y)
 
     # Coefficients
-    coef_df = pd.DataFrame({
-        "feature": feature_cols,
-        "coefficient": model.coef_[0],
-        "abs_coefficient": np.abs(model.coef_[0]),
-    }).sort_values("abs_coefficient", ascending=False)
+    coef_df = pd.DataFrame(
+        {
+            "feature": feature_cols,
+            "coefficient": model.coef_[0],
+            "abs_coefficient": np.abs(model.coef_[0]),
+        }
+    ).sort_values("abs_coefficient", ascending=False)
 
     # Plot
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -438,8 +482,7 @@ def logistic_regression_analysis(all_data):
     ax.set_yticks(range(top_n))
     ax.set_yticklabels(top["feature"].values, fontsize=9)
     ax.set_xlabel("Logistic Regression Coefficient")
-    ax.set_title(f"WIN PREDICTION COEFFICIENTS (accuracy: {model.score(X_scaled, y):.1%})",
-                 fontweight="bold")
+    ax.set_title(f"WIN PREDICTION COEFFICIENTS (accuracy: {model.score(X_scaled, y):.1%})", fontweight="bold")
     ax.axvline(x=0, color="#8b949e", linestyle="-", alpha=0.5)
     ax.invert_yaxis()
     ax.grid(True, alpha=0.3, axis="x")
@@ -455,23 +498,26 @@ def logistic_regression_analysis(all_data):
 # 6. SCORE DIMENSION CORRELATIONS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 def correlation_analysis(all_data):
     """Correlation between score weight configurations and winning."""
     rows = []
     for pc in [2, 3, 4, 5]:
         for game in all_data[pc]["games"]:
             for player in game["players"]:
-                rows.append({
-                    "w_stability": game["w_stability"],
-                    "w_influence": game["w_influence"],
-                    "w_sovereignty": game["w_sovereignty"],
-                    "w_diplomatic": game["w_diplomatic"],
-                    "w_military": game["w_military"],
-                    "margin": game["margin"],
-                    "winner_score": game["winner_score"],
-                    "won": 1 if player == game["winner"] else 0,
-                    "player_count": pc,
-                })
+                rows.append(
+                    {
+                        "w_stability": game["w_stability"],
+                        "w_influence": game["w_influence"],
+                        "w_sovereignty": game["w_sovereignty"],
+                        "w_diplomatic": game["w_diplomatic"],
+                        "w_military": game["w_military"],
+                        "margin": game["margin"],
+                        "winner_score": game["winner_score"],
+                        "won": 1 if player == game["winner"] else 0,
+                        "player_count": pc,
+                    }
+                )
 
     df = pd.DataFrame(rows)
 
@@ -483,10 +529,19 @@ def correlation_analysis(all_data):
 
     # Full correlation heatmap
     mask = np.triu(np.ones_like(corr_with_win, dtype=bool), k=1)
-    sns.heatmap(corr_with_win, mask=mask, annot=True, fmt=".2f", cmap="RdYlGn",
-                center=0, vmin=-0.3, vmax=0.3, ax=ax1,
-                xticklabels=[c.replace("w_", "").upper() for c in corr_with_win.columns],
-                yticklabels=[c.replace("w_", "").upper() for c in corr_with_win.columns])
+    sns.heatmap(
+        corr_with_win,
+        mask=mask,
+        annot=True,
+        fmt=".2f",
+        cmap="RdYlGn",
+        center=0,
+        vmin=-0.3,
+        vmax=0.3,
+        ax=ax1,
+        xticklabels=[c.replace("w_", "").upper() for c in corr_with_win.columns],
+        yticklabels=[c.replace("w_", "").upper() for c in corr_with_win.columns],
+    )
     ax1.set_title("WEIGHT CORRELATION MATRIX", fontweight="bold")
 
     # Weight vs Win point-biserial correlation per player count
@@ -500,9 +555,17 @@ def correlation_analysis(all_data):
         corr_by_pc[f"{pc}P"] = corrs
 
     corr_df = pd.DataFrame(corr_by_pc).T
-    sns.heatmap(corr_df, annot=True, fmt=".3f", cmap="RdYlGn", center=0,
-                vmin=-0.15, vmax=0.15, ax=ax2,
-                xticklabels=[c.upper() for c in corr_df.columns])
+    sns.heatmap(
+        corr_df,
+        annot=True,
+        fmt=".3f",
+        cmap="RdYlGn",
+        center=0,
+        vmin=-0.15,
+        vmax=0.15,
+        ax=ax2,
+        xticklabels=[c.upper() for c in corr_df.columns],
+    )
     ax2.set_title("WEIGHT↔WIN CORRELATION BY PLAYER COUNT", fontweight="bold")
     ax2.set_ylabel("Player Count")
 
@@ -517,9 +580,18 @@ def correlation_analysis(all_data):
 # 7. STRATEGY EFFECTIVENESS HEATMAP + NASH EQUILIBRIUM
 # ═══════════════════════════════════════════════════════════════════════
 
-STRATEGY_ORDER = ["ci_defensive", "propagandist", "spy_heavy", "random_mix",
-                  "balanced", "assassin_rush", "all_out", "saboteur_heavy",
-                  "econ_build", "infiltrator"]
+STRATEGY_ORDER = [
+    "ci_defensive",
+    "propagandist",
+    "spy_heavy",
+    "random_mix",
+    "balanced",
+    "assassin_rush",
+    "all_out",
+    "saboteur_heavy",
+    "econ_build",
+    "infiltrator",
+]
 
 
 def strategy_analysis(all_data):
@@ -536,8 +608,7 @@ def strategy_analysis(all_data):
             strat_by_pc[pc][strat] = data
 
     # Strategy win rate heatmap
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 7),
-                                         gridspec_kw={"width_ratios": [2, 1.5, 1.5]})
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(20, 7), gridspec_kw={"width_ratios": [2, 1.5, 1.5]})
 
     # Heatmap: strategy × player_count → win rate
     heat_data = []
@@ -556,8 +627,18 @@ def strategy_analysis(all_data):
         heat_data.append(row)
 
     heat_df = pd.DataFrame(heat_data, index=STRATEGY_ORDER)
-    sns.heatmap(heat_df, annot=True, fmt=".0f", cmap="RdYlGn", center=25,
-                vmin=0, vmax=100, ax=ax1, linewidths=0.5, linecolor="#30363d")
+    sns.heatmap(
+        heat_df,
+        annot=True,
+        fmt=".0f",
+        cmap="RdYlGn",
+        center=25,
+        vmin=0,
+        vmax=100,
+        ax=ax1,
+        linewidths=0.5,
+        linecolor="#30363d",
+    )
     ax1.set_title("STRATEGY WIN RATE (%) BY PLAYER COUNT", fontweight="bold")
     ax1.set_ylabel("")
 
@@ -573,22 +654,28 @@ def strategy_analysis(all_data):
             denom = 1 + z**2 / n
             center = (p + z**2 / (2 * n)) / denom
             margin = z * np.sqrt((p * (1 - p) + z**2 / (4 * n)) / n) / denom
-            combined.append({
-                "strategy": strat,
-                "win_rate": p * 100,
-                "ci_low": max(0, (center - margin) * 100),
-                "ci_high": min(100, (center + margin) * 100),
-                "n": n,
-            })
+            combined.append(
+                {
+                    "strategy": strat,
+                    "win_rate": p * 100,
+                    "ci_low": max(0, (center - margin) * 100),
+                    "ci_high": min(100, (center + margin) * 100),
+                    "n": n,
+                }
+            )
 
     comb_df = pd.DataFrame(combined)
-    colors = ["#27ae60" if r > 30 else "#d4a017" if r > 15 else "#c0392b"
-              for r in comb_df["win_rate"]]
+    colors = ["#27ae60" if r > 30 else "#d4a017" if r > 15 else "#c0392b" for r in comb_df["win_rate"]]
     bars = ax2.barh(range(len(comb_df)), comb_df["win_rate"], color=colors, alpha=0.8)
-    ax2.errorbar(comb_df["win_rate"], range(len(comb_df)),
-                 xerr=[comb_df["win_rate"] - comb_df["ci_low"],
-                       comb_df["ci_high"] - comb_df["win_rate"]],
-                 fmt="none", ecolor="#8b949e", capsize=3, alpha=0.6)
+    ax2.errorbar(
+        comb_df["win_rate"],
+        range(len(comb_df)),
+        xerr=[comb_df["win_rate"] - comb_df["ci_low"], comb_df["ci_high"] - comb_df["win_rate"]],
+        fmt="none",
+        ecolor="#8b949e",
+        capsize=3,
+        alpha=0.6,
+    )
     ax2.set_yticks(range(len(comb_df)))
     ax2.set_yticklabels(comb_df["strategy"], fontsize=9)
     ax2.set_xlabel("Win Rate (%)")
@@ -635,8 +722,7 @@ def strategy_analysis(all_data):
     if nonzero:
         names_eq = [x[0] for x in nonzero]
         probs_eq = [x[1] for x in nonzero]
-        bars = ax3.barh(range(len(names_eq)), [p * 100 for p in probs_eq],
-                        color="#2980b9", alpha=0.8)
+        bars = ax3.barh(range(len(names_eq)), [p * 100 for p in probs_eq], color="#2980b9", alpha=0.8)
         ax3.set_yticks(range(len(names_eq)))
         ax3.set_yticklabels(names_eq, fontsize=9)
         ax3.set_xlabel("Equilibrium Probability (%)")
@@ -644,8 +730,14 @@ def strategy_analysis(all_data):
         ax3.invert_yaxis()
         ax3.grid(True, alpha=0.3, axis="x")
         for bar, prob in zip(bars, probs_eq, strict=False):
-            ax3.text(bar.get_width() + 1, bar.get_y() + bar.get_height() / 2,
-                     f"{prob:.1%}", va="center", fontsize=9, color="#c9d1d9")
+            ax3.text(
+                bar.get_width() + 1,
+                bar.get_y() + bar.get_height() / 2,
+                f"{prob:.1%}",
+                va="center",
+                fontsize=9,
+                color="#c9d1d9",
+            )
 
     plt.tight_layout()
     plt.savefig(OUT / "05_strategy_analysis.png", bbox_inches="tight")
@@ -658,18 +750,21 @@ def strategy_analysis(all_data):
 # 8. SCORE DISTRIBUTION VIOLIN PLOTS
 # ═══════════════════════════════════════════════════════════════════════
 
+
 def score_distributions(all_data):
     """Violin plots of winner/runner-up scores and margins."""
     rows = []
     for pc in [2, 3, 4, 5]:
         for game in all_data[pc]["games"]:
-            rows.append({
-                "player_count": pc,
-                "winner_score": game["winner_score"],
-                "runner_up_score": game["runner_up_score"],
-                "margin": game["margin"],
-                "winner": game["winner"],
-            })
+            rows.append(
+                {
+                    "player_count": pc,
+                    "winner_score": game["winner_score"],
+                    "runner_up_score": game["runner_up_score"],
+                    "margin": game["margin"],
+                    "winner": game["winner"],
+                }
+            )
     df = pd.DataFrame(rows)
 
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -677,8 +772,7 @@ def score_distributions(all_data):
     # Winner score distributions by player count
     for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"], strict=False):
         data = df[df["player_count"] == pc]["winner_score"]
-        parts = axes[0, 0].violinplot([data.values], positions=[pc], showmeans=True,
-                                       showmedians=True, widths=0.7)
+        parts = axes[0, 0].violinplot([data.values], positions=[pc], showmeans=True, showmedians=True, widths=0.7)
         for pc_part in parts["bodies"]:
             pc_part.set_facecolor(color)
             pc_part.set_alpha(0.6)
@@ -695,8 +789,7 @@ def score_distributions(all_data):
     # Margin distributions by player count
     for pc, color in zip([2, 3, 4, 5], ["#c0392b", "#27ae60", "#d4a017", "#2980b9"], strict=False):
         data = df[df["player_count"] == pc]["margin"]
-        parts = axes[0, 1].violinplot([data.values], positions=[pc], showmeans=True,
-                                       showmedians=True, widths=0.7)
+        parts = axes[0, 1].violinplot([data.values], positions=[pc], showmeans=True, showmedians=True, widths=0.7)
         for pc_part in parts["bodies"]:
             pc_part.set_facecolor(color)
             pc_part.set_alpha(0.6)
@@ -719,8 +812,7 @@ def score_distributions(all_data):
     sim_names = sorted(sim_scores.keys())
     box_data = [sim_scores[s] for s in sim_names]
     box_colors = [SIM_COLORS[s] for s in sim_names]
-    bp = axes[1, 0].boxplot(box_data, labels=[s.split()[0] for s in sim_names],
-                             patch_artist=True, widths=0.6)
+    bp = axes[1, 0].boxplot(box_data, labels=[s.split()[0] for s in sim_names], patch_artist=True, widths=0.6)
     for patch, color in zip(bp["boxes"], box_colors, strict=False):
         patch.set_facecolor(color)
         patch.set_alpha(0.6)
@@ -733,8 +825,7 @@ def score_distributions(all_data):
     dims = ["stability", "influence", "sovereignty", "diplomatic", "military"]
     sim_avg_weights = {}
     for sim in SIM_TAGS.values():
-        weights = {"stability": [], "influence": [], "sovereignty": [],
-                   "diplomatic": [], "military": []}
+        weights = {"stability": [], "influence": [], "sovereignty": [], "diplomatic": [], "military": []}
         for pc in [2, 3, 4, 5]:
             for game in all_data[pc]["games"]:
                 if game["winner"] == sim:
@@ -758,8 +849,7 @@ def score_distributions(all_data):
     for sim, avg_w in sim_avg_weights.items():
         values = [avg_w[d] for d in dims]
         values += values[:1]
-        ax_radar.plot(angles, values, "o-", linewidth=1.5, label=sim.split()[0],
-                      color=SIM_COLORS[sim], alpha=0.7)
+        ax_radar.plot(angles, values, "o-", linewidth=1.5, label=sim.split()[0], color=SIM_COLORS[sim], alpha=0.7)
         ax_radar.fill(angles, values, alpha=0.1, color=SIM_COLORS[sim])
 
     ax_radar.set_xticks(angles[:-1])
@@ -776,6 +866,7 @@ def score_distributions(all_data):
 # ═══════════════════════════════════════════════════════════════════════
 # 9. SIMULATION HEAD-TO-HEAD MATRIX (2P data)
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def head_to_head(all_data):
     """Build head-to-head matrix from 2P games."""
@@ -803,18 +894,30 @@ def head_to_head(all_data):
 
     fig, ax = plt.subplots(figsize=(8, 6))
     short_names = [s.split()[0] for s in sims_2p]
-    sns.heatmap(matrix.astype(float), annot=True, fmt=".0f", cmap="RdYlGn", center=50,
-                vmin=0, vmax=100, ax=ax, linewidths=1, linecolor="#30363d",
-                xticklabels=short_names, yticklabels=short_names,
-                cbar_kws={"label": "Win Rate (%)"})
+    sns.heatmap(
+        matrix.astype(float),
+        annot=True,
+        fmt=".0f",
+        cmap="RdYlGn",
+        center=50,
+        vmin=0,
+        vmax=100,
+        ax=ax,
+        linewidths=1,
+        linecolor="#30363d",
+        xticklabels=short_names,
+        yticklabels=short_names,
+        cbar_kws={"label": "Win Rate (%)"},
+    )
     ax.set_title("HEAD-TO-HEAD WIN RATE (%) — 2P GAMES\n(Row beats Column)", fontweight="bold")
 
     # Add game counts as secondary annotation
     for i, a in enumerate(sims_2p):
         for j, b in enumerate(sims_2p):
             if a != b and h2h[a][b]["games"] > 0:
-                ax.text(j + 0.5, i + 0.75, f"n={h2h[a][b]['games']}",
-                        ha="center", va="center", fontsize=7, color="#8b949e")
+                ax.text(
+                    j + 0.5, i + 0.75, f"n={h2h[a][b]['games']}", ha="center", va="center", fontsize=7, color="#8b949e"
+                )
 
     plt.tight_layout()
     plt.savefig(OUT / "07_head_to_head.png", bbox_inches="tight")
@@ -826,6 +929,7 @@ def head_to_head(all_data):
 # ═══════════════════════════════════════════════════════════════════════
 # 10. DIMENSION IMPACT ANALYSIS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def dimension_impact(all_data):
     """Which score weight dimensions correlate most strongly with winning?"""
@@ -847,10 +951,10 @@ def dimension_impact(all_data):
 
             # KDE for winners vs losers at this player count
             if weights_win and weights_lose:
-                ax.hist(weights_win, bins=15, alpha=0.4, color="#27ae60",
-                        density=True, label="Win" if pc == 2 else "")
-                ax.hist(weights_lose, bins=15, alpha=0.4, color="#c0392b",
-                        density=True, label="Lose" if pc == 2 else "")
+                ax.hist(weights_win, bins=15, alpha=0.4, color="#27ae60", density=True, label="Win" if pc == 2 else "")
+                ax.hist(
+                    weights_lose, bins=15, alpha=0.4, color="#c0392b", density=True, label="Lose" if pc == 2 else ""
+                )
 
         # Mann-Whitney U test: do winners have different weight distributions?
         all_win_weights = []
@@ -865,8 +969,7 @@ def dimension_impact(all_data):
                         all_lose_weights.append(w)
 
         if all_win_weights and all_lose_weights:
-            u_stat, p_val = stats.mannwhitneyu(all_win_weights, all_lose_weights,
-                                                alternative="two-sided")
+            u_stat, p_val = stats.mannwhitneyu(all_win_weights, all_lose_weights, alternative="two-sided")
             sig = "***" if p_val < 0.001 else "**" if p_val < 0.01 else "*" if p_val < 0.05 else "ns"
             ax.set_title(f"{dim.upper()}\nMann-Whitney p={p_val:.4f} {sig}", fontweight="bold")
         else:
@@ -881,8 +984,7 @@ def dimension_impact(all_data):
     # Hide unused subplot
     axes[1, 2].set_visible(False)
 
-    plt.suptitle("SCORE WEIGHT DISTRIBUTION: WINNERS vs LOSERS", fontweight="bold",
-                 fontsize=14, y=1.02)
+    plt.suptitle("SCORE WEIGHT DISTRIBUTION: WINNERS vs LOSERS", fontweight="bold", fontsize=14, y=1.02)
     plt.tight_layout()
     plt.savefig(OUT / "08_dimension_impact.png", bbox_inches="tight")
     plt.close()
@@ -891,6 +993,7 @@ def dimension_impact(all_data):
 # ═══════════════════════════════════════════════════════════════════════
 # 11. BOOTSTRAP CONFIDENCE INTERVALS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def bootstrap_ci(all_data, n_bootstrap=10000):
     """Bootstrap 95% confidence intervals for simulation win rates."""
@@ -904,10 +1007,9 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
     cis = {}
     for sim, results in sorted(outcomes.items()):
         results = np.array(results)
-        boot_means = np.array([
-            np.mean(np.random.choice(results, size=len(results), replace=True))
-            for _ in range(n_bootstrap)
-        ])
+        boot_means = np.array(
+            [np.mean(np.random.choice(results, size=len(results), replace=True)) for _ in range(n_bootstrap)]
+        )
         ci_low, ci_high = np.percentile(boot_means, [2.5, 97.5])
         cis[sim] = {
             "mean": np.mean(results),
@@ -926,10 +1028,18 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
     colors = [SIM_COLORS[s] for s in sims]
 
     ax.barh(y_pos, means, color=colors, alpha=0.7)
-    ax.errorbar(means, y_pos,
-                xerr=[[m - low for m, low in zip(means, lows, strict=False)],
-                      [h - m for m, h in zip(means, highs, strict=False)]],
-                fmt="none", ecolor="white", capsize=4, linewidth=2)
+    ax.errorbar(
+        means,
+        y_pos,
+        xerr=[
+            [m - low for m, low in zip(means, lows, strict=False)],
+            [h - m for m, h in zip(means, highs, strict=False)],
+        ],
+        fmt="none",
+        ecolor="white",
+        capsize=4,
+        linewidth=2,
+    )
     ax.set_yticks(y_pos)
     ax.set_yticklabels([f"{s}\n(n={cis[s]['n']})" for s in sims], fontsize=9)
     ax.set_xlabel("Win Rate (%)")
@@ -939,8 +1049,7 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
 
     # Add CI text
     for i, _sim in enumerate(sims):
-        ax.text(highs[i] + 1, i, f"[{lows[i]:.1f}%, {highs[i]:.1f}%]",
-                va="center", fontsize=8, color="#8b949e")
+        ax.text(highs[i] + 1, i, f"[{lows[i]:.1f}%, {highs[i]:.1f}%]", va="center", fontsize=8, color="#8b949e")
 
     plt.tight_layout()
     plt.savefig(OUT / "09_bootstrap_ci.png", bbox_inches="tight")
@@ -952,6 +1061,7 @@ def bootstrap_ci(all_data, n_bootstrap=10000):
 # ═══════════════════════════════════════════════════════════════════════
 # 12. WIN RATE EVOLUTION ACROSS PLAYER COUNTS
 # ═══════════════════════════════════════════════════════════════════════
+
 
 def win_rate_evolution(all_data):
     """Line chart showing how each sim's win rate changes with player count."""
@@ -968,13 +1078,11 @@ def win_rate_evolution(all_data):
                 pcs.append(pc)
 
         if rates:
-            ax.plot(pcs, rates, "o-", label=sim, color=SIM_COLORS[sim],
-                    linewidth=2, markersize=8, alpha=0.85)
+            ax.plot(pcs, rates, "o-", label=sim, color=SIM_COLORS[sim], linewidth=2, markersize=8, alpha=0.85)
 
     # Theoretical fair rate
-    theoretical = [50, 100/3, 25, 20]
-    ax.plot([2, 3, 4, 5], theoretical, "--", color="#8b949e", linewidth=1.5,
-            alpha=0.6, label="Theoretical Fair")
+    theoretical = [50, 100 / 3, 25, 20]
+    ax.plot([2, 3, 4, 5], theoretical, "--", color="#8b949e", linewidth=1.5, alpha=0.6, label="Theoretical Fair")
 
     ax.set_xlabel("Player Count")
     ax.set_ylabel("Win Rate (%)")
@@ -993,8 +1101,10 @@ def win_rate_evolution(all_data):
 # 13. GENERATE STATISTICAL SUPPLEMENT MARKDOWN
 # ═══════════════════════════════════════════════════════════════════════
 
-def generate_supplement(elo_results, chi_results, pairwise, per_pc_chi,
-                         coef_df, corr_by_pc, bootstrap_cis, nash_eq, strat_combined):
+
+def generate_supplement(
+    elo_results, chi_results, pairwise, per_pc_chi, coef_df, corr_by_pc, bootstrap_cis, nash_eq, strat_combined
+):
     """Write a markdown file with all statistical findings."""
     lines = []
     lines.append("# Epoch Statistical Supplement")
@@ -1113,8 +1223,8 @@ def generate_supplement(elo_results, chi_results, pairwise, per_pc_chi,
     lines.append("|----------|---------|--------|---|")
     for s in strat_combined:
         lines.append(
-            f"| {s['strategy']} | {s['win_rate']:.1f}%"
-            f" | [{s['ci_low']:.1f}%, {s['ci_high']:.1f}%] | {s['n']} |")
+            f"| {s['strategy']} | {s['win_rate']:.1f}% | [{s['ci_low']:.1f}%, {s['ci_high']:.1f}%] | {s['n']} |"
+        )
     lines.append("")
 
     # Charts index
@@ -1144,6 +1254,7 @@ def generate_supplement(elo_results, chi_results, pairwise, per_pc_chi,
 # MAIN
 # ═══════════════════════════════════════════════════════════════════════
 
+
 def main():
     print("=" * 60)
     print("EPOCH STATISTICAL ANALYSIS — v2.1 (200 games)")
@@ -1169,8 +1280,10 @@ def main():
 
     print("\n4. PCA on score weights...")
     pca_model, scaler, df = pca_analysis(all_data)
-    print(f"   PC1 explains {pca_model.explained_variance_ratio_[0]:.1%}, "
-          f"PC2 explains {pca_model.explained_variance_ratio_[1]:.1%}")
+    print(
+        f"   PC1 explains {pca_model.explained_variance_ratio_[0]:.1%}, "
+        f"PC2 explains {pca_model.explained_variance_ratio_[1]:.1%}"
+    )
 
     print("\n5. Logistic regression...")
     model, coef_df = logistic_regression_analysis(all_data)
@@ -1207,8 +1320,9 @@ def main():
     win_rate_evolution(all_data)
 
     print("\n13. Generating statistical supplement...")
-    generate_supplement(sorted_elo, chi_results, pairwise, per_pc_chi,
-                        coef_df, corr_by_pc, bootstrap_cis, nash_eq, strat_combined)
+    generate_supplement(
+        sorted_elo, chi_results, pairwise, per_pc_chi, coef_df, corr_by_pc, bootstrap_cis, nash_eq, strat_combined
+    )
 
     print(f"\n{'=' * 60}")
     print(f"COMPLETE — {len(list(OUT.glob('*.png')))} charts + 1 supplement written to {OUT}")

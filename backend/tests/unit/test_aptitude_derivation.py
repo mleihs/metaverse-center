@@ -25,16 +25,25 @@ from backend.services.combat.skill_checks import (
 )
 
 _CONSCIENTIOUS = {
-    "conscientiousness": 0.95, "neuroticism": 0.1, "openness": 0.3,
-    "agreeableness": 0.5, "extraversion": 0.4,
+    "conscientiousness": 0.95,
+    "neuroticism": 0.1,
+    "openness": 0.3,
+    "agreeableness": 0.5,
+    "extraversion": 0.4,
 }
 _SOCIABLE = {
-    "openness": 0.9, "extraversion": 0.95, "conscientiousness": 0.2,
-    "neuroticism": 0.5, "agreeableness": 0.8,
+    "openness": 0.9,
+    "extraversion": 0.95,
+    "conscientiousness": 0.2,
+    "neuroticism": 0.5,
+    "agreeableness": 0.8,
 }
 _RUTHLESS = {
-    "agreeableness": 0.05, "neuroticism": 0.8, "openness": 0.7,
-    "conscientiousness": 0.5, "extraversion": 0.3,
+    "agreeableness": 0.05,
+    "neuroticism": 0.8,
+    "openness": 0.7,
+    "conscientiousness": 0.5,
+    "extraversion": 0.3,
 }
 
 
@@ -54,8 +63,7 @@ class TestTheSignalComesFromTheExistingTables:
     def test_every_check_type_has_a_trait(self, operative):
         check_type = APTITUDE_CHECK_TYPE_MAP[operative]
         assert CHECK_TYPE_PERSONALITY_MODIFIERS.get(check_type), (
-            f"'{check_type}' hat keine Merkmalszuordnung — die Herleitung "
-            f"fiele für {operative} auf neutral zurück"
+            f"'{check_type}' hat keine Merkmalszuordnung — die Herleitung fiele für {operative} auf neutral zurück"
         )
 
     def test_the_tiebreaker_covers_everyone(self):
@@ -66,8 +74,8 @@ class TestTheSignalComesFromTheExistingTables:
 
 class TestTheBudgetInvariant:
     @pytest.mark.parametrize(
-        "personality", [None, {}, _CONSCIENTIOUS, _SOCIABLE, _RUTHLESS,
-                        {"openness": 1.0}, {"openness": 0.0}, {"openness": "kaputt"}]
+        "personality",
+        [None, {}, _CONSCIENTIOUS, _SOCIABLE, _RUTHLESS, {"openness": 1.0}, {"openness": 0.0}, {"openness": "kaputt"}],
     )
     def test_always_sums_to_the_budget(self, personality):
         levels = _levels(personality)
@@ -111,9 +119,7 @@ class TestItActuallyDifferentiates:
     def test_a_strong_disposition_produces_a_real_spread(self):
         for personality in (_CONSCIENTIOUS, _SOCIABLE, _RUTHLESS):
             levels = _levels(personality)
-            assert max(levels.values()) - min(levels.values()) >= 2, (
-                f"Zu flach, um eine Entscheidung zu sein: {levels}"
-            )
+            assert max(levels.values()) - min(levels.values()) >= 2, f"Zu flach, um eine Entscheidung zu sein: {levels}"
 
 
 class TestItIsDeterministic:
@@ -125,6 +131,5 @@ class TestItIsDeterministic:
 
         source = Path("backend/services/aptitude_derivation.py").read_text(encoding="utf-8")
         assert "random" not in source, (
-            "Zufall macht die Herleitung unreproduzierbar — zwei Läufe derselben "
-            "Welt bekämen verschiedene Agenten"
+            "Zufall macht die Herleitung unreproduzierbar — zwei Läufe derselben Welt bekämen verschiedene Agenten"
         )

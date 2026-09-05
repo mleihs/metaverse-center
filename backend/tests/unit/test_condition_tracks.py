@@ -197,9 +197,7 @@ class TestDataIntegrity:
         non_captured = ["operational", "stressed", "wounded", "afflicted"]
         for condition in non_captured:
             for steps in (1, 2):
-                assert (condition, steps) in CONDITION_TRANSITIONS, (
-                    f"Missing transition for ({condition}, {steps})"
-                )
+                assert (condition, steps) in CONDITION_TRANSITIONS, f"Missing transition for ({condition}, {steps})"
 
     def test_transition_targets_are_valid_conditions(self):
         valid = set(CONDITION_SEVERITY.keys())

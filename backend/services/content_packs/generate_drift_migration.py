@@ -46,13 +46,9 @@ _TRUNCATE_NOTE = [
 ]
 
 
-def generate_drift_sql(
-    content: DriftPackContent, *, truncate: bool = True
-) -> tuple[str, dict[str, int]]:
+def generate_drift_sql(content: DriftPackContent, *, truncate: bool = True) -> tuple[str, dict[str, int]]:
     """Produce the drift seed SQL string plus a per-table row-count map."""
-    sections = [
-        (spec, _BUILDER_FOR_SPEC[spec](content)) for spec in DRIFT_EMISSION_ORDER
-    ]
+    sections = [(spec, _BUILDER_FOR_SPEC[spec](content)) for spec in DRIFT_EMISSION_ORDER]
     return render_seed_document(
         sections,
         banner_title="Drift content seed (generated from content/drift/**/*.yaml)",
@@ -79,7 +75,6 @@ def main(argv: list[str] | None = None) -> int:
         root_help=f"Drift pack root (defaults to {DEFAULT_DRIFT_PACK_ROOT}).",
         build=lambda root, truncate: generate_drift_sql(load_drift_content(root), truncate=truncate),
     )
-
 
 
 if __name__ == "__main__":

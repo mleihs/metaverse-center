@@ -92,8 +92,12 @@ async def update_notification_preferences(
         body.model_dump(),
     )
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "notification_preferences", user.id, "update",
+        supabase,
+        None,
+        user.id,
+        "notification_preferences",
+        user.id,
+        "update",
     )
     return SuccessResponse(data=result)
 
@@ -106,8 +110,12 @@ async def complete_onboarding(
     """Mark the current user's onboarding as completed."""
     await UserProfileService.complete_onboarding(supabase, user.id)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "user_profiles", user.id, "complete_onboarding",
+        supabase,
+        None,
+        user.id,
+        "user_profiles",
+        user.id,
+        "complete_onboarding",
     )
     return SuccessResponse(data={"onboarding_completed": True})
 
@@ -146,8 +154,12 @@ async def update_image_preferences(
         vantage_folgt_der_welt=body.vantage_folgt_der_welt,
     )
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "user_profiles", user.id, "update_image_preferences",
+        supabase,
+        None,
+        user.id,
+        "user_profiles",
+        user.id,
+        "update_image_preferences",
         details={"fields": sorted(body.model_dump(exclude_none=True))},
     )
     return SuccessResponse(data=ImagePreferencesResponse(**stand))

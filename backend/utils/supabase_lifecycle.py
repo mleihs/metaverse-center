@@ -62,6 +62,4 @@ async def _try_close(obj: object) -> None:
         if hasattr(result, "__await__"):
             await result
     except Exception:  # noqa: BLE001 — teardown must never break the request
-        logger.debug(
-            "Failed to close Supabase sub-client %r", type(obj), exc_info=True
-        )
+        logger.debug("Failed to close Supabase sub-client %r", type(obj), exc_info=True)

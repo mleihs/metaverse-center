@@ -117,37 +117,31 @@ class TestDieLageWirdAusgerechnetNichtErbeten:
     def test_wer_nicht_gemeint_war_erfaehrt_es(self):
         note = ChatAIService._addressed_note(
             "waehrend ich Marie kuesse, fessle ich die beiden anderen",
-            agent_names=BESETZUNG, idx=1, locale="de",
+            agent_names=BESETZUNG,
+            idx=1,
+            locale="de",
         )
         assert "Marie Morgenrot" in note
         assert "nicht dich" in note
 
     def test_wer_gemeint_war_erfaehrt_es_auch(self):
-        note = ChatAIService._addressed_note(
-            "Marie, komm her", agent_names=BESETZUNG, idx=0, locale="de"
-        )
+        note = ChatAIService._addressed_note("Marie, komm her", agent_names=BESETZUNG, idx=0, locale="de")
         assert "dich an" in note
         assert "nicht dich" not in note
 
     def test_der_vorname_genuegt(self):
         """So sprechen Menschen ihre Figuren an. Verlangte die Erkennung den
         vollen Namen, traefe sie in echten Nachrichten fast nie."""
-        note = ChatAIService._addressed_note(
-            "ich kuesse marie", agent_names=BESETZUNG, idx=1, locale="de"
-        )
+        note = ChatAIService._addressed_note("ich kuesse marie", agent_names=BESETZUNG, idx=1, locale="de")
         assert "nicht dich" in note
 
     def test_die_vorredner_dieser_runde_stehen_drin(self):
-        note = ChatAIService._addressed_note(
-            "was passiert?", agent_names=BESETZUNG, idx=2, locale="de"
-        )
+        note = ChatAIService._addressed_note("was passiert?", agent_names=BESETZUNG, idx=2, locale="de")
         assert "Marie Morgenrot" in note and "Suse Sonnenblum" in note
         assert "denselben Augenblick" in note
 
     def test_die_erste_sprecherin_hat_keine_vorredner(self):
-        note = ChatAIService._addressed_note(
-            "was passiert?", agent_names=BESETZUNG, idx=0, locale="de"
-        )
+        note = ChatAIService._addressed_note("was passiert?", agent_names=BESETZUNG, idx=0, locale="de")
         assert note == "", f"die erste Sprecherin bekommt einen Hinweis auf Vorredner: {note!r}"
 
     def test_ohne_anlass_bleibt_der_satz_leer(self):
@@ -163,9 +157,7 @@ class TestDieLageWirdAusgerechnetNichtErbeten:
     def test_ein_teilstring_loest_nicht_aus(self):
         """`Marie` darf nicht in `Marienbad` treffen — sonst spraeche der
         Hinweis von einer Anrede, die niemand gemacht hat."""
-        note = ChatAIService._addressed_note(
-            "wir fahren nach Marienbad", agent_names=BESETZUNG, idx=1, locale="de"
-        )
+        note = ChatAIService._addressed_note("wir fahren nach Marienbad", agent_names=BESETZUNG, idx=1, locale="de")
         assert "nicht dich" not in note
 
     def test_der_vertrag_kennt_die_lage(self):

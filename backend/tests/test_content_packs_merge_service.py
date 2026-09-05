@@ -200,9 +200,7 @@ def test_add_add_different_entry_defaults_to_ours() -> None:
     assert c.kind == ConflictKind.ADD_ADD_DIFFERENT
     assert c.path == ".banter[id=new]"
     assert c.base is None
-    assert result.merged == {
-        "banter": [_entry("a", "x"), _entry("new", "by-ours")]
-    }
+    assert result.merged == {"banter": [_entry("a", "x"), _entry("new", "by-ours")]}
 
 
 # ── Conflicts: top-level scalar ───────────────────────────────────────────

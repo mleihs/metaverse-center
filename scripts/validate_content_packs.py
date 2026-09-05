@@ -127,9 +127,7 @@ def validate_drift(content: DriftPackContent) -> tuple[list[str], list[str]]:
     ):
         for dup, count in Counter(keys).items():
             if count > 1:
-                violations.append(
-                    f"{label} template_key '{dup}' appears {count}× (must be globally unique)"
-                )
+                violations.append(f"{label} template_key '{dup}' appears {count}× (must be globally unique)")
 
     if content.signals:
         per_class = Counter(record.signal_class for record in content.signals)
@@ -171,12 +169,7 @@ def _check_global_id_uniqueness(result: PackLoadResult) -> list[str]:
         if count > 1:
             violations.append(f"enemy id '{dup}' appears {count}× (must be globally unique)")
 
-    loot_ids = [
-        item.id
-        for tiers in result.loot.values()
-        for items in tiers.values()
-        for item in items
-    ]
+    loot_ids = [item.id for tiers in result.loot.values() for items in tiers.values() for item in items]
     for dup, count in Counter(loot_ids).items():
         if count > 1:
             violations.append(f"loot id '{dup}' appears {count}× (must be globally unique)")
@@ -229,9 +222,7 @@ def _check_archetype_minimums(result: PackLoadResult) -> list[str]:
     for archetype, per_kind in sorted(counts.items()):
         for kind, minimum in ARCHETYPE_MINIMUMS.items():
             if per_kind[kind] < minimum:
-                violations.append(
-                    f"{archetype}: only {per_kind[kind]} {kind} (minimum {minimum})"
-                )
+                violations.append(f"{archetype}: only {per_kind[kind]} {kind} (minimum {minimum})")
     return violations
 
 
@@ -257,9 +248,7 @@ def _check_unreachable_content(result: PackLoadResult) -> list[str]:
                 if isinstance(entry, dict) and entry.get("template_id"):
                     spawned.add(entry["template_id"])
         for orphan in sorted(set(templates) - spawned):
-            warnings.append(
-                f"enemy '{orphan}' ({archetype}) appears in no spawn config — it can never be fought"
-            )
+            warnings.append(f"enemy '{orphan}' ({archetype}) appears in no spawn config — it can never be fought")
 
     for archetype, configs in sorted(result.spawns.items()):
         referenced = {
@@ -393,9 +382,7 @@ def _check_archetype_completeness(result: PackLoadResult) -> list[str]:
         for required in REQUIRED_ROOM_TYPES_AT_LEAST_ONCE:
             count = by_type.get(required, 0)
             if count < 1:
-                violations.append(
-                    f"archetype '{archetype}' has no {required} encounter; at least 1 required"
-                )
+                violations.append(f"archetype '{archetype}' has no {required} encounter; at least 1 required")
     return violations
 
 
@@ -467,8 +454,7 @@ def _check_enemy_art_coverage(result: PackLoadResult) -> list[str]:
     anything listed here is new and unillustrated.
     """
     return [
-        f"enemy '{enemy_id}' ({archetype}) has no image_path — "
-        f"it will render as a silhouette in the graphical view"
+        f"enemy '{enemy_id}' ({archetype}) has no image_path — it will render as a silhouette in the graphical view"
         for archetype in sorted(result.enemies)
         for enemy_id, tmpl in sorted(result.enemies[archetype].items())
         if tmpl.image_path is None
@@ -503,10 +489,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.domain == "drift":
             content = load_drift_content(args.root)
             violations, warnings = validate_drift(content)
-            summary = (
-                f"{len(content.quests)} drift quest template(s), "
-                f"{len(content.signals)} signal template(s)"
-            )
+            summary = f"{len(content.quests)} drift quest template(s), {len(content.signals)} signal template(s)"
         else:
             result = load_packs(args.root)
             violations, warnings = validate(result)

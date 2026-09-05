@@ -26,20 +26,22 @@ AGENT_ID = UUID("cccccccc-cccc-cccc-cccc-cccccccccccc")
 EVENT_ID = UUID("dddddddd-dddd-dddd-dddd-dddddddddddd")
 CONN_ID = UUID("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee")
 
-MOCK_CONN = ConnectionResponse.model_validate({
-    "id": str(CONN_ID),
-    "simulation_a_id": str(SIM_A),
-    "simulation_b_id": str(SIM_B),
-    "connection_type": "bleed",
-    "bleed_vectors": ["resonance", "commerce"],
-    "strength": 0.7,
-    "description": "Test connection",
-    "is_active": True,
-    "created_at": "2026-01-01T00:00:00Z",
-    "updated_at": "2026-01-01T00:00:00Z",
-    "simulation_a": None,
-    "simulation_b": None,
-})
+MOCK_CONN = ConnectionResponse.model_validate(
+    {
+        "id": str(CONN_ID),
+        "simulation_a_id": str(SIM_A),
+        "simulation_b_id": str(SIM_B),
+        "connection_type": "bleed",
+        "bleed_vectors": ["resonance", "commerce"],
+        "strength": 0.7,
+        "description": "Test connection",
+        "is_active": True,
+        "created_at": "2026-01-01T00:00:00Z",
+        "updated_at": "2026-01-01T00:00:00Z",
+        "simulation_a": None,
+        "simulation_b": None,
+    }
+)
 
 
 @pytest.fixture()

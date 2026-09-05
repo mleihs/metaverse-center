@@ -102,16 +102,18 @@ class TestBuildEventContext:
         """Event description should NOT be truncated (was [:500] before)."""
         long_description = "A" * 2000  # 2000 chars, well over old 500 limit
 
-        event_refs = [{
-            "event_id": "evt-1",
-            "events": {
-                "title": "Big Event",
-                "event_type": "political",
-                "impact_level": 8,
-                "occurred_at": "2026-01-01",
-                "description": long_description,
-            },
-        }]
+        event_refs = [
+            {
+                "event_id": "evt-1",
+                "events": {
+                    "title": "Big Event",
+                    "event_type": "political",
+                    "impact_level": 8,
+                    "occurred_at": "2026-01-01",
+                    "description": long_description,
+                },
+            }
+        ]
 
         # Mock resolve to return hardcoded fallback templates
         async def mock_resolve(template_type, locale):
@@ -128,23 +130,27 @@ class TestBuildEventContext:
 
     async def test_includes_event_reactions(self, chat_service):
         """Event reactions should be appended after the event block."""
-        event_refs = [{
-            "event_id": "evt-1",
-            "events": {
-                "title": "Rebellion",
-                "event_type": "political",
-                "impact_level": 9,
-                "occurred_at": "2026-01-15",
-                "description": "A rebellion broke out.",
-            },
-        }]
-        reactions = [{
-            "event_id": "evt-1",
-            "agent_id": "agent-1",
-            "agent_name": "Captain Ava",
-            "reaction_text": "This changes everything!",
-            "emotion": "shock",
-        }]
+        event_refs = [
+            {
+                "event_id": "evt-1",
+                "events": {
+                    "title": "Rebellion",
+                    "event_type": "political",
+                    "impact_level": 9,
+                    "occurred_at": "2026-01-15",
+                    "description": "A rebellion broke out.",
+                },
+            }
+        ]
+        reactions = [
+            {
+                "event_id": "evt-1",
+                "agent_id": "agent-1",
+                "agent_name": "Captain Ava",
+                "reaction_text": "This changes everything!",
+                "emotion": "shock",
+            }
+        ]
 
         async def mock_resolve(template_type, locale):
             content = HARDCODED_FALLBACKS.get(template_type, "")

@@ -86,13 +86,13 @@ async def test_upsert_rule_create_invokes_insert_reload_audit() -> None:
     row = _rule_row()
     admin = _admin_mock([row])
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock) as reload_mock,
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock) as reload_mock,
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         result = await SentryRuleService.upsert_rule(
-            admin, actor_id=_ACTOR_ID, body=_body(),
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(),
         )
     assert str(result.id) == row["id"]
     reload_mock.assert_awaited_once_with(admin)
@@ -110,13 +110,14 @@ async def test_upsert_rule_update_targets_id_and_logs_update_action() -> None:
     row = _rule_row(rule_id=rule_id)
     admin = _admin_mock([row])
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock),
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         result = await SentryRuleService.upsert_rule(
-            admin, actor_id=_ACTOR_ID, body=_body(), rule_id=rule_id,
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(),
+            rule_id=rule_id,
         )
     assert str(result.id) == str(rule_id)
     admin.table.return_value.update.assert_called_once()
@@ -128,14 +129,15 @@ async def test_upsert_rule_update_targets_id_and_logs_update_action() -> None:
 async def test_upsert_rule_update_raises_not_found_for_missing_id() -> None:
     admin = _admin_mock([])  # empty update result → not_found
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock),
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock),
         pytest.raises(HTTPException) as exc,
     ):
         await SentryRuleService.upsert_rule(
-            admin, actor_id=_ACTOR_ID, body=_body(), rule_id=uuid4(),
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(),
+            rule_id=uuid4(),
         )
     assert exc.value.status_code == 404
 
@@ -150,10 +152,8 @@ async def test_upsert_rule_uses_audit_reason_when_provided() -> None:
     row = _rule_row()
     admin = _admin_mock([row])
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock),
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         await SentryRuleService.upsert_rule(
             admin,
@@ -170,13 +170,13 @@ async def test_upsert_rule_falls_back_to_note_when_audit_reason_missing() -> Non
     row = _rule_row()
     admin = _admin_mock([row])
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock),
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         await SentryRuleService.upsert_rule(
-            admin, actor_id=_ACTOR_ID, body=_body(),
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(),
         )
     assert audit_mock.call_args.kwargs["reason"] == "test rule rationale"
 
@@ -188,13 +188,17 @@ async def test_upsert_rule_tolerates_cache_reload_failure() -> None:
     row = _rule_row()
     admin = _admin_mock([row])
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock, side_effect=RuntimeError("pg down")),
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch(
+            "backend.services.sentry_rule_service.sentry_rule_cache.reload",
+            new_callable=AsyncMock,
+            side_effect=RuntimeError("pg down"),
+        ),
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         result = await SentryRuleService.upsert_rule(
-            admin, actor_id=_ACTOR_ID, body=_body(),
+            admin,
+            actor_id=_ACTOR_ID,
+            body=_body(),
         )
     assert str(result.id) == row["id"]
     # Audit still fires — the write did land, an operator should see it.
@@ -209,13 +213,14 @@ async def test_delete_rule_reloads_cache_and_audits() -> None:
     rule_id = uuid4()
     admin = _admin_mock([{"id": str(rule_id)}])  # delete returns affected row
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock) as reload_mock,
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock) as reload_mock,
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
     ):
         await SentryRuleService.delete_rule(
-            admin, actor_id=_ACTOR_ID, rule_id=rule_id, reason="stale rule",
+            admin,
+            actor_id=_ACTOR_ID,
+            rule_id=rule_id,
+            reason="stale rule",
         )
     admin.table.return_value.delete.assert_called_once()
     admin.table.return_value.eq.assert_called_with("id", str(rule_id))
@@ -228,14 +233,15 @@ async def test_delete_rule_reloads_cache_and_audits() -> None:
 async def test_delete_rule_raises_not_found_when_row_missing() -> None:
     admin = _admin_mock([])  # no rows affected
     with (
-        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload",
-              new_callable=AsyncMock) as reload_mock,
-        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action",
-              new_callable=AsyncMock) as audit_mock,
+        patch("backend.services.sentry_rule_service.sentry_rule_cache.reload", new_callable=AsyncMock) as reload_mock,
+        patch("backend.services.sentry_rule_service.OpsLedgerService.log_action", new_callable=AsyncMock) as audit_mock,
         pytest.raises(HTTPException) as exc,
     ):
         await SentryRuleService.delete_rule(
-            admin, actor_id=_ACTOR_ID, rule_id=uuid4(), reason="nope",
+            admin,
+            actor_id=_ACTOR_ID,
+            rule_id=uuid4(),
+            reason="nope",
         )
     assert exc.value.status_code == 404
     # No reload or audit on a missing row — nothing changed.

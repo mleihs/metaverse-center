@@ -47,9 +47,7 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 
 def _run_row(admin_client, run_id) -> dict:
-    return (
-        admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()
-    ).data[0]
+    return (admin_client.table("travel_runs").select("*").eq("id", str(run_id)).execute()).data[0]
 
 
 def _strand(admin_client, client, user, chart_home, neighbor, *, cause: str = "kohaerenz") -> dict:
@@ -60,26 +58,34 @@ def _strand(admin_client, client, user, chart_home, neighbor, *, cause: str = "k
     """
     run = _open_run(client, user, chart_home["simulation_id"])
     if cause == "kohaerenz":
-        admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-            "id", run["id"]
-        ).execute()
+        admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
     else:
-        admin_client.table("travel_runs").update({"window_remaining": 1}).eq(
-            "id", run["id"]
-        ).execute()
-    return client.rpc(
-        "fn_travel_move",
-        {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-         "p_to_node": neighbor},
-    ).execute().data
+        admin_client.table("travel_runs").update({"window_remaining": 1}).eq("id", run["id"]).execute()
+    return (
+        client.rpc(
+            "fn_travel_move",
+            {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"], "p_to_node": neighbor},
+        )
+        .execute()
+        .data
+    )
 
 
 def _accept_depesche(client, user, run, target_sim) -> dict:
-    return client.rpc(
-        "fn_quest_accept",
-        {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-         "p_template_key": "deliver_memory_parcel", "p_target_sim": target_sim},
-    ).execute().data
+    return (
+        client.rpc(
+            "fn_quest_accept",
+            {
+                "p_user": str(user),
+                "p_run": run["id"],
+                "p_run_version": run["run_version"],
+                "p_template_key": "deliver_memory_parcel",
+                "p_target_sim": target_sim,
+            },
+        )
+        .execute()
+        .data
+    )
 
 
 class TestHavarieOpens:
@@ -104,9 +110,7 @@ class TestHavarieOpens:
             )
             assert hav["expires_at"], "a wreck must carry its own deadline"
             assert run["position_node_id"] == home_neighbor, "stranded WHERE YOU ARE"
-            assert _profile(admin_client, user)["zerfaserung_count"] == 0, (
-                "a Havarie is not (yet) a Zerfaserung"
-            )
+            assert _profile(admin_client, user)["zerfaserung_count"] == 0, "a Havarie is not (yet) a Zerfaserung"
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
@@ -122,14 +126,20 @@ class TestHavarieOpens:
             run = _open_run(client, user, chart_home["simulation_id"])
             accepted = _accept_depesche(client, user, run, chart_foreign["simulation_id"])
             run = accepted["run"]
-            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-                "id", run["id"]
-            ).execute()
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             hav = run["checkpoint"]["havarie"]
             assert hav["options"] == ["notabwurf", "notruf", "zerfaserung"]
@@ -188,23 +198,39 @@ class TestHavarieOpens:
             # stand bisher nur ungeschrieben da und traf in rund 93 % der Fälle zu; jetzt
             # steht sie. `travel_cargo.haul_value` speist `travel_runs.haul` über einen
             # Auslöser (264/§3.2), das Löschen zieht den Haul also sauber mit zurück.
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_neighbor},
-            ).execute().data
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
             assert run["status"] == "active", "the outbound hop must not already strand it"
             checkpoint = {k: v for k, v in run["checkpoint"].items() if k != "pending_signal"}
             admin_client.table("travel_cargo").delete().eq("run_id", run["id"]).execute()
-            admin_client.table("travel_runs").update(
-                {"kohaerenz": 1, "bandbreite": 0, "checkpoint": checkpoint}
-            ).eq("id", run["id"]).execute()
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0, "checkpoint": checkpoint}).eq(
+                "id", run["id"]
+            ).execute()
             run = _run_row(admin_client, run["id"])
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_to_node": home_node},
-            ).execute().data
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_node,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             assert run["status"] == "havarie", "arriving broken is still a Havarie"
             assert run["position_node_id"] == home_node
@@ -222,16 +248,23 @@ class TestHavarieOpens:
                 "unten zu Recht länger, und diese Zeile sagt WARUM statt nur DASS"
             )
             assert hav["options"] == ["rueckruf", "notruf", "zerfaserung"], (
-                "the recall leads: it is the best of the three at home, and the panel "
-                "renders the catalogue in order"
+                "the recall leads: it is the best of the three at home, and the panel renders the catalogue in order"
             )
 
             # And it must actually be takeable — the option list is validated server-side.
-            settled = client.rpc(
-                "fn_travel_havarie_resolve",
-                {"p_user": str(user), "p_run": run["id"],
-                 "p_run_version": run["run_version"], "p_choice": "rueckruf"},
-            ).execute().data
+            settled = (
+                client.rpc(
+                    "fn_travel_havarie_resolve",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_choice": "rueckruf",
+                    },
+                )
+                .execute()
+                .data
+            )
             assert settled["status"] == "completed", "an orderly recall closes the run"
         finally:
             _set_gate(admin_client, False)
@@ -259,8 +292,7 @@ class TestHavarieOpens:
             hav = run["checkpoint"]["havarie"]
             assert hav["at_home"] is False
             assert "rueckruf" not in hav["options"], (
-                "leaving home is not arriving home — the catalogue must not follow the "
-                "node the run departed from"
+                "leaving home is not arriving home — the catalogue must not follow the node the run departed from"
             )
             assert hav["options"] == ["notruf", "zerfaserung"]
         finally:
@@ -312,11 +344,20 @@ class TestHavarieChoices:
     """Every option is a real trade — and only the trade it advertises."""
 
     def _resolve(self, client, user, run, choice, jettison=None):
-        return client.rpc(
-            "fn_travel_havarie_resolve",
-            {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-             "p_choice": choice, "p_jettison_cargo_ids": jettison},
-        ).execute().data
+        return (
+            client.rpc(
+                "fn_travel_havarie_resolve",
+                {
+                    "p_user": str(user),
+                    "p_run": run["id"],
+                    "p_run_version": run["run_version"],
+                    "p_choice": choice,
+                    "p_jettison_cargo_ids": jettison,
+                },
+            )
+            .execute()
+            .data
+        )
 
     def test_notabwurf_restores_kohaerenz_costs_window_and_fails_the_depesche(
         self, admin_client, user_clients, test_user_ids, chart_home, chart_foreign, home_neighbor
@@ -330,14 +371,20 @@ class TestHavarieChoices:
             accepted = _accept_depesche(client, user, run, chart_foreign["simulation_id"])
             cargo_id, instance_id = accepted["cargo"]["id"], accepted["instance"]["id"]
             run = accepted["run"]
-            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-                "id", run["id"]
-            ).execute()
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
             window_before = run["window_remaining"]
 
             out = self._resolve(client, user, run, "notabwurf", [cargo_id])
@@ -349,14 +396,11 @@ class TestHavarieChoices:
             assert "havarie" not in out["checkpoint"], "the wreck block is cleared"
             assert out["checkpoint"]["last_havarie"]["jettisoned"] == 1
 
-            cargo = (
-                admin_client.table("travel_cargo").select("id").eq("id", cargo_id).execute()
-            ).data
+            cargo = (admin_client.table("travel_cargo").select("id").eq("id", cargo_id).execute()).data
             assert cargo == [], "the freight is gone"
-            inst = (
-                admin_client.table("travel_quest_instances")
-                .select("status").eq("id", instance_id).execute()
-            ).data[0]
+            inst = (admin_client.table("travel_quest_instances").select("status").eq("id", instance_id).execute()).data[
+                0
+            ]
             assert inst["status"] == "failed", (
                 "a jettisoned Depesche must fail its instance — an 'active' instance on a "
                 "cargo-less run locks fn_quest_accept out with QUEST_ACTIVE forever"
@@ -365,7 +409,10 @@ class TestHavarieChoices:
             # next fn_quest_accept (at the next world edge) passes its QUEST_ACTIVE guard.
             open_instances = (
                 admin_client.table("travel_quest_instances")
-                .select("id").eq("owner_user_id", str(user)).eq("status", "active").execute()
+                .select("id")
+                .eq("owner_user_id", str(user))
+                .eq("status", "active")
+                .execute()
             ).data
             assert open_instances == []
         finally:
@@ -388,31 +435,40 @@ class TestHavarieChoices:
             # is under test, not their run).
             foreign_cargo = (
                 admin_client.table("travel_cargo")
-                .insert({"owner_user_id": str(other), "family": "erinnerungsstuecke",
-                         "vector": "memory", "manifest_slot": 0})
+                .insert(
+                    {
+                        "owner_user_id": str(other),
+                        "family": "erinnerungsstuecke",
+                        "vector": "memory",
+                        "manifest_slot": 0,
+                    }
+                )
                 .execute()
             ).data[0]
 
             run = _open_run(client, user, chart_home["simulation_id"])
             accepted = _accept_depesche(client, user, run, chart_foreign["simulation_id"])
             run = accepted["run"]
-            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-                "id", run["id"]
-            ).execute()
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             with pytest.raises(Exception) as exc:
                 self._resolve(client, user, run, "notabwurf", [foreign_cargo["id"]])
             assert "CARGO_NOT_ABOARD" in str(exc.value)
 
-            still_there = (
-                admin_client.table("travel_cargo").select("id")
-                .eq("id", foreign_cargo["id"]).execute()
-            ).data
+            still_there = (admin_client.table("travel_cargo").select("id").eq("id", foreign_cargo["id"]).execute()).data
             assert still_there, "the other traveller's freight is untouched"
             assert _run_row(admin_client, run["id"])["status"] == "havarie", "and nothing resolved"
         finally:
@@ -431,14 +487,20 @@ class TestHavarieChoices:
         try:
             run = _open_run(client, user, chart_home["simulation_id"])
             run = _accept_depesche(client, user, run, chart_foreign["simulation_id"])["run"]
-            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-                "id", run["id"]
-            ).execute()
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
             with pytest.raises(Exception) as exc:
                 self._resolve(client, user, run, "notabwurf", None)
             assert "NOTHING_SELECTED" in str(exc.value)
@@ -456,9 +518,7 @@ class TestHavarieChoices:
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor)
             # Give the wreck a haul worth halving (the one-move strand banks nothing).
-            admin_client.table("travel_runs").update({"haul_survey": 9}).eq(
-                "id", run["id"]
-            ).execute()
+            admin_client.table("travel_runs").update({"haul_survey": 9}).eq("id", run["id"]).execute()
             run = _run_row(admin_client, run["id"])
 
             out = self._resolve(client, user, run, "notruf")
@@ -500,16 +560,22 @@ class TestHavarieChoices:
             assert out["window_remaining"] == 0
 
             # The next move must NOT collapse on the expired window — and must pay the tax.
-            admin_client.table("travel_runs").update({"kohaerenz": 100, "bandbreite": 50}).eq(
-                "id", out["id"]
-            ).execute()
+            admin_client.table("travel_runs").update({"kohaerenz": 100, "bandbreite": 50}).eq("id", out["id"]).execute()
             out = _run_row(admin_client, out["id"])
             dz_before = out["dissonanz"]
-            moved = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": out["id"], "p_run_version": out["run_version"],
-                 "p_to_node": chart_home["id"]},
-            ).execute().data
+            moved = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": out["id"],
+                        "p_run_version": out["run_version"],
+                        "p_to_node": chart_home["id"],
+                    },
+                )
+                .execute()
+                .data
+            )
 
             assert moved["status"] == "active", "an overstay permit survives the expired window"
             assert moved["overstay"] is True, (
@@ -517,9 +583,9 @@ class TestHavarieChoices:
                 "the checkpoint rebuild cannot reach it any more"
             )
             tax = _tuning(admin_client, "havarie_options")["ueberziehen"]["dz_per_takt"]
-            assert moved["dissonanz"] >= min(
-                int(_tuning(admin_client, "dz_p0_cap")), dz_before + tax
-            ), "every further Takt costs Dissonanz — the Bleed notices an overstay"
+            assert moved["dissonanz"] >= min(int(_tuning(admin_client, "dz_p0_cap")), dz_before + tax), (
+                "every further Takt costs Dissonanz — the Bleed notices an overstay"
+            )
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
@@ -533,9 +599,7 @@ class TestHavarieChoices:
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             run = _strand(admin_client, client, user, chart_home, home_neighbor, cause="window")
-            admin_client.table("travel_runs").update({"haul_survey": 10}).eq(
-                "id", run["id"]
-            ).execute()
+            admin_client.table("travel_runs").update({"haul_survey": 10}).eq("id", run["id"]).execute()
             run = _run_row(admin_client, run["id"])
 
             out = self._resolve(client, user, run, "rueckruf")
@@ -545,9 +609,7 @@ class TestHavarieChoices:
             assert out["status"] == "completed", "an orderly recall CLOSES the run"
             closing = out["checkpoint"]["closing"]
             assert closing["haul_banked"] == expected_haul
-            assert closing["reason"] == "rueckruf", (
-                "the receipt must never present a recalled haul as a full one"
-            )
+            assert closing["reason"] == "rueckruf", "the receipt must never present a recalled haul as a full one"
             assert closing["haul_before"] == 10
             assert closing["haul_lost"] == 10 - expected_haul
 
@@ -578,14 +640,20 @@ class TestHavarieChoices:
         try:
             run = _open_run(client, user, chart_home["simulation_id"])
             run = _accept_depesche(client, user, run, chart_foreign["simulation_id"])["run"]
-            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq(
-                "id", run["id"]
-            ).execute()
-            run = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            admin_client.table("travel_runs").update({"kohaerenz": 1, "bandbreite": 0}).eq("id", run["id"]).execute()
+            run = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             out = self._resolve(client, user, run, "zerfaserung")
 
@@ -599,10 +667,9 @@ class TestHavarieChoices:
             assert _profile(admin_client, user)["zerfaserung_count"] == 1, (
                 "the scar is counted where the run ACTUALLY unravels"
             )
-            assert (
-                admin_client.table("travel_cargo").select("id")
-                .eq("run_id", out["id"]).execute()
-            ).data == [], "the 250 close-cleanup trigger forfeited the manifest"
+            assert (admin_client.table("travel_cargo").select("id").eq("run_id", out["id"]).execute()).data == [], (
+                "the 250 close-cleanup trigger forfeited the manifest"
+            )
         finally:
             _set_gate(admin_client, False)
             _reset_traveler(admin_client, user)
@@ -715,11 +782,20 @@ class TestHavarieTTL:
             run = _strand(admin_client, client, user, chart_home, home_neighbor)
             run = self._expire(admin_client, run["id"])
 
-            out = client.rpc(
-                "fn_travel_havarie_resolve",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_choice": "notruf", "p_jettison_cargo_ids": None},
-            ).execute().data
+            out = (
+                client.rpc(
+                    "fn_travel_havarie_resolve",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_choice": "notruf",
+                        "p_jettison_cargo_ids": None,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             assert out["expired"] is True
             assert out["status"] == "abandoned", "the Drift decided for you"
@@ -766,17 +842,25 @@ class TestHavarieTTL:
         _seed_profile(admin_client, user, chart_home["simulation_id"])
         try:
             wreck = _strand(admin_client, client, user, chart_home, home_neighbor)
-            first = admin_client.rpc(
-                "fn_travel_zerfasern",
-                {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
-            ).execute().data
+            first = (
+                admin_client.rpc(
+                    "fn_travel_zerfasern",
+                    {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
+                )
+                .execute()
+                .data
+            )
             assert first["status"] == "abandoned"
             assert _profile(admin_client, user)["zerfaserung_count"] == 1
 
-            second = admin_client.rpc(
-                "fn_travel_zerfasern",
-                {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
-            ).execute().data
+            second = (
+                admin_client.rpc(
+                    "fn_travel_zerfasern",
+                    {"p_user": str(user), "p_run": wreck["id"], "p_reason": "ttl_expired"},
+                )
+                .execute()
+                .data
+            )
             assert second["status"] == "abandoned", "the closed run comes back untouched"
             assert _profile(admin_client, user)["zerfaserung_count"] == 1, (
                 "one wreck, one scar — a record that says otherwise cannot be corrected"
@@ -808,18 +892,24 @@ class TestHavarieRescueHatches:
                 {"kohaerenz": 1, "bandbreite": 0, "window_remaining": cost + 1}
             ).eq("id", run["id"]).execute()
 
-            wrecked = client.rpc(
-                "fn_travel_move",
-                {"p_user": str(user), "p_run": run["id"], "p_run_version": run["run_version"],
-                 "p_to_node": home_neighbor},
-            ).execute().data
+            wrecked = (
+                client.rpc(
+                    "fn_travel_move",
+                    {
+                        "p_user": str(user),
+                        "p_run": run["id"],
+                        "p_run_version": run["run_version"],
+                        "p_to_node": home_neighbor,
+                    },
+                )
+                .execute()
+                .data
+            )
 
             hav = wrecked["checkpoint"]["havarie"]
             assert wrecked["window_remaining"] == cost
             assert hav["cargo_aboard"] == 1, "there IS cargo — it is the window that is short"
-            assert "notabwurf" not in hav["options"], (
-                "an option that buys nothing must not be offered, cargo or not"
-            )
+            assert "notabwurf" not in hav["options"], "an option that buys nothing must not be offered, cargo or not"
             assert hav["options"] == ["notruf", "zerfaserung"]
         finally:
             _set_gate(admin_client, False)

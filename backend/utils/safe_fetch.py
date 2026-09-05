@@ -86,10 +86,7 @@ def validate_url(url: str) -> None:
 def _check_ip(ip: ipaddress.IPv4Address | ipaddress.IPv6Address, context: str) -> None:
     """Reject private, loopback, reserved, and link-local addresses."""
     if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_link_local:
-        raise ValueError(
-            f"URLs pointing to private/internal addresses are not allowed "
-            f"({context} resolves to {ip})"
-        )
+        raise ValueError(f"URLs pointing to private/internal addresses are not allowed ({context} resolves to {ip})")
 
 
 async def safe_fetch(
@@ -161,9 +158,6 @@ async def safe_download(
 
     data = response.content
     if len(data) > max_size:
-        raise ValueError(
-            f"Downloaded file too large: {len(data)} bytes "
-            f"(max {max_size // (1024 * 1024)} MB)"
-        )
+        raise ValueError(f"Downloaded file too large: {len(data)} bytes (max {max_size // (1024 * 1024)} MB)")
 
     return data, content_type

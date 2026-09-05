@@ -45,7 +45,9 @@ from backend.services.content_packs.orphan_sweeper_scheduler import (
 _NOW = datetime(2026, 4, 21, 12, 0, 0, tzinfo=UTC)
 
 
-def _classification(name: str, *, status: str, deleted: bool = False, error: str | None = None) -> OrphanBranchClassification:
+def _classification(
+    name: str, *, status: str, deleted: bool = False, error: str | None = None
+) -> OrphanBranchClassification:
     return OrphanBranchClassification(
         name=name,
         sha="a" * 40,
@@ -209,7 +211,9 @@ class TestLoadConfig:
     async def test_fetch_error_falls_back_to_defaults(self) -> None:
         admin = MagicMock()
         with patch.object(
-            ss, "load_platform_settings", AsyncMock(side_effect=KeyError("boom")),
+            ss,
+            "load_platform_settings",
+            AsyncMock(side_effect=KeyError("boom")),
         ):
             config = await OrphanSweeperScheduler._load_config(admin)
         # Defaults preserved despite the raised error.
@@ -238,10 +242,12 @@ class TestProcessTick:
         # _report_result with the bare-AsyncMock sweep result (AsyncMock > int).
         clock = MagicMock(wraps=datetime)
         clock.now.return_value = _NOW
-        with patch.object(ss, "datetime", clock), \
-             patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", get_client), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))):
+        with (
+            patch.object(ss, "datetime", clock),
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", get_client),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         sweep.assert_not_called()
         get_client.assert_not_called()
@@ -255,14 +261,18 @@ class TestProcessTick:
             "min_age_days": 14.0,
             "last_run_at": _NOW - timedelta(days=8),
         }
-        result = _result(branches=[
-            _classification("content/drafts-batch-aaa", status="delete", deleted=True),
-            _classification("content/drafts-batch-bbb", status="keep"),
-        ])
+        result = _result(
+            branches=[
+                _classification("content/drafts-batch-aaa", status="delete", deleted=True),
+                _classification("content/drafts-batch-bbb", status="keep"),
+            ]
+        )
         sweep = AsyncMock(return_value=result)
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         # Sweep ran with dry_run=False + our min_age_days.
         kwargs = sweep.await_args.kwargs
@@ -281,9 +291,11 @@ class TestProcessTick:
         }
         result = _result(branches=[])
         sweep = AsyncMock(return_value=result)
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         sweep.assert_awaited_once()
         execute.assert_awaited_once()
@@ -297,13 +309,15 @@ class TestProcessTick:
             "last_run_at": None,
         }
         sweep = AsyncMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(
-                 ss,
-                 "get_github_repo_config",
-                 MagicMock(side_effect=HTTPException(status_code=400, detail="missing env")),
-             ):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(
+                ss,
+                "get_github_repo_config",
+                MagicMock(side_effect=HTTPException(status_code=400, detail="missing env")),
+            ),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         # Nothing ran; last_run_at NOT advanced so next tick retries.
         sweep.assert_not_called()
@@ -317,16 +331,20 @@ class TestProcessTick:
             "min_age_days": 14.0,
             "last_run_at": None,
         }
-        result = _result(branches=[
-            _classification("content/drafts-batch-aaa", status="delete", error="422: already gone"),
-            _classification("content/drafts-batch-bbb", status="delete", deleted=True),
-        ])
+        result = _result(
+            branches=[
+                _classification("content/drafts-batch-aaa", status="delete", error="422: already gone"),
+                _classification("content/drafts-batch-bbb", status="delete", deleted=True),
+            ]
+        )
         sweep = AsyncMock(return_value=result)
         capture = MagicMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(ss.sentry_sdk, "capture_message", capture):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(ss.sentry_sdk, "capture_message", capture),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         # Still persists last_run_at — partial failure doesn't block the clock.
         execute.assert_awaited_once()
@@ -355,23 +373,25 @@ class TestProcessTick:
             "min_age_days": 14.0,
             "last_run_at": None,
         }
-        result = _result(branches=[
-            _classification("x", status="delete", deleted=True),
-        ])
+        result = _result(
+            branches=[
+                _classification("x", status="delete", deleted=True),
+            ]
+        )
         sweep = AsyncMock(return_value=result)
         info_log = MagicMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(ss.logger, "info", info_log):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(ss.logger, "info", info_log),
+        ):
             with pytest.raises(RuntimeError):
                 await OrphanSweeperScheduler._process_tick(admin, config)
         # Despite the persist failure, the result summary was logged.
         # Two info calls total: "starting" + "complete".
         messages = [call.args[0] for call in info_log.call_args_list]
-        assert any("complete" in m for m in messages), (
-            f"Expected 'complete' log before persist failure; got {messages}"
-        )
+        assert any("complete" in m for m in messages), f"Expected 'complete' log before persist failure; got {messages}"
 
     @pytest.mark.asyncio
     async def test_no_errors_does_not_call_sentry(self) -> None:
@@ -384,10 +404,12 @@ class TestProcessTick:
         result = _result(branches=[_classification("x", status="keep")])
         sweep = AsyncMock(return_value=result)
         capture = MagicMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(ss.sentry_sdk, "capture_message", capture):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(ss.sentry_sdk, "capture_message", capture),
+        ):
             await OrphanSweeperScheduler._process_tick(admin, config)
         capture.assert_not_called()
 
@@ -413,14 +435,16 @@ class TestRunSweepAndPersist:
         }
         result = _result(branches=[_classification("x", status="delete", deleted=True)])
         sweep = AsyncMock(return_value=result)
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(
-                 OrphanSweeperScheduler,
-                 "_load_config",
-                 AsyncMock(return_value=config_loaded),
-             ):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(
+                OrphanSweeperScheduler,
+                "_load_config",
+                AsyncMock(return_value=config_loaded),
+            ),
+        ):
             out = await OrphanSweeperScheduler.run_sweep_and_persist(admin)
         assert out is result
         sweep.assert_awaited_once()
@@ -446,12 +470,16 @@ class TestRunSweepAndPersist:
         result = _result(branches=[])
         sweep = AsyncMock(return_value=result)
         load = AsyncMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(OrphanSweeperScheduler, "_load_config", load):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(OrphanSweeperScheduler, "_load_config", load),
+        ):
             await OrphanSweeperScheduler.run_sweep_and_persist(
-                admin, now=fixed_now, config=config,
+                admin,
+                now=fixed_now,
+                config=config,
             )
         load.assert_not_awaited()
         assert sweep.await_args.kwargs["now"] == fixed_now
@@ -469,16 +497,20 @@ class TestRunSweepAndPersist:
             "last_run_at": None,
         }
         sweep = AsyncMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(
-                 ss,
-                 "get_github_repo_config",
-                 MagicMock(side_effect=HTTPException(status_code=400, detail="missing")),
-             ):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(
+                ss,
+                "get_github_repo_config",
+                MagicMock(side_effect=HTTPException(status_code=400, detail="missing")),
+            ),
+        ):
             with pytest.raises(HTTPException):
                 await OrphanSweeperScheduler.run_sweep_and_persist(
-                    admin, now=_NOW, config=config,
+                    admin,
+                    now=_NOW,
+                    config=config,
                 )
         sweep.assert_not_called()
 
@@ -494,17 +526,23 @@ class TestRunSweepAndPersist:
             "min_age_days": 14.0,
             "last_run_at": None,
         }
-        result = _result(branches=[
-            _classification("x", status="delete", error="boom"),
-        ])
+        result = _result(
+            branches=[
+                _classification("x", status="delete", error="boom"),
+            ]
+        )
         sweep = AsyncMock(return_value=result)
         capture = MagicMock()
-        with patch.object(ss, "sweep_orphan_branches", sweep), \
-             patch.object(ss, "get_github_app_client", MagicMock()), \
-             patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))), \
-             patch.object(ss.sentry_sdk, "capture_message", capture):
+        with (
+            patch.object(ss, "sweep_orphan_branches", sweep),
+            patch.object(ss, "get_github_app_client", MagicMock()),
+            patch.object(ss, "get_github_repo_config", MagicMock(return_value=("o", "r"))),
+            patch.object(ss.sentry_sdk, "capture_message", capture),
+        ):
             await OrphanSweeperScheduler.run_sweep_and_persist(
-                admin, now=_NOW, config=config,
+                admin,
+                now=_NOW,
+                config=config,
             )
         msg, *_ = capture.call_args.args
         assert "(admin)" in msg, f"Expected 'admin' trigger in Sentry msg: {msg}"

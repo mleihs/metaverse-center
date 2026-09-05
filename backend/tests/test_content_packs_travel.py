@@ -151,17 +151,13 @@ def test_spawn_event_without_impact_level_rejected():
 
 
 def test_importance_exclusive_to_inject_memory():
-    bad = _valid_template(
-        effects=[{"kind": "emit_fragment", "text_de": "d", "text_en": "e", "importance": 4}]
-    )
+    bad = _valid_template(effects=[{"kind": "emit_fragment", "text_de": "d", "text_en": "e", "importance": 4}])
     with pytest.raises(ValidationError, match="importance"):
         DeliverQuestPack.model_validate(_pack([bad]))
 
 
 def test_unknown_prose_token_rejected():
-    bad = _valid_template(
-        effects=[{"kind": "emit_fragment", "text_de": "Hallo {welt}", "text_en": "Hi {world}"}]
-    )
+    bad = _valid_template(effects=[{"kind": "emit_fragment", "text_de": "Hallo {welt}", "text_en": "Hi {world}"}])
     with pytest.raises(ValidationError, match="unknown prose token"):
         DeliverQuestPack.model_validate(_pack([bad]))
 
@@ -276,18 +272,14 @@ def test_passive_class_without_auto_rejected():
 
 
 def test_interactive_class_without_options_rejected():
-    auto_only = _signal(
-        options=[], auto={"text_de": "de", "text_en": "en", "deltas": {"dz": 1}}
-    )
+    auto_only = _signal(options=[], auto={"text_de": "de", "text_en": "en", "deltas": {"dz": 1}})
     with pytest.raises(ValidationError, match="must offer at least one option"):
         SignalPack.model_validate(_signal_pack([auto_only]))
 
 
 def test_unreachable_template_rejected():
     with pytest.raises(ValidationError, match="could never be drawn"):
-        SignalPack.model_validate(
-            _signal_pack([_signal(band_weights={"near": 0, "deep": 0})])
-        )
+        SignalPack.model_validate(_signal_pack([_signal(band_weights={"near": 0, "deep": 0})]))
 
 
 def test_unknown_band_rejected():
@@ -350,9 +342,7 @@ def test_cargo_grant_reuses_the_family_vector_pairing():
         "result": {
             "text_de": "de",
             "text_en": "en",
-            "deltas": {
-                "cargo_grant": {"family": "traumfracht", "vector": "memory", "haul": 2}
-            },
+            "deltas": {"cargo_grant": {"family": "traumfracht", "vector": "memory", "haul": 2}},
         },
     }
     with pytest.raises(ValidationError, match="carries vector 'dream'"):
@@ -402,9 +392,7 @@ def test_signal_class_must_match_filename(tmp_path):
 
 
 def _quest_record(key: str = "x") -> QuestTemplateRecord:
-    return QuestTemplateRecord(
-        template_key=key, family="deliver", tier=1, pack_slug="p", definition={}
-    )
+    return QuestTemplateRecord(template_key=key, family="deliver", tier=1, pack_slug="p", definition={})
 
 
 def _signal_record(key: str, signal_class: str) -> SignalTemplateRecord:

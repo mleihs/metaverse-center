@@ -27,8 +27,21 @@ MISSION_ID = uuid4()
 def _mock_chain(**overrides):
     """Create a chainable mock for Supabase table/rpc calls."""
     c = MagicMock()
-    for method in ("select", "eq", "in_", "neq", "lte", "or_", "single",
-                   "maybe_single", "limit", "order", "insert", "update", "delete"):
+    for method in (
+        "select",
+        "eq",
+        "in_",
+        "neq",
+        "lte",
+        "or_",
+        "single",
+        "maybe_single",
+        "limit",
+        "order",
+        "insert",
+        "update",
+        "delete",
+    ):
         setattr(c, method, MagicMock(return_value=c))
     for k, v in overrides.items():
         setattr(c, k, v)
@@ -96,9 +109,7 @@ class TestAtomicRPCPaths:
     @pytest.mark.asyncio
     async def test_grant_rp_calls_rpc_directly(self, route_secdef_admin):
         """grant_rp must call fn_grant_rp_single without PlatformConfigService check."""
-        epoch_chain = _mock_chain(
-            execute=AsyncMock(return_value=MagicMock(data={"config": {"rp_cap": 40}}))
-        )
+        epoch_chain = _mock_chain(execute=AsyncMock(return_value=MagicMock(data={"config": {"rp_cap": 40}})))
         rpc_chain = _mock_chain(execute=AsyncMock(return_value=MagicMock(data=25)))
         sb = _mock_supabase(
             table_map={"game_epochs": epoch_chain},
@@ -146,7 +157,8 @@ class TestPipelineDependencyGuards:
             "notification": patch("backend.services.cycle_notification_service.CycleNotificationService"),
             "battle": patch("backend.services.cycle_resolution_service.BattleLogService"),
             "resolve_cycle": patch.object(
-                CycleResolutionService, "resolve_cycle",
+                CycleResolutionService,
+                "resolve_cycle",
                 new=AsyncMock(return_value={"config": {"cycle_hours": 8}, "current_cycle": 2}),
             ),
         }
@@ -156,15 +168,16 @@ class TestPipelineDependencyGuards:
         """PostgrestAPIError in mission resolution → tension must NOT run."""
         patches = self._make_patched_resolve()
 
-        with patches["alliance"] as mock_alliance, \
-             patches["operative"] as mock_operative, \
-             patches["scoring"] as mock_scoring, \
-             patches["bot"] as mock_bot, \
-             patches["notification"] as mock_notif, \
-             patches["battle"], \
-             patches["resolve_cycle"], \
-             patch("backend.services.cycle_resolution_service.sentry_sdk"):
-
+        with (
+            patches["alliance"] as mock_alliance,
+            patches["operative"] as mock_operative,
+            patches["scoring"] as mock_scoring,
+            patches["bot"] as mock_bot,
+            patches["notification"] as mock_notif,
+            patches["battle"],
+            patches["resolve_cycle"],
+            patch("backend.services.cycle_resolution_service.sentry_sdk"),
+        ):
             mock_operative.resolve_pending_missions = AsyncMock(side_effect=_pg_error())
             mock_alliance.expire_proposals = AsyncMock(return_value=0)
             mock_alliance.deduct_upkeep = AsyncMock(return_value=[])
@@ -182,7 +195,9 @@ class TestPipelineDependencyGuards:
                     "epoch_participants": _mock_chain(execute=AsyncMock(return_value=MagicMock(data=[]))),
                 },
                 rpc_map={
-                    "fn_advance_epoch_cycle": _mock_chain(execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))),
+                    "fn_advance_epoch_cycle": _mock_chain(
+                        execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))
+                    ),
                     "fn_expire_fortifications": rpc_chain,
                     "fn_batch_grant_rp": rpc_chain,
                 },
@@ -198,14 +213,15 @@ class TestPipelineDependencyGuards:
         """Successful mission resolution → tension MUST run."""
         patches = self._make_patched_resolve()
 
-        with patches["alliance"] as mock_alliance, \
-             patches["operative"] as mock_operative, \
-             patches["scoring"] as mock_scoring, \
-             patches["bot"] as mock_bot, \
-             patches["notification"] as mock_notif, \
-             patches["battle"], \
-             patches["resolve_cycle"]:
-
+        with (
+            patches["alliance"] as mock_alliance,
+            patches["operative"] as mock_operative,
+            patches["scoring"] as mock_scoring,
+            patches["bot"] as mock_bot,
+            patches["notification"] as mock_notif,
+            patches["battle"],
+            patches["resolve_cycle"],
+        ):
             mock_operative.resolve_pending_missions = AsyncMock(return_value=[])
             mock_alliance.expire_proposals = AsyncMock(return_value=0)
             mock_alliance.deduct_upkeep = AsyncMock(return_value=[])
@@ -225,7 +241,9 @@ class TestPipelineDependencyGuards:
                     "epoch_participants": _mock_chain(execute=AsyncMock(return_value=MagicMock(data=[]))),
                 },
                 rpc_map={
-                    "fn_advance_epoch_cycle": _mock_chain(execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))),
+                    "fn_advance_epoch_cycle": _mock_chain(
+                        execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))
+                    ),
                     "fn_expire_fortifications": rpc_chain,
                     "fn_batch_grant_rp": rpc_chain,
                 },
@@ -240,15 +258,16 @@ class TestPipelineDependencyGuards:
         """KeyError in mission resolution must raise, not be swallowed."""
         patches = self._make_patched_resolve()
 
-        with patches["alliance"] as mock_alliance, \
-             patches["operative"] as mock_operative, \
-             patches["scoring"], \
-             patches["bot"], \
-             patches["notification"], \
-             patches["battle"], \
-             patches["resolve_cycle"], \
-             patch("backend.services.cycle_resolution_service.sentry_sdk"):
-
+        with (
+            patches["alliance"] as mock_alliance,
+            patches["operative"] as mock_operative,
+            patches["scoring"],
+            patches["bot"],
+            patches["notification"],
+            patches["battle"],
+            patches["resolve_cycle"],
+            patch("backend.services.cycle_resolution_service.sentry_sdk"),
+        ):
             mock_operative.resolve_pending_missions = AsyncMock(side_effect=KeyError("x"))
             mock_alliance.expire_proposals = AsyncMock(return_value=0)
             mock_alliance.deduct_upkeep = AsyncMock(return_value=[])
@@ -263,7 +282,9 @@ class TestPipelineDependencyGuards:
                     "epoch_participants": _mock_chain(execute=AsyncMock(return_value=MagicMock(data=[]))),
                 },
                 rpc_map={
-                    "fn_advance_epoch_cycle": _mock_chain(execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))),
+                    "fn_advance_epoch_cycle": _mock_chain(
+                        execute=AsyncMock(return_value=MagicMock(data={"new_cycle": 2}))
+                    ),
                     "fn_expire_fortifications": rpc_chain,
                     "fn_batch_grant_rp": rpc_chain,
                 },
@@ -279,7 +300,6 @@ class TestPipelineDependencyGuards:
 
 
 class TestErrorHandlingFixes:
-
     @pytest.mark.asyncio
     async def test_counter_intel_handles_per_mission_error(self):
         """counter_intel_sweep continues when one mission update fails."""
@@ -337,9 +357,7 @@ class TestErrorHandlingFixes:
             "target_simulation_id": str(TARGET_SIM_ID),
             "target_entity_id": None,
         }
-        events_chain = _mock_chain(
-            execute=AsyncMock(return_value=MagicMock(data=[{"id": str(uuid4())}]))
-        )
+        events_chain = _mock_chain(execute=AsyncMock(return_value=MagicMock(data=[{"id": str(uuid4())}])))
         sb = _mock_supabase(table_map={"events": events_chain})
 
         result = await OperativeMissionService._apply_propagandist_effect(sb, mission)

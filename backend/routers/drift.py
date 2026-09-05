@@ -278,9 +278,7 @@ async def resolve_signal(
     already ignores a leftover `pending_signal` when the gate is shut — but a scene the
     traveller can see and cannot dismiss is a bug, and the drain exists to answer it.
     """
-    run = await DriftService.resolve_signal(
-        supabase, user.id, run_id, body.run_version, body.option_key
-    )
+    run = await DriftService.resolve_signal(supabase, user.id, run_id, body.run_version, body.option_key)
     return SuccessResponse(data=run)
 
 
@@ -381,7 +379,5 @@ async def advance_quest(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> SuccessResponse[QuestDeliverResponse]:
     """Deliver a Depesche at the target world's broadcast edge (fires the hospitality gate)."""
-    result = await DriftService.deliver_quest(
-        supabase, user.id, body.run_id, body.run_version, instance_id
-    )
+    result = await DriftService.deliver_quest(supabase, user.id, body.run_id, body.run_version, instance_id)
     return SuccessResponse(data=result)

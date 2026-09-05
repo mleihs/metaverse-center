@@ -315,9 +315,7 @@ class TestDieMarkeAmWortwechsel:
 
     async def test_ohne_zuordenbare_zeile_wird_nichts_geschrieben(self):
         admin = MagicMock()
-        ok = await ContinuationService._persist(
-            admin, uuid4(), [{"speaker": "Fremd", "content": "x"}], [], "m"
-        )
+        ok = await ContinuationService._persist(admin, uuid4(), [{"speaker": "Fremd", "content": "x"}], [], "m")
         assert ok is False
         admin.table.return_value.insert.assert_not_called()
 

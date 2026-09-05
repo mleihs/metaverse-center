@@ -264,11 +264,7 @@ def _fake_admin_for_epoch(
 
     def table(name: str):
         if name == "epoch_participants":
-            return _Chain(
-                participants_err
-                if participants_err
-                else _Resp(participants or [])
-            )
+            return _Chain(participants_err if participants_err else _Resp(participants or []))
         if name == "epoch_scores":
             return _Chain(scores_err if scores_err else _Resp(scores or []))
         raise AssertionError(f"unexpected table: {name}")
@@ -671,9 +667,7 @@ async def test_achievement_mark_slug_fallback_when_lookup_returns_none():
 async def test_achievement_mark_preserves_name_but_prunes_empty_description():
     """Half-filled row: name present but description empty. Mark should
     include the name and silently drop the empty description."""
-    admin = _fake_admin_for_achievement_lookup(
-        {"id": "pacifist", "name_en": "Pacifist", "description_en": ""}
-    )
+    admin = _fake_admin_for_achievement_lookup({"id": "pacifist", "name_en": "Pacifist", "description_en": ""})
     with patch(
         "backend.services.journal.hooks.FragmentService.enqueue_request",
         new=AsyncMock(),

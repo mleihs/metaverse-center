@@ -49,15 +49,28 @@ def _mock_supabase(execute_data=None, execute_count=None):
     result = MagicMock()
     result.data = execute_data if execute_data is not None else []
     result.count = (
-        execute_count
-        if execute_count is not None
-        else (len(result.data) if isinstance(result.data, list) else 0)
+        execute_count if execute_count is not None else (len(result.data) if isinstance(result.data, list) else 0)
     )
     chain.execute = AsyncMock(return_value=result)
     for method in (
-        "select", "eq", "neq", "insert", "update", "delete", "upsert",
-        "limit", "single", "maybe_single", "order", "range", "filter",
-        "in_", "is_", "not_", "or_", "ilike",
+        "select",
+        "eq",
+        "neq",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
+        "limit",
+        "single",
+        "maybe_single",
+        "order",
+        "range",
+        "filter",
+        "in_",
+        "is_",
+        "not_",
+        "or_",
+        "ilike",
     ):
         getattr(chain, method).return_value = chain
     mock.table.return_value = chain
@@ -86,7 +99,9 @@ class TestDungeonContentAdminListContent:
         mock_sb, chain = _mock_supabase(execute_data=rows, execute_count=1)
 
         data, total = await DungeonContentAdminService.list_content(
-            mock_sb, "enemies", archetype="shadow",
+            mock_sb,
+            "enemies",
+            archetype="shadow",
         )
 
         assert data == rows
@@ -99,7 +114,10 @@ class TestDungeonContentAdminListContent:
         mock_sb, chain = _mock_supabase(execute_data=[], execute_count=0)
 
         await DungeonContentAdminService.list_content(
-            mock_sb, "enemies", page=3, per_page=25,
+            mock_sb,
+            "enemies",
+            page=3,
+            per_page=25,
         )
 
         chain.range.assert_called_once_with(50, 74)
@@ -119,7 +137,9 @@ class TestDungeonContentAdminListContent:
         mock_sb, chain = _mock_supabase(execute_data=[], execute_count=0)
 
         await DungeonContentAdminService.list_content(
-            mock_sb, "enemies", search="dragon",
+            mock_sb,
+            "enemies",
+            search="dragon",
         )
 
         chain.or_.assert_called_once()
@@ -151,7 +171,9 @@ class TestDungeonContentAdminGetItem:
         mock_sb, chain = _mock_supabase(execute_data=row)
 
         result = await DungeonContentAdminService.get_item(
-            mock_sb, "choices", "enc-1::choice-1",
+            mock_sb,
+            "choices",
+            "enc-1::choice-1",
         )
 
         assert result == row
@@ -167,7 +189,9 @@ class TestDungeonContentAdminGetItem:
         mock_sb, chain = _mock_supabase(execute_data=row)
 
         result = await DungeonContentAdminService.get_item(
-            mock_sb, "anchors", "shadow::anchor-1",
+            mock_sb,
+            "anchors",
+            "shadow::anchor-1",
         )
 
         assert result == row
@@ -205,7 +229,9 @@ class TestDungeonContentAdminUpdateItem:
         mock_sb, chain = _mock_supabase(execute_data=[row])
 
         result = await DungeonContentAdminService.update_item(
-            mock_sb, "enemies", "enemy-1",
+            mock_sb,
+            "enemies",
+            "enemy-1",
             {"name_en": "Updated Name", "created_at": "2026-01-01", "updated_at": "2026-01-01"},
         )
 
@@ -223,7 +249,10 @@ class TestDungeonContentAdminUpdateItem:
 
         with pytest.raises(HTTPException) as exc_info:
             await DungeonContentAdminService.update_item(
-                mock_sb, "enemies", "nonexistent", {"name_en": "X"},
+                mock_sb,
+                "enemies",
+                "nonexistent",
+                {"name_en": "X"},
             )
         assert exc_info.value.status_code == 404
 
@@ -234,7 +263,10 @@ class TestDungeonContentAdminUpdateItem:
         mock_sb, chain = _mock_supabase(execute_data=[row])
 
         await DungeonContentAdminService.update_item(
-            mock_sb, "choices", "enc-1::choice-1", {"label_en": "Flee"},
+            mock_sb,
+            "choices",
+            "enc-1::choice-1",
+            {"label_en": "Flee"},
         )
 
         eq_calls = [call.args for call in chain.eq.call_args_list]
@@ -253,7 +285,8 @@ class TestDungeonContentAdminCreateItem:
         mock_sb, chain = _mock_supabase(execute_data=[row])
 
         result = await DungeonContentAdminService.create_item(
-            mock_sb, "enemies",
+            mock_sb,
+            "enemies",
             {"name_en": "New Boss", "created_at": "2026-01-01", "updated_at": "2026-01-01"},
         )
 
@@ -269,7 +302,9 @@ class TestDungeonContentAdminCreateItem:
 
         with pytest.raises(HTTPException) as exc_info:
             await DungeonContentAdminService.create_item(
-                mock_sb, "enemies", {"name_en": "Doomed"},
+                mock_sb,
+                "enemies",
+                {"name_en": "Doomed"},
             )
         assert exc_info.value.status_code == 500
 
@@ -294,7 +329,9 @@ class TestDungeonContentAdminDeleteItem:
         mock_sb, chain = _mock_supabase(execute_data=[{"encounter_id": "enc-1", "id": "c-1"}])
 
         result = await DungeonContentAdminService.delete_item(
-            mock_sb, "choices", "enc-1::c-1",
+            mock_sb,
+            "choices",
+            "enc-1::c-1",
         )
 
         assert result["deleted"] is True
@@ -352,9 +389,7 @@ class TestForgeDraftServiceGetUserKeys:
     async def test_both_keys_present(self, mock_admin, mock_decrypt):
         """A user with both keys gets both decrypted."""
         mock_decrypt.side_effect = lambda ct: f"decrypted-{ct}"
-        mock_admin.return_value = self._admin_with(
-            {"openrouter": "enc-or-key", "replicate": "enc-rep-key"}
-        )
+        mock_admin.return_value = self._admin_with({"openrouter": "enc-or-key", "replicate": "enc-rep-key"})
 
         or_key, rep_key = await ForgeDraftService.get_user_keys(USER_ID)
 
@@ -414,6 +449,8 @@ class TestForgeDraftServiceGetUserKeys:
 
         assert await ForgeDraftService.get_user_keys(USER_ID) == (None, None)
         mock_decrypt.assert_not_called()
+
+
 @pytest.mark.integration
 class TestSettingsServiceListDungeonOverrides:
     """list_dungeon_overrides — template simulations + override configs."""
@@ -491,9 +528,11 @@ class TestSettingsServiceGetDungeonOverride:
     @pytest.mark.asyncio
     async def test_simulation_with_override(self):
         """Simulation with a dungeon_override returns the stored config."""
-        mock_sb, _ = _mock_supabase(execute_data={
-            "setting_value": {"mode": "curated", "archetypes": ["entropy", "deluge"]},
-        })
+        mock_sb, _ = _mock_supabase(
+            execute_data={
+                "setting_value": {"mode": "curated", "archetypes": ["entropy", "deluge"]},
+            }
+        )
 
         result = await SettingsService.get_dungeon_override(mock_sb, SIM_ID)
 
@@ -592,8 +631,14 @@ class TestShowcaseImageServiceValidation:
     async def test_all_base_archetypes_have_visuals(self):
         """Verify the 8 core archetypes are all present in ARCHETYPE_VISUALS."""
         core_archetypes = {
-            "shadow", "tower", "mother", "entropy",
-            "prometheus", "deluge", "awakening", "overthrow",
+            "shadow",
+            "tower",
+            "mother",
+            "entropy",
+            "prometheus",
+            "deluge",
+            "awakening",
+            "overthrow",
         }
         for arch in core_archetypes:
             assert arch in ARCHETYPE_VISUALS, f"Missing archetype visual: {arch}"

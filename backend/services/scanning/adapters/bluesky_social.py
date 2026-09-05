@@ -251,8 +251,7 @@ class BlueskyScannerAdapter(SourceAdapter):
                 )
 
         logger.info(
-            "Bluesky scan: %d anchored signals from %d queries "
-            "(%d dropped without a link, %d below engagement floor)",
+            "Bluesky scan: %d anchored signals from %d queries (%d dropped without a link, %d below engagement floor)",
             len(results),
             len(self._queries()),
             dropped_no_link,

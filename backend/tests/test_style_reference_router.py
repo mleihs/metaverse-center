@@ -30,8 +30,19 @@ def _mock_supabase_with_role(role: str = "editor") -> MagicMock:
     def make_builder(table_name):
         b = MagicMock()
         for m in (
-            "select", "eq", "in_", "limit", "single", "not_", "is_",
-            "order", "range", "insert", "update", "delete", "upsert",
+            "select",
+            "eq",
+            "in_",
+            "limit",
+            "single",
+            "not_",
+            "is_",
+            "order",
+            "range",
+            "insert",
+            "update",
+            "delete",
+            "upsert",
         ):
             getattr(b, m).return_value = b
         r = MagicMock()
@@ -44,9 +55,7 @@ def _mock_supabase_with_role(role: str = "editor") -> MagicMock:
 
     mock.table.side_effect = make_builder
     mock.storage.from_.return_value.upload.return_value = None
-    mock.storage.from_.return_value.get_public_url.return_value = (
-        "https://storage.example.com/ref.avif"
-    )
+    mock.storage.from_.return_value.get_public_url.return_value = "https://storage.example.com/ref.avif"
     mock.storage.from_.return_value.remove.return_value = None
     return mock
 

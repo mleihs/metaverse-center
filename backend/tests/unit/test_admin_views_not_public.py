@@ -30,8 +30,7 @@ from pathlib import Path
 import pytest
 
 _MIGRATION = (
-    Path(__file__).resolve().parents[3]
-    / "supabase/migrations/20260831050000_294_admin_views_are_not_public.sql"
+    Path(__file__).resolve().parents[3] / "supabase/migrations/20260831050000_294_admin_views_are_not_public.sql"
 )
 
 _PROTECTED = ("token_economy_stats", "v_instagram_queue", "v_bluesky_queue")
@@ -57,8 +56,13 @@ _PROTECTED = ("token_economy_stats", "v_instagram_queue", "v_bluesky_queue")
 #: Der Name `_PUBLIC` meint weiterhin genau das Richtige: Sichten, die MIGRATION
 #: 294 nicht anfasst. Er sagt nichts darüber, ob sie öffentlich BLEIBEN sollen.
 _PUBLIC = (
-    "active_agents", "active_buildings", "active_events", "active_resonances",
-    "available_dungeons", "conversation_summaries", "map_simulations",
+    "active_agents",
+    "active_buildings",
+    "active_events",
+    "active_resonances",
+    "available_dungeons",
+    "conversation_summaries",
+    "map_simulations",
     "simulation_dashboard",
 )
 

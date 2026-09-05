@@ -30,10 +30,7 @@ LOCALE = "de"
 
 def build_all_templates() -> list[tuple[str, str]]:
     """Return list of (subject, html_body) for every registered template."""
-    return [
-        (f"[TEST] {fixture.label}", fixture.render(LOCALE))
-        for fixture in FIXTURES
-    ]
+    return [(f"[TEST] {fixture.label}", fixture.render(LOCALE)) for fixture in FIXTURES]
 
 
 async def main():

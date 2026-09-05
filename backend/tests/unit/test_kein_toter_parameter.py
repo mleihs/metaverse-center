@@ -87,13 +87,7 @@ def _tote_parameter(quelle: str) -> list[tuple[str, list[str]]]:
         # haeufigste Fall in einem Weiterreicher).
         benutzt = {n.id for n in ast.walk(knoten) if isinstance(n, ast.Name)}
         benutzt |= {n.attr for n in ast.walk(knoten) if isinstance(n, ast.Attribute)}
-        benutzt |= {
-            k.arg
-            for n in ast.walk(knoten)
-            if isinstance(n, ast.Call)
-            for k in n.keywords
-            if k.arg
-        }
+        benutzt |= {k.arg for n in ast.walk(knoten) if isinstance(n, ast.Call) for k in n.keywords if k.arg}
         tot = [n for n in namen if n not in ERLAUBT and not n.startswith("_") and n not in benutzt]
         if tot:
             funde.append((knoten.name, tot))
@@ -122,10 +116,7 @@ class TestDasTorSiehtWirklichEtwas:
     """
 
     def test_es_faengt_einen_fallengelassenen_parameter(self):
-        quelle = (
-            "def weiterreichen(a, b):\n"
-            "    return ziel(a=a)\n"
-        )
+        quelle = "def weiterreichen(a, b):\n    return ziel(a=a)\n"
         assert _tote_parameter(quelle) == [("weiterreichen", ["b"])]
 
     def test_es_faengt_den_echten_fall_von_damals(self):

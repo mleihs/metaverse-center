@@ -77,9 +77,7 @@ class TestTheAddressIsReadBeforeTheAccountIsGone:
                 elif node.func.attr == "_send_deletion_confirmation":
                     calls.append(("send", node.lineno))
         order = [name for name, _ in sorted(calls, key=lambda pair: pair[1])]
-        assert order == ["contact", "rpc", "send"], (
-            f"Reihenfolge ist {order}; nach dem RPC gibt es keine Adresse mehr"
-        )
+        assert order == ["contact", "rpc", "send"], f"Reihenfolge ist {order}; nach dem RPC gibt es keine Adresse mehr"
 
     @pytest.mark.asyncio
     async def test_a_failed_deletion_sends_nothing(self):
@@ -96,11 +94,13 @@ class TestTheAddressIsReadBeforeTheAccountIsGone:
         supabase.rpc = _boom
         with (
             patch.object(
-                AdminUserService, "_deletion_contact",
+                AdminUserService,
+                "_deletion_contact",
                 AsyncMock(return_value={"email": "a@b.c", "email_locale": "de", "worlds": 0}),
             ),
             patch.object(
-                AdminUserService, "_send_deletion_confirmation",
+                AdminUserService,
+                "_send_deletion_confirmation",
                 AsyncMock(side_effect=lambda *a, **k: sent.append(a)),
             ),
             pytest.raises(HTTPException),

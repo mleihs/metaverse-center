@@ -165,9 +165,7 @@ class TestTheLadderLivesInOnePlace:
         assert "fn_building_condition_step(v_new_cond, -1)" in body, (
             "die Beute-Reparatur muss die gemeinsame Leiter benutzen"
         )
-        assert "WHEN 'ruined'   THEN 'poor'" not in body, (
-            "die Beute-Reparatur trägt wieder eine eigene Kette"
-        )
+        assert "WHEN 'ruined'   THEN 'poor'" not in body, "die Beute-Reparatur trägt wieder eine eigene Kette"
 
 
 class TestTheReasonTellsTheTruth:
@@ -179,9 +177,7 @@ class TestTheReasonTellsTheTruth:
         body = code[start : code.index("$$;", start)]
         assert "condition_off_ladder" in body
         assert "already_at_bottom" in body
-        assert "v_old = 'ruined'" in body, (
-            "die Unterscheidung muss am Ende der Leiter hängen, nicht an etwas anderem"
-        )
+        assert "v_old = 'ruined'" in body, "die Unterscheidung muss am Ende der Leiter hängen, nicht an etwas anderem"
 
     def test_the_acceptance_block_exercises_both(self, sql: str) -> None:
         code = _code_only(sql)
@@ -209,4 +205,4 @@ class TestThePythonSideCountsWhatItSkips:
             source = (BACKEND / "services" / name).read_text(encoding="utf-8")
             if "fn_degrade_building" not in source:
                 continue
-            assert '"changed"' in source or ".get(\"changed\")" in source
+            assert '"changed"' in source or '.get("changed")' in source

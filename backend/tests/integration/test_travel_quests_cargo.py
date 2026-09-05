@@ -59,9 +59,7 @@ class TestQuestTemplateFamily:
                     {"template_key": f"{key}-deliver", "family": "fetch", "pack_slug": "test"}
                 ).execute()
         finally:
-            admin_client.table("travel_quest_templates").delete().like(
-                "template_key", f"{key}%"
-            ).execute()
+            admin_client.table("travel_quest_templates").delete().like("template_key", f"{key}%").execute()
 
 
 class TestQuestInstanceSoftRef:
@@ -88,23 +86,16 @@ class TestQuestInstanceSoftRef:
                 }
             ).execute()
             # Simulate a pack reseed: drop the template row entirely.
-            admin_client.table("travel_quest_templates").delete().eq(
-                "template_key", template_key
-            ).execute()
+            admin_client.table("travel_quest_templates").delete().eq("template_key", template_key).execute()
             # The live instance must still exist (no CASCADE, no FK).
             resp = (
-                admin_client.table("travel_quest_instances")
-                .select("id,template_key")
-                .eq("id", instance_id)
-                .execute()
+                admin_client.table("travel_quest_instances").select("id,template_key").eq("id", instance_id).execute()
             )
             assert len(resp.data) == 1, "instance was wiped by template delete — soft-ref broken"
             assert resp.data[0]["template_key"] == template_key
         finally:
             admin_client.table("travel_quest_instances").delete().eq("id", instance_id).execute()
-            admin_client.table("travel_quest_templates").delete().eq(
-                "template_key", template_key
-            ).execute()
+            admin_client.table("travel_quest_templates").delete().eq("template_key", template_key).execute()
 
     def test_entity_refs_must_be_array(self, admin_client, test_user_ids):
         owner = str(test_user_ids[1])
@@ -165,12 +156,7 @@ class TestCargoVocabularies:
                     "counterpart_cargo_id": a_id,
                 }
             ).execute()
-            resp = (
-                admin_client.table("travel_cargo")
-                .select("counterpart_cargo_id")
-                .eq("id", b_id)
-                .execute()
-            )
+            resp = admin_client.table("travel_cargo").select("counterpart_cargo_id").eq("id", b_id).execute()
             assert resp.data[0]["counterpart_cargo_id"] == a_id
         finally:
             # Delete B first (it points at A); A's FK is SET NULL so order is lenient.
@@ -195,17 +181,13 @@ class TestScarActiveUnique:
                     {"user_id": user_id, "scar_key": scar_key, "active": True}
                 ).execute()
             # Shed the first (active → false): the partial index no longer covers it.
-            admin_client.table("traveler_scars").update({"active": False}).eq(
-                "id", first_id
-            ).execute()
+            admin_client.table("traveler_scars").update({"active": False}).eq("id", first_id).execute()
             # Re-acquisition of the same scar_key is now allowed.
             admin_client.table("traveler_scars").insert(
                 {"user_id": user_id, "scar_key": scar_key, "active": True}
             ).execute()
         finally:
-            admin_client.table("traveler_scars").delete().eq("user_id", user_id).eq(
-                "scar_key", scar_key
-            ).execute()
+            admin_client.table("traveler_scars").delete().eq("user_id", user_id).eq("scar_key", scar_key).execute()
 
 
 class TestRoutePurchaseOnce:
@@ -268,21 +250,14 @@ class TestPublicVsOwnerRLS:
         admin_client.table("travel_quest_templates").insert(
             {"template_key": template_key, "family": "survey", "pack_slug": "test"}
         ).execute()
-        row = (
-            admin_client.table("travel_quest_templates")
-            .select("id")
-            .eq("template_key", template_key)
-            .execute()
-        )
+        row = admin_client.table("travel_quest_templates").select("id").eq("template_key", template_key).execute()
         tpl_id = row.data[0]["id"]
         try:
             resp = self._anon_get("travel_quest_templates", tpl_id)
             assert resp.status_code == 200, resp.text
             assert any(r["id"] == tpl_id for r in resp.json()), "anon could not read public template"
         finally:
-            admin_client.table("travel_quest_templates").delete().eq(
-                "template_key", template_key
-            ).execute()
+            admin_client.table("travel_quest_templates").delete().eq("template_key", template_key).execute()
 
     def test_anon_cannot_read_owner_cargo(self, admin_client, test_user_ids):
         cargo_id = str(uuid4())

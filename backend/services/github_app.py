@@ -211,16 +211,12 @@ class GitHubAppClient:
             if (
                 not force_refresh
                 and self._cached_token is not None
-                and self._cached_token.expires_at_monotonic
-                > now + TOKEN_STALE_THRESHOLD_SECONDS
+                and self._cached_token.expires_at_monotonic > now + TOKEN_STALE_THRESHOLD_SECONDS
             ):
                 return self._cached_token.value
 
             app_jwt = self._generate_app_jwt()
-            url = (
-                f"{_GITHUB_API_BASE}/app/installations/"
-                f"{self._installation_id}/access_tokens"
-            )
+            url = f"{_GITHUB_API_BASE}/app/installations/{self._installation_id}/access_tokens"
             client = await self._get_http()
             resp = await client.post(
                 url,
@@ -438,9 +434,6 @@ def check_env_config() -> list[str]:
     for var in ("GITHUB_APP_ID", "GITHUB_APP_INSTALLATION_ID"):
         if not os.environ.get(var):
             missing.append(var)
-    if not (
-        os.environ.get("GITHUB_APP_PRIVATE_KEY_B64")
-        or os.environ.get("GITHUB_APP_PRIVATE_KEY")
-    ):
+    if not (os.environ.get("GITHUB_APP_PRIVATE_KEY_B64") or os.environ.get("GITHUB_APP_PRIVATE_KEY")):
         missing.append("GITHUB_APP_PRIVATE_KEY_B64 (or GITHUB_APP_PRIVATE_KEY)")
     return missing

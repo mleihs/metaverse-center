@@ -93,8 +93,16 @@ def _mock_supabase(execute_results: list[MagicMock]) -> MagicMock:
     mock = MagicMock()
     chain = MagicMock()
     for method in (
-        "select", "insert", "update", "delete",
-        "eq", "in_", "is_", "order", "range", "limit",
+        "select",
+        "insert",
+        "update",
+        "delete",
+        "eq",
+        "in_",
+        "is_",
+        "order",
+        "range",
+        "limit",
     ):
         getattr(chain, method).return_value = chain
     chain.execute = AsyncMock(side_effect=execute_results)
@@ -147,15 +155,7 @@ def _mock_github_client(
             {"number": pr_number, "html_url": pr_url},
         ]
     if graphql_side_effects is None:
-        graphql_side_effects = [
-            {
-                "data": {
-                    "createCommitOnBranch": {
-                        "commit": {"oid": commit_oid, "url": "..."}
-                    }
-                }
-            }
-        ]
+        graphql_side_effects = [{"data": {"createCommitOnBranch": {"commit": {"oid": commit_oid, "url": "..."}}}}]
     client.rest = AsyncMock(side_effect=rest_side_effects)
     client.rest_list = AsyncMock(side_effect=[migrations_listing])
     client.graphql = AsyncMock(side_effect=graphql_side_effects)
@@ -169,8 +169,11 @@ def _stub_migration_sql(monkeypatch) -> None:
     the end-to-end test in TestMigrationAttachment covers real generation.
     """
     from backend.services.content_packs import publish as _pub
+
     monkeypatch.setattr(
-        _pub, "_generate_migration_sql", lambda drafts: "-- stub migration\n",
+        _pub,
+        "_generate_migration_sql",
+        lambda drafts: "-- stub migration\n",
     )
 
 
@@ -215,14 +218,14 @@ class TestBuildFilePath:
     @pytest.mark.parametrize(
         "bad_resource_path",
         [
-            "banter[ab_01]",        # bracket sub-resource notation
-            "banter.yaml",          # caller pre-suffixed
-            "encounters/sub",       # slash
-            "Banter",               # uppercase
-            "banter-1",             # hyphen
-            "1banter",              # leading digit
-            "banter.choices",       # dotted path
-            "",                     # empty
+            "banter[ab_01]",  # bracket sub-resource notation
+            "banter.yaml",  # caller pre-suffixed
+            "encounters/sub",  # slash
+            "Banter",  # uppercase
+            "banter-1",  # hyphen
+            "1banter",  # leading digit
+            "banter.choices",  # dotted path
+            "",  # empty
         ],
     )
     def test_rejects_phase5_or_invalid_resource_path(self, bad_resource_path):
@@ -235,9 +238,7 @@ class TestRenderYaml:
     def test_block_style_unicode_trailing_newline(self):
         content = {
             "schema_version": 1,
-            "banter": [
-                {"id": "sb_01", "text_de": "Schöne Grüße »ohne« ASCII"}
-            ],
+            "banter": [{"id": "sb_01", "text_de": "Schöne Grüße »ohne« ASCII"}],
         }
         rendered = render_yaml(content)
         assert rendered.endswith("\n")
@@ -253,9 +254,7 @@ class TestRenderYaml:
         rendered = render_yaml(content)
         # safe_dump with sort_keys=False emits keys in insertion order.
         keys_in_order = [
-            line.split(":")[0].strip()
-            for line in rendered.splitlines()
-            if line and not line.startswith(" ")
+            line.split(":")[0].strip() for line in rendered.splitlines() if line and not line.startswith(" ")
         ]
         assert keys_in_order == ["zebra", "apple", "mango"]
 
@@ -345,22 +344,32 @@ class TestPublishBatch:
         #   2) mark_published_bulk: UPDATE (no .data needed)
         #   3) mark_published_bulk: SELECT (re-fetch)
         published_d1 = _draft_row(
-            draft_id=d1_id, pack_slug="shadow", resource_path="banter",
-            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+            draft_id=d1_id,
+            pack_slug="shadow",
+            resource_path="banter",
+            status=ContentDraftStatus.PUBLISHED,
+            pr_number=42,
         )
         published_d2 = _draft_row(
-            draft_id=d2_id, pack_slug="tower", resource_path="encounters",
-            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+            draft_id=d2_id,
+            pack_slug="tower",
+            resource_path="encounters",
+            status=ContentDraftStatus.PUBLISHED,
+            pr_number=42,
         )
-        supabase = _mock_supabase([
-            _exec_result(data=[d1, d2]),
-            _exec_result(data=[]),
-            _exec_result(data=[published_d1, published_d2]),
-        ])
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[d1, d2]),
+                _exec_result(data=[]),
+                _exec_result(data=[published_d1, published_d2]),
+            ]
+        )
 
         client = _mock_github_client()
         result = await ContentPacksPublishService.publish_batch(
-            supabase, draft_ids=[d1_id, d2_id], github_client=client,
+            supabase,
+            draft_ids=[d1_id, d2_id],
+            github_client=client,
         )
         assert isinstance(result, BatchPublishResult)
         assert result.commit_sha == "def456commit"
@@ -392,7 +401,9 @@ class TestPublishBatch:
         supabase = _mock_supabase([])
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[], github_client=_mock_github_client(),
+                supabase,
+                draft_ids=[],
+                github_client=_mock_github_client(),
             )
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -427,7 +438,8 @@ class TestPublishBatch:
         monkeypatch.setenv("GITHUB_REPO_NAME", "y")
         d_id = uuid4()
         already_published = _draft_row(
-            draft_id=d_id, status=ContentDraftStatus.PUBLISHED,
+            draft_id=d_id,
+            status=ContentDraftStatus.PUBLISHED,
         )
         supabase = _mock_supabase([_exec_result(data=[already_published])])
         with pytest.raises(HTTPException) as exc_info:
@@ -445,7 +457,9 @@ class TestPublishBatch:
         d_id = uuid4()
         draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
         conflict_row = _draft_row(
-            draft_id=d_id, pack_slug="shadow", resource_path="banter",
+            draft_id=d_id,
+            pack_slug="shadow",
+            resource_path="banter",
             status=ContentDraftStatus.CONFLICT,
         )
 
@@ -453,16 +467,20 @@ class TestPublishBatch:
         #   1) _fetch_and_validate_drafts: SELECT
         #   2) mark_conflict_bulk: UPDATE
         #   3) mark_conflict_bulk: SELECT re-fetch
-        supabase = _mock_supabase([
-            _exec_result(data=[draft]),
-            _exec_result(data=[]),
-            _exec_result(data=[conflict_row]),
-        ])
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[draft]),
+                _exec_result(data=[]),
+                _exec_result(data=[conflict_row]),
+            ]
+        )
 
         # GitHub: head + ref + branch creation succeed (migrations listing
         # goes through `rest_list`); createCommitOnBranch raises a drift error.
         drift_exc = GitHubAPIError(
-            200, "expected head oid did not match", "https://api.github.com/graphql",
+            200,
+            "expected head oid did not match",
+            "https://api.github.com/graphql",
         )
         rest_side = [
             {"default_branch": "main"},
@@ -476,7 +494,9 @@ class TestPublishBatch:
 
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[d_id], github_client=client,
+                supabase,
+                draft_ids=[d_id],
+                github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_409_CONFLICT
         # PR creation MUST NOT have been attempted (head + head_oid + branch
@@ -493,7 +513,9 @@ class TestPublishBatch:
         supabase = _mock_supabase([_exec_result(data=[draft])])
 
         rate_limit_exc = GitHubAPIError(
-            403, "API rate limit exceeded", "https://api.github.com/graphql",
+            403,
+            "API rate limit exceeded",
+            "https://api.github.com/graphql",
         )
         rest_side = [
             {"default_branch": "main"},
@@ -506,7 +528,9 @@ class TestPublishBatch:
         )
         with pytest.raises(GitHubAPIError):
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[d_id], github_client=client,
+                supabase,
+                draft_ids=[d_id],
+                github_client=client,
             )
 
     async def test_invalid_resource_path_raises_400_no_branch_created(self, monkeypatch):
@@ -521,7 +545,9 @@ class TestPublishBatch:
         monkeypatch.setenv("GITHUB_REPO_NAME", "y")
         d_id = uuid4()
         bad_draft = _draft_row(
-            draft_id=d_id, pack_slug="shadow", resource_path="banter[sb_01]",
+            draft_id=d_id,
+            pack_slug="shadow",
+            resource_path="banter[sb_01]",
         )
         supabase = _mock_supabase([_exec_result(data=[bad_draft])])
         rest_side = [
@@ -531,7 +557,9 @@ class TestPublishBatch:
         client = _mock_github_client(rest_side_effects=rest_side)
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[d_id], github_client=client,
+                supabase,
+                draft_ids=[d_id],
+                github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
         # No branch creation, no commit, no PR.
@@ -557,7 +585,9 @@ class TestPhase25MigrationAttachment:
 
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[d1_id, d2_id], github_client=client,
+                supabase,
+                draft_ids=[d1_id, d2_id],
+                github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
         # Duplicate check runs BEFORE any REST call.
@@ -565,7 +595,8 @@ class TestPhase25MigrationAttachment:
         assert client.graphql.call_count == 0
 
     async def test_pack_schema_error_returns_400_with_field_errors(
-        self, monkeypatch,
+        self,
+        monkeypatch,
     ):
         """A draft with invalid working_content fails Pydantic → 400 pre-branch.
 
@@ -583,7 +614,9 @@ class TestPhase25MigrationAttachment:
 
         with pytest.raises(HTTPException) as exc_info:
             await ContentPacksPublishService.publish_batch(
-                supabase, draft_ids=[d_id], github_client=client,
+                supabase,
+                draft_ids=[d_id],
+                github_client=client,
             )
         assert exc_info.value.status_code == status.HTTP_400_BAD_REQUEST
         assert "pack validation" in str(exc_info.value.detail).lower()
@@ -600,14 +633,19 @@ class TestPhase25MigrationAttachment:
         d_id = uuid4()
         draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
         published = _draft_row(
-            draft_id=d_id, pack_slug="shadow", resource_path="banter",
-            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+            draft_id=d_id,
+            pack_slug="shadow",
+            resource_path="banter",
+            status=ContentDraftStatus.PUBLISHED,
+            pr_number=42,
         )
-        supabase = _mock_supabase([
-            _exec_result(data=[draft]),
-            _exec_result(data=[]),
-            _exec_result(data=[published]),
-        ])
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[draft]),
+                _exec_result(data=[]),
+                _exec_result(data=[published]),
+            ]
+        )
 
         # Listing with max NNN = 311 (unusual filename forms mixed in to
         # verify the parser picks the 3-digit sequence reliably).
@@ -620,7 +658,9 @@ class TestPhase25MigrationAttachment:
         ]
         client = _mock_github_client(migrations_listing=listing)
         await ContentPacksPublishService.publish_batch(
-            supabase, draft_ids=[d_id], github_client=client,
+            supabase,
+            draft_ids=[d_id],
+            github_client=client,
         )
 
         additions = client.graphql.call_args.args[1]["input"]["fileChanges"]["additions"]
@@ -637,17 +677,24 @@ class TestPhase25MigrationAttachment:
         d_id = uuid4()
         draft = _draft_row(draft_id=d_id, pack_slug="shadow", resource_path="banter")
         published = _draft_row(
-            draft_id=d_id, pack_slug="shadow", resource_path="banter",
-            status=ContentDraftStatus.PUBLISHED, pr_number=42,
+            draft_id=d_id,
+            pack_slug="shadow",
+            resource_path="banter",
+            status=ContentDraftStatus.PUBLISHED,
+            pr_number=42,
         )
-        supabase = _mock_supabase([
-            _exec_result(data=[draft]),
-            _exec_result(data=[]),
-            _exec_result(data=[published]),
-        ])
+        supabase = _mock_supabase(
+            [
+                _exec_result(data=[draft]),
+                _exec_result(data=[]),
+                _exec_result(data=[published]),
+            ]
+        )
         client = _mock_github_client()
         await ContentPacksPublishService.publish_batch(
-            supabase, draft_ids=[d_id], github_client=client,
+            supabase,
+            draft_ids=[d_id],
+            github_client=client,
         )
 
         additions = client.graphql.call_args.args[1]["input"]["fileChanges"]["additions"]
@@ -655,7 +702,9 @@ class TestPhase25MigrationAttachment:
         # Strip the "supabase/migrations/" prefix, then verify the 14-digit
         # timestamp + 3-digit sequence format.
         import re
+
         basename = migration_path.removeprefix("supabase/migrations/")
         assert re.match(
-            r"^\d{14}_\d{3}_dungeon_content_seed_auto\.sql$", basename,
+            r"^\d{14}_\d{3}_dungeon_content_seed_auto\.sql$",
+            basename,
         ), f"unexpected filename format: {basename}"

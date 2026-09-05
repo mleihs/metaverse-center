@@ -21,7 +21,7 @@ from backend.services.generation_service import GenerationService
 # ---------------------------------------------------------------------------
 
 # Pattern 1: JSON block FIRST, then # heading + narrative article
-LLM_OUTPUT_JSON_FIRST = '''```json
+LLM_OUTPUT_JSON_FIRST = """```json
 {
   "title": "15 Wege zur Verbesserung der Akademie-Erfahrung für Dimensionenreisende",
   "description": "Studierende aus anderen Sphären sind für die magische Balance und kulturelle Vielfalt der Velgarien-Akademien essenziell. Ein Rat der Weisen schlägt Maßnahmen vor, damit die dimensionenreisenden Scholaren im Gegenzug maximal vom Aufenthalt profitieren.",
@@ -38,10 +38,10 @@ Die Große Akademie von Aethelburg stand unter der zweifachen Sonne Velgariens i
 
 „Dimensionenreisende sind nicht nur für unsere magischen Reserven und kulturelle Diversität lebenswichtig", sagte Wolkenbruch später im Konzil der Weisen. „Sie bringen Perspektiven aus anderen Realitätsschichten, die unsere Kristallmagie bereichern."
 
-Das Konzil einigte sich darauf, die Vorschläge noch vor dem nächsten akademischen Zyklus umzusetzen.'''
+Das Konzil einigte sich darauf, die Vorschläge noch vor dem nächsten akademischen Zyklus umzusetzen."""
 
 # Pattern 2: **Titel:**, **Artikel:**, then ---, then JSON at end
-LLM_OUTPUT_MARKERS_THEN_JSON = '''**Titel:** Velgarische Eispinguine verlegen Brutzeit nach Nordsektor
+LLM_OUTPUT_MARKERS_THEN_JSON = """**Titel:** Velgarische Eispinguine verlegen Brutzeit nach Nordsektor
 
 **Artikel:**
 In einer überraschenden Wendung haben die Eispinguine des Nordviertels ihre Brutzeit um drei Monate nach vorn verlegt. Experten sehen darin ein Zeichen des sich beschleunigenden Klimawandels in der Eiszone.
@@ -49,10 +49,10 @@ In einer überraschenden Wendung haben die Eispinguine des Nordviertels ihre Bru
 ---
 ```json
 {"title": "Velgarische Eispinguine verlegen Brutzeit", "description": "Eispinguine verlegen Brutzeit", "event_type": "environmental", "impact_level": 8}
-```'''
+```"""
 
 # Pattern 3: Only a clean narrative, no JSON at all
-LLM_OUTPUT_NO_JSON = '''Die Kristallminen von Aethelburg melden einen drastischen Rückgang der Fördermenge. Seit der letzten Mondwende ist die Ausbeute um nahezu vierzig Prozent eingebrochen, was den Stadtrat in Alarmbereitschaft versetzt hat.'''
+LLM_OUTPUT_NO_JSON = """Die Kristallminen von Aethelburg melden einen drastischen Rückgang der Fördermenge. Seit der letzten Mondwende ist die Ausbeute um nahezu vierzig Prozent eingebrochen, was den Stadtrat in Alarmbereitschaft versetzt hat."""
 
 MOCK_USER_ID = UUID("11111111-1111-1111-1111-111111111111")
 MOCK_SIM_ID = UUID("22222222-2222-2222-2222-222222222222")
@@ -74,10 +74,20 @@ class TestNewsTransformJsonFirst:
     """Test with real LLM output where JSON block appears FIRST, then the article."""
 
     async def test_extracts_all_json_fields(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_JSON_FIRST, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_JSON_FIRST,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         assert result["title"] == "15 Wege zur Verbesserung der Akademie-Erfahrung für Dimensionenreisende"
@@ -86,10 +96,20 @@ class TestNewsTransformJsonFirst:
         assert result["impact_level"] == 7
 
     async def test_narrative_has_no_json_block(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_JSON_FIRST, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_JSON_FIRST,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         narrative = result["narrative"]
@@ -98,10 +118,20 @@ class TestNewsTransformJsonFirst:
         assert "```" not in narrative
 
     async def test_narrative_preserves_article_text(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_JSON_FIRST, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_JSON_FIRST,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         narrative = result["narrative"]
@@ -114,10 +144,20 @@ class TestNewsTransformMarkersAndJson:
     """Test with **Titel:**, **Artikel:**, ---, and JSON at end."""
 
     async def test_extracts_json_fields(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_MARKERS_THEN_JSON, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_MARKERS_THEN_JSON,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         assert result["title"] == "Velgarische Eispinguine verlegen Brutzeit"
@@ -125,10 +165,20 @@ class TestNewsTransformMarkersAndJson:
         assert result["impact_level"] == 8
 
     async def test_narrative_strips_all_markers(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_MARKERS_THEN_JSON, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_MARKERS_THEN_JSON,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         narrative = result["narrative"]
@@ -143,10 +193,20 @@ class TestNewsTransformNoJson:
     """Test with clean narrative, no JSON block."""
 
     async def test_no_structured_fields_set(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_NO_JSON, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_NO_JSON,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         assert "title" not in result
@@ -154,10 +214,20 @@ class TestNewsTransformNoJson:
         assert "impact_level" not in result
 
     async def test_narrative_is_full_content(self, generation_service):
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_NO_JSON, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_NO_JSON,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         assert result["narrative"] == LLM_OUTPUT_NO_JSON
@@ -227,7 +297,9 @@ class TestIntegrateTrendRequestModel:
 
         with pytest.raises(ValidationError):
             IntegrateTrendRequest(
-                trend_id=str(MOCK_TREND_ID), title="Test", impact_level=11,
+                trend_id=str(MOCK_TREND_ID),
+                title="Test",
+                impact_level=11,
             )
 
     def test_defaults(self):
@@ -261,15 +333,20 @@ class TestEventServiceCreateNoCrash:
         row = {"id": str(uuid4()), "title": "Test Event", "simulation_id": str(sim_id)}
         mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(data=[row]))
 
-        await EventService.create(mock_sb, sim_id, user_id, {
-            "title": "15 Wege zur Verbesserung",
-            "description": "Studierende aus anderen Sphären...",
-            "event_type": "Bildungsreform",
-            "impact_level": 7,
-            "tags": ["guardian", "imported", "news"],
-            "data_source": "imported",
-            "occurred_at": "2026-02-17T12:00:00Z",
-        })
+        await EventService.create(
+            mock_sb,
+            sim_id,
+            user_id,
+            {
+                "title": "15 Wege zur Verbesserung",
+                "description": "Studierende aus anderen Sphären...",
+                "event_type": "Bildungsreform",
+                "impact_level": 7,
+                "tags": ["guardian", "imported", "news"],
+                "data_source": "imported",
+                "occurred_at": "2026-02-17T12:00:00Z",
+            },
+        )
 
         insert_data = mock_sb.table.return_value.insert.call_args[0][0]
         assert "created_by_id" not in insert_data
@@ -282,15 +359,22 @@ class TestEventServiceCreateNoCrash:
         from backend.services.event_service import EventService
 
         mock_sb = MagicMock()
-        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(uuid4())}],
-        ))
+        mock_sb.table.return_value.insert.return_value.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[{"id": str(uuid4())}],
+            )
+        )
 
-        await EventService.create(mock_sb, MOCK_SIM_ID, MOCK_USER_ID, {
-            "title": "Test",
-            "tags": ["guardian", "imported"],
-            "impact_level": 7,
-        })
+        await EventService.create(
+            mock_sb,
+            MOCK_SIM_ID,
+            MOCK_USER_ID,
+            {
+                "title": "Test",
+                "tags": ["guardian", "imported"],
+                "impact_level": 7,
+            },
+        )
 
         insert_data = mock_sb.table.return_value.insert.call_args[0][0]
         assert insert_data["tags"] == ["guardian", "imported"]
@@ -310,23 +394,35 @@ class TestFullTransformPipeline:
 
     async def test_json_first_output_produces_valid_event_data(self, generation_service):
         """The user's exact LLM output should produce data suitable for EventService.create."""
-        with patch.object(
-            generation_service, "_generate", new_callable=AsyncMock,
-            return_value={"content": LLM_OUTPUT_JSON_FIRST, "model_used": "m", "template_source": "db", "locale": "de"},
-        ), patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"):
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_JSON_FIRST,
+                    "model_used": "m",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(generation_service, "_get_simulation_name", new_callable=AsyncMock, return_value="V"),
+        ):
             result = await generation_service.generate_news_transformation("T", "C")
 
         # Build event data as the /integrate endpoint would
         from backend.services.base_service import serialize_for_json
 
-        event_data = serialize_for_json({
-            "title": result.get("title", "Fallback"),
-            "description": result.get("description"),
-            "event_type": result.get("event_type", "news"),
-            "impact_level": result.get("impact_level", 5),
-            "tags": ["guardian", "imported", "news"],
-            "data_source": "imported",
-        })
+        event_data = serialize_for_json(
+            {
+                "title": result.get("title", "Fallback"),
+                "description": result.get("description"),
+                "event_type": result.get("event_type", "news"),
+                "impact_level": result.get("impact_level", 5),
+                "tags": ["guardian", "imported", "news"],
+                "data_source": "imported",
+            }
+        )
 
         assert event_data["title"] == "15 Wege zur Verbesserung der Akademie-Erfahrung für Dimensionenreisende"
         assert event_data["event_type"] == "Bildungsreform"

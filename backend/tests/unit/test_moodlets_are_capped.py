@@ -198,8 +198,7 @@ class TestTheGateItself:
         capped, _, unresolved = _scan()
         autonomous = [site for site in capped if "autonomous_event_service" in site]
         assert len(autonomous) == 2, (
-            f"die beiden **-Stellen in autonomous_event_service sind nicht als "
-            f"gedeckelt erkannt worden: {autonomous}"
+            f"die beiden **-Stellen in autonomous_event_service sind nicht als gedeckelt erkannt worden: {autonomous}"
         )
         assert not unresolved, (
             "unauflösbare **-Auspackung — der Scanner weiß nicht, ob dort eine "

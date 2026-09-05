@@ -63,11 +63,17 @@ def _ledger() -> list[dict]:
     payload = json.dumps({"query": "select version, name from supabase_migrations.schema_migrations;"})
     ergebnis = subprocess.run(
         [
-            "curl", "-sS", "-X", "POST",
+            "curl",
+            "-sS",
+            "-X",
+            "POST",
             f"https://api.supabase.com/v1/projects/{PROJECT}/database/query",
-            "-H", f"Authorization: Bearer {_token()}",
-            "-H", "Content-Type: application/json",
-            "--data", "@-",
+            "-H",
+            f"Authorization: Bearer {_token()}",
+            "-H",
+            "Content-Type: application/json",
+            "--data",
+            "@-",
         ],
         input=payload,
         capture_output=True,

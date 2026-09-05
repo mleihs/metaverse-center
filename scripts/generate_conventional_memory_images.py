@@ -56,8 +56,16 @@ def psql_json(query: str) -> list:
     wrapped = f"SELECT json_agg(t) FROM ({query}) t;"
     result = subprocess.run(
         [
-            "docker", "exec", "supabase_db_velgarien-rebuild",
-            "psql", "-U", "postgres", "-t", "-A", "-c", wrapped,
+            "docker",
+            "exec",
+            "supabase_db_velgarien-rebuild",
+            "psql",
+            "-U",
+            "postgres",
+            "-t",
+            "-A",
+            "-c",
+            wrapped,
         ],
         capture_output=True,
         text=True,
@@ -72,8 +80,7 @@ def get_entity_ids() -> tuple[list, list]:
     """Query the local DB for current agent/building IDs."""
     # Agents: include character + background for portrait prompt generation
     agent_rows = psql_json(
-        f"SELECT id, name, character, background FROM agents "
-        f"WHERE simulation_id = '{SIM_ID}' ORDER BY name"
+        f"SELECT id, name, character, background FROM agents WHERE simulation_id = '{SIM_ID}' ORDER BY name"
     )
     agents = [
         (

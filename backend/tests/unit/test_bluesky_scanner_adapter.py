@@ -64,9 +64,7 @@ def _adapter(posts, *, queries=("news",)):
 
 async def _fetch(posts, *, queries=("news",)):
     adapter, search = _adapter(posts, queries=queries)
-    with patch(
-        "backend.services.scanning.adapters.bluesky_social.BlueskyService"
-    ) as service_cls:
+    with patch("backend.services.scanning.adapters.bluesky_social.BlueskyService") as service_cls:
         service_cls.return_value.search_posts = search
         return await adapter.fetch()
 
@@ -84,9 +82,7 @@ class TestDasTor:
     async def test_a_link_without_a_headline_is_not_an_anchor_either(self):
         # Eine URL ohne Titel gäbe als Überschrift nur den Beitragstext her —
         # also den Kommentar des Absenders statt der Nachricht.
-        results = await _fetch(
-            [post(text="seht euch das an", url="https://example.org/a", title=None, likes=50)]
-        )
+        results = await _fetch([post(text="seht euch das an", url="https://example.org/a", title=None, likes=50)])
         assert results == []
 
     @pytest.mark.asyncio
@@ -141,16 +137,12 @@ class TestDieSchwelle:
 
     @pytest.mark.asyncio
     async def test_a_post_nobody_reacted_to_is_dropped(self):
-        results = await _fetch(
-            [post(url="https://example.org/a", title="Eine Meldung", likes=0, reposts=0)]
-        )
+        results = await _fetch([post(url="https://example.org/a", title="Eine Meldung", likes=0, reposts=0)])
         assert results == []
 
     @pytest.mark.asyncio
     async def test_likes_and_reposts_count_together(self):
-        results = await _fetch(
-            [post(url="https://example.org/b", title="Eine Meldung", likes=0, reposts=1)]
-        )
+        results = await _fetch([post(url="https://example.org/b", title="Eine Meldung", likes=0, reposts=1)])
         assert len(results) == 1
 
     def test_the_threshold_is_the_measured_one(self):
@@ -226,9 +218,7 @@ class TestDerZyklusHaeltDurch:
                 raise BlueskyAPIError("500")
             return good
 
-        with patch(
-            "backend.services.scanning.adapters.bluesky_social.BlueskyService"
-        ) as service_cls:
+        with patch("backend.services.scanning.adapters.bluesky_social.BlueskyService") as service_cls:
             service_cls.return_value.search_posts = search
             results = await adapter.fetch()
 

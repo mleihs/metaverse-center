@@ -98,6 +98,7 @@ class TestEnrichHtmlForCrawler:
     def _reset_cache(self):
         """Reset the module-level caches between tests."""
         import backend.middleware.seo as seo_module
+
         seo_module._index_html_cache = None
         seo_module._sim_meta_cache.clear()
         seo_module._anon_client = None
@@ -133,8 +134,8 @@ class TestEnrichHtmlForCrawler:
     async def test_enriches_simulation_page(self, tmp_path):
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>metaverse.center – a worldbuilding framework</title>'
+            "<html><head>"
+            "<title>metaverse.center – a worldbuilding framework</title>"
             '<meta name="description" content="default desc">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -142,7 +143,7 @@ class TestEnrichHtmlForCrawler:
             '<meta name="twitter:title" content="default">'
             '<meta name="twitter:description" content="default">'
             '<link rel="canonical" href="https://metaverse.center/">'
-            '</head></html>'
+            "</head></html>"
         )
 
         mock_response = MagicMock()
@@ -167,8 +168,8 @@ class TestEnrichHtmlForCrawler:
     async def test_escapes_xss_in_simulation_name(self, tmp_path):
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>default</title>'
+            "<html><head>"
+            "<title>default</title>"
             '<meta name="description" content="default">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -176,7 +177,7 @@ class TestEnrichHtmlForCrawler:
             '<meta name="twitter:title" content="default">'
             '<meta name="twitter:description" content="default">'
             '<link rel="canonical" href="https://metaverse.center/">'
-            '</head></html>'
+            "</head></html>"
         )
 
         mock_response = MagicMock()
@@ -221,8 +222,8 @@ class TestEnrichHtmlForCrawler:
         """Verify entity content div and JSON-LD are injected for crawler responses."""
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>metaverse.center</title>'
+            "<html><head>"
+            "<title>metaverse.center</title>"
             '<meta name="description" content="default">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -230,25 +231,29 @@ class TestEnrichHtmlForCrawler:
             '<meta name="twitter:title" content="default">'
             '<meta name="twitter:description" content="default">'
             '<link rel="canonical" href="https://metaverse.center/">'
-            '</head><body><velg-app></velg-app></body></html>'
+            "</head><body><velg-app></velg-app></body></html>"
         )
 
         sim_response = MagicMock()
-        sim_response.data = [{
-            "id": "10000000-0000-0000-0000-000000000001",
-            "slug": "test-sim",
-            "name": "Test Sim",
-            "description": "A test simulation",
-            "banner_url": "",
-        }]
+        sim_response.data = [
+            {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "slug": "test-sim",
+                "name": "Test Sim",
+                "description": "A test simulation",
+                "banner_url": "",
+            }
+        ]
 
-        with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.build_view_content") as mock_build:
+        with (
+            patch("backend.middleware.seo.create_client") as mock_create,
+            patch("backend.middleware.seo.build_view_content") as mock_build,
+        ):
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
             mock_build.return_value = (
-                '<article><h3>Ada</h3></article>',
+                "<article><h3>Ada</h3></article>",
                 '{"@type":"CollectionPage"}',
             )
 
@@ -267,8 +272,8 @@ class TestEnrichHtmlForCrawler:
         """Verify JSON-LD @type varies by view."""
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>x</title>'
+            "<html><head>"
+            "<title>x</title>"
             '<meta name="description" content="d">'
             '<meta property="og:title" content="d">'
             '<meta property="og:description" content="d">'
@@ -276,20 +281,24 @@ class TestEnrichHtmlForCrawler:
             '<meta name="twitter:title" content="d">'
             '<meta name="twitter:description" content="d">'
             '<link rel="canonical" href="u">'
-            '</head><body></body></html>'
+            "</head><body></body></html>"
         )
 
         sim_response = MagicMock()
-        sim_response.data = [{
-            "id": "10000000-0000-0000-0000-000000000001",
-            "slug": "sim",
-            "name": "Sim",
-            "description": "",
-            "banner_url": "",
-        }]
+        sim_response.data = [
+            {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "slug": "sim",
+                "name": "Sim",
+                "description": "",
+                "banner_url": "",
+            }
+        ]
 
-        with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.build_view_content") as mock_build:
+        with (
+            patch("backend.middleware.seo.create_client") as mock_create,
+            patch("backend.middleware.seo.build_view_content") as mock_build,
+        ):
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
@@ -312,6 +321,7 @@ class TestArchetypeEnrichment:
     @pytest.fixture(autouse=True)
     def _reset_cache(self):
         import backend.middleware.seo as seo_module
+
         seo_module._index_html_cache = None
         yield
         seo_module._index_html_cache = None
@@ -322,8 +332,8 @@ class TestArchetypeEnrichment:
 
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>default</title>'
+            "<html><head>"
+            "<title>default</title>"
             '<meta name="description" content="default">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -336,12 +346,13 @@ class TestArchetypeEnrichment:
             '<meta name="twitter:image" content="default">'
             '<meta name="twitter:image:alt" content="default">'
             '<link rel="canonical" href="default">'
-            '</head><body></body></html>'
+            "</head><body></body></html>"
         )
 
         for archetype in ARCHETYPES:
             result = await enrich_html_for_crawler(
-                index, f"/archetypes/{archetype.id}",
+                index,
+                f"/archetypes/{archetype.id}",
             )
             assert result is not None, f"no enrichment for {archetype.id}"
             assert archetype.name in result, f"name missing for {archetype.id}"
@@ -359,6 +370,7 @@ class TestEntityMetaOverride:
     @pytest.fixture(autouse=True)
     def _reset_cache(self):
         import backend.middleware.seo as seo_module
+
         seo_module._index_html_cache = None
         seo_module._sim_meta_cache.clear()
         seo_module._entity_cache.clear()
@@ -375,8 +387,8 @@ class TestEntityMetaOverride:
 
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>default</title>'
+            "<html><head>"
+            "<title>default</title>"
             '<meta name="description" content="default">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -389,17 +401,19 @@ class TestEntityMetaOverride:
             '<meta name="twitter:image" content="default">'
             '<meta name="twitter:image:alt" content="default">'
             '<link rel="canonical" href="default">'
-            '</head><body></body></html>'
+            "</head><body></body></html>"
         )
 
         sim_response = MagicMock()
-        sim_response.data = [{
-            "id": "10000000-0000-0000-0000-000000000001",
-            "slug": "station-null",
-            "name": "Station Null",
-            "description": "An orbital outpost.",
-            "banner_url": "https://example.com/banner.jpg",
-        }]
+        sim_response.data = [
+            {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "slug": "station-null",
+                "name": "Station Null",
+                "description": "An orbital outpost.",
+                "banner_url": "https://example.com/banner.jpg",
+            }
+        ]
 
         entity_detail = EntityDetailResult(
             html="<h2>Alice Smith</h2>",
@@ -413,8 +427,10 @@ class TestEntityMetaOverride:
             ),
         )
 
-        with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.build_entity_detail_content") as mock_detail:
+        with (
+            patch("backend.middleware.seo.create_client") as mock_create,
+            patch("backend.middleware.seo.build_entity_detail_content") as mock_detail,
+        ):
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
@@ -440,8 +456,8 @@ class TestEntityMetaOverride:
         """Without an entity slug, the URL is a list view — sim-level meta stays."""
         index = tmp_path / "index.html"
         index.write_text(
-            '<html><head>'
-            '<title>default</title>'
+            "<html><head>"
+            "<title>default</title>"
             '<meta name="description" content="default">'
             '<meta property="og:title" content="default">'
             '<meta property="og:description" content="default">'
@@ -452,20 +468,24 @@ class TestEntityMetaOverride:
             '<meta name="twitter:description" content="default">'
             '<meta name="twitter:image" content="default">'
             '<link rel="canonical" href="default">'
-            '</head><body></body></html>'
+            "</head><body></body></html>"
         )
 
         sim_response = MagicMock()
-        sim_response.data = [{
-            "id": "10000000-0000-0000-0000-000000000001",
-            "slug": "station-null",
-            "name": "Station Null",
-            "description": "An orbital outpost.",
-            "banner_url": "",
-        }]
+        sim_response.data = [
+            {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "slug": "station-null",
+                "name": "Station Null",
+                "description": "An orbital outpost.",
+                "banner_url": "",
+            }
+        ]
 
-        with patch("backend.middleware.seo.create_client") as mock_create, \
-             patch("backend.middleware.seo.build_view_content") as mock_view:
+        with (
+            patch("backend.middleware.seo.create_client") as mock_create,
+            patch("backend.middleware.seo.build_view_content") as mock_view,
+        ):
             mock_client = MagicMock()
             mock_create.return_value = mock_client
             mock_client.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = sim_response
@@ -486,6 +506,7 @@ class TestInjectEntityContent:
     @pytest.fixture(autouse=True)
     def _reset_cache(self):
         import backend.middleware.seo as seo_module
+
         seo_module._entity_cache.clear()
         seo_module._anon_client = None
         yield
@@ -494,8 +515,10 @@ class TestInjectEntityContent:
 
     def test_injects_seo_content_div(self):
         base_html = "<html><head></head><body><app></app></body></html>"
-        with patch("backend.middleware.seo.build_view_content") as mock_build, \
-             patch("backend.middleware.seo._get_anon_client"):
+        with (
+            patch("backend.middleware.seo.build_view_content") as mock_build,
+            patch("backend.middleware.seo._get_anon_client"),
+        ):
             mock_build.return_value = ("<article>Test</article>", "")
             result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
 
@@ -504,8 +527,10 @@ class TestInjectEntityContent:
 
     def test_injects_jsonld(self):
         base_html = "<html><head></head><body></body></html>"
-        with patch("backend.middleware.seo.build_view_content") as mock_build, \
-             patch("backend.middleware.seo._get_anon_client"):
+        with (
+            patch("backend.middleware.seo.build_view_content") as mock_build,
+            patch("backend.middleware.seo._get_anon_client"),
+        ):
             mock_build.return_value = ("", '{"@type":"CollectionPage"}')
             result = _inject_entity_content(base_html, "agents", "id", "Sim", "slug")
 
@@ -514,8 +539,10 @@ class TestInjectEntityContent:
 
     def test_empty_content_unchanged(self):
         base_html = "<html><head></head><body></body></html>"
-        with patch("backend.middleware.seo.build_view_content") as mock_build, \
-             patch("backend.middleware.seo._get_anon_client"):
+        with (
+            patch("backend.middleware.seo.build_view_content") as mock_build,
+            patch("backend.middleware.seo._get_anon_client"),
+        ):
             mock_build.return_value = ("", "")
             result = _inject_entity_content(base_html, "settings", "id", "Sim", "slug")
 

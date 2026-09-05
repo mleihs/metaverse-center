@@ -204,17 +204,21 @@ async def main() -> None:
             logger.info("  Generated %d lines:\n%s", boot_art.count("\n") + 1, preview)
 
             # Upsert to simulation_settings
-            await supabase.table("simulation_settings").upsert(
-                [
-                    {
-                        "simulation_id": str(sim_id),
-                        "setting_key": "terminal_boot_art",
-                        "setting_value": boot_art,
-                        "category": "design",
-                    }
-                ],
-                on_conflict="simulation_id,category,setting_key",
-            ).execute()
+            await (
+                supabase.table("simulation_settings")
+                .upsert(
+                    [
+                        {
+                            "simulation_id": str(sim_id),
+                            "setting_key": "terminal_boot_art",
+                            "setting_value": boot_art,
+                            "category": "design",
+                        }
+                    ],
+                    on_conflict="simulation_id,category,setting_key",
+                )
+                .execute()
+            )
 
             logger.info("  Saved to simulation_settings")
             success_count += 1

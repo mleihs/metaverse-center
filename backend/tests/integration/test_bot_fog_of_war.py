@@ -30,16 +30,9 @@ def _fetch_real_agent_id(admin_client, simulation_id) -> str:
 
     Requires seed data to include at least one agent for the simulation.
     """
-    resp = (
-        admin_client.table("agents")
-        .select("id")
-        .eq("simulation_id", str(simulation_id))
-        .limit(1)
-        .execute()
-    )
+    resp = admin_client.table("agents").select("id").eq("simulation_id", str(simulation_id)).limit(1).execute()
     assert resp.data, (
-        f"No agents found for simulation {simulation_id}. "
-        "Seed data must include agents for template simulations."
+        f"No agents found for simulation {simulation_id}. Seed data must include agents for template simulations."
     )
     return resp.data[0]["id"]
 
@@ -47,18 +40,20 @@ def _fetch_real_agent_id(admin_client, simulation_id) -> str:
 def _insert_spy_mission(admin_client, *, epoch_id, source_sim_id, target_sim_id, agent_id, status="active"):
     """Insert an operative spy mission and return its ID."""
     mission_id = uuid4()
-    admin_client.table("operative_missions").insert({
-        "id": str(mission_id),
-        "epoch_id": str(epoch_id),
-        "source_simulation_id": str(source_sim_id),
-        "target_simulation_id": str(target_sim_id),
-        "agent_id": agent_id,
-        "operative_type": "spy",
-        "status": status,
-        "cost_rp": 5,
-        "deployed_at": datetime.now(UTC).isoformat(),
-        "resolves_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat(),
-    }).execute()
+    admin_client.table("operative_missions").insert(
+        {
+            "id": str(mission_id),
+            "epoch_id": str(epoch_id),
+            "source_simulation_id": str(source_sim_id),
+            "target_simulation_id": str(target_sim_id),
+            "agent_id": agent_id,
+            "operative_type": "spy",
+            "status": status,
+            "cost_rp": 5,
+            "deployed_at": datetime.now(UTC).isoformat(),
+            "resolves_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat(),
+        }
+    ).execute()
     return mission_id
 
 
@@ -108,9 +103,7 @@ class TestBotFogOfWar:
             "Active (undetected) spy should not appear in target's detected_enemy_ops"
         )
         target_own_source_ids = {m["source_simulation_id"] for m in bot_state.own_missions}
-        assert str(SIM_VELGARIEN) not in target_own_source_ids, (
-            "Enemy spy should never appear in target's own_missions"
-        )
+        assert str(SIM_VELGARIEN) not in target_own_source_ids, "Enemy spy should never appear in target's own_missions"
 
     @pytest.mark.asyncio
     async def test_detected_spy_visible_to_target_bot(self, admin_client, async_admin_client, epoch_factory):
@@ -139,9 +132,7 @@ class TestBotFogOfWar:
         )
 
         detected_ids = {m["id"] for m in bot_state.detected_enemy_ops}
-        assert str(mission_id) in detected_ids, (
-            "Detected spy must appear in target's detected_enemy_ops"
-        )
+        assert str(mission_id) in detected_ids, "Detected spy must appear in target's detected_enemy_ops"
 
     @pytest.mark.asyncio
     async def test_own_spy_visible_to_deployer(self, admin_client, async_admin_client, epoch_factory):
@@ -170,6 +161,4 @@ class TestBotFogOfWar:
         )
 
         own_mission_ids = {m["id"] for m in bot_state.own_missions}
-        assert str(mission_id) in own_mission_ids, (
-            "Deployer must see their own spy mission in own_missions"
-        )
+        assert str(mission_id) in own_mission_ids, "Deployer must see their own spy mission in own_missions"

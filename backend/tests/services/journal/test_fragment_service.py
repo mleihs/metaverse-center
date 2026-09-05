@@ -50,9 +50,7 @@ class TestParseLLMResponseDirectJSON:
         assert result["thematic_tags"] == []
 
     def test_non_list_tags_default_empty(self):
-        content = json.dumps(
-            {"content_de": "a", "content_en": "b", "thematic_tags": "stimmung"}
-        )
+        content = json.dumps({"content_de": "a", "content_en": "b", "thematic_tags": "stimmung"})
         result = FragmentService._parse_llm_response(content)
         assert result is not None
         assert result["thematic_tags"] == []
@@ -74,28 +72,20 @@ class TestParseLLMResponseTolerance:
     """Fall-back paths: fences, preamble, postamble, partial JSON."""
 
     def test_markdown_json_fence(self):
-        content = (
-            '```json\n'
-            '{"content_de": "a", "content_en": "b", "thematic_tags": []}\n'
-            '```'
-        )
+        content = '```json\n{"content_de": "a", "content_en": "b", "thematic_tags": []}\n```'
         result = FragmentService._parse_llm_response(content)
         assert result is not None
         assert result["content_de"] == "a"
 
     def test_generic_fence_without_language(self):
-        content = (
-            '```\n{"content_de": "a", "content_en": "b"}\n```'
-        )
+        content = '```\n{"content_de": "a", "content_en": "b"}\n```'
         result = FragmentService._parse_llm_response(content)
         assert result is not None
         assert result["content_en"] == "b"
 
     def test_preamble_is_stripped(self):
         content = (
-            "Here is the fragment:\n"
-            '{"content_de": "a", "content_en": "b", "thematic_tags": []}\n'
-            "Hope you like it!"
+            'Here is the fragment:\n{"content_de": "a", "content_en": "b", "thematic_tags": []}\nHope you like it!'
         )
         result = FragmentService._parse_llm_response(content)
         assert result is not None
@@ -127,9 +117,7 @@ class TestParseLLMResponseValidationFailures:
 
     def test_non_dict_root(self):
         # Array at root, not a fragment object.
-        content = json.dumps(
-            [{"content_de": "a", "content_en": "b"}]
-        )
+        content = json.dumps([{"content_de": "a", "content_en": "b"}])
         assert FragmentService._parse_llm_response(content) is None
 
     def test_empty_string(self):
@@ -149,9 +137,7 @@ class TestParseLLMResponseTrimming:
     """Whitespace around content values should be stripped but not from within."""
 
     def test_leading_trailing_whitespace_stripped(self):
-        content = json.dumps(
-            {"content_de": "\n  text  \n", "content_en": "  other  "}
-        )
+        content = json.dumps({"content_de": "\n  text  \n", "content_en": "  other  "})
         result = FragmentService._parse_llm_response(content)
         assert result is not None
         assert result["content_de"] == "text"

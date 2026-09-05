@@ -93,12 +93,7 @@ class TestSurveyDeliverRace:
             assert r2.data["honors_won"] == 0, "you cannot re-win your own node"
             assert r2.data["surveys_delivered"] == 1, "the re-delivery still touches the FoW row"
 
-            honors = (
-                admin_client.table("chart_honors")
-                .select("id")
-                .eq("node_stable_key", key)
-                .execute()
-            )
+            honors = admin_client.table("chart_honors").select("id").eq("node_stable_key", key).execute()
             assert len(honors.data) == 1
             disc = (
                 admin_client.table("traveler_discoveries")

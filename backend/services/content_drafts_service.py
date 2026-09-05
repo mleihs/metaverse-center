@@ -41,8 +41,7 @@ _TABLE = "content_drafts"
 # `base_content` and `working_content` JSONB blobs so "My Drafts"
 # pagination stays cheap.
 _SUMMARY_COLUMNS = (
-    "id,author_id,pack_slug,resource_path,status,version,"
-    "pr_number,pr_url,created_at,updated_at,published_at,merged_at"
+    "id,author_id,pack_slug,resource_path,status,version,pr_number,pr_url,created_at,updated_at,published_at,merged_at"
 )
 
 
@@ -91,13 +90,7 @@ class ContentDraftsService:
     @classmethod
     async def get(cls, supabase: Client, draft_id: UUID) -> ContentDraft:
         """Fetch a single draft by ID, including both JSONB blobs."""
-        response = await (
-            supabase.table(_TABLE)
-            .select("*")
-            .eq("id", str(draft_id))
-            .limit(1)
-            .execute()
-        )
+        response = await supabase.table(_TABLE).select("*").eq("id", str(draft_id)).limit(1).execute()
         data = extract_one(response)
         if not data:
             raise not_found(_TABLE, draft_id)
@@ -123,11 +116,7 @@ class ContentDraftsService:
         The default `status_filter` is None = all statuses; UI typically
         filters to [DRAFT, CONFLICT] for the "in-progress" tab.
         """
-        query = (
-            supabase.table(_TABLE)
-            .select(_SUMMARY_COLUMNS, count="exact")
-            .order("updated_at", desc=True)
-        )
+        query = supabase.table(_TABLE).select(_SUMMARY_COLUMNS, count="exact").order("updated_at", desc=True)
         if author_id is not None:
             query = query.eq("author_id", str(author_id))
         if status_filter:
@@ -143,7 +132,9 @@ class ContentDraftsService:
 
     @classmethod
     async def _attach_author_emails(
-        cls, supabase: Client, rows: list[dict[str, Any]],
+        cls,
+        supabase: Client,
+        rows: list[dict[str, Any]],
     ) -> None:
         """Enrich rows with `author_email` via the `get_user_emails_batch` RPC.
 
@@ -168,16 +159,13 @@ class ContentDraftsService:
             return
         try:
             email_resp = await supabase.rpc(
-                "get_user_emails_batch", {"user_ids": author_ids},
+                "get_user_emails_batch",
+                {"user_ids": author_ids},
             ).execute()
-            email_map: dict[str, str] = {
-                row["id"]: row["email"]
-                for row in (extract_list(email_resp) or [])
-            }
+            email_map: dict[str, str] = {row["id"]: row["email"] for row in (extract_list(email_resp) or [])}
         except Exception:  # noqa: BLE001 — non-fatal enrichment
             logger.warning(
-                "get_user_emails_batch failed for %d author(s); "
-                "drafts list will render without email",
+                "get_user_emails_batch failed for %d author(s); drafts list will render without email",
                 len(author_ids),
                 exc_info=True,
             )
@@ -212,9 +200,7 @@ class ContentDraftsService:
             )
             .execute()
         )
-        return [
-            ContentDraftSummary.model_validate(r) for r in extract_list(response)
-        ]
+        return [ContentDraftSummary.model_validate(r) for r in extract_list(response)]
 
     @classmethod
     async def list_by_ids(
@@ -232,9 +218,7 @@ class ContentDraftsService:
         if not draft_ids:
             return []
         ids = [str(d) for d in draft_ids]
-        response = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
+        response = await supabase.table(_TABLE).select("*").in_("id", ids).execute()
         return [ContentDraft.model_validate(r) for r in extract_list(response)]
 
     @classmethod
@@ -251,12 +235,7 @@ class ContentDraftsService:
         `idx_content_drafts_pr_number` (partial: WHERE pr_number IS NOT NULL)
         serves this lookup.
         """
-        response = await (
-            supabase.table(_TABLE)
-            .select("*")
-            .eq("pr_number", pr_number)
-            .execute()
-        )
+        response = await supabase.table(_TABLE).select("*").eq("pr_number", pr_number).execute()
         return [ContentDraft.model_validate(r) for r in extract_list(response)]
 
     # ── Update — working content (with optimistic lock) ───────────────
@@ -563,9 +542,7 @@ class ContentDraftsService:
         draft_id: UUID,
     ) -> None:
         """Permanent delete. Prefer `abandon()` unless PII/GDPR demands removal."""
-        response = await (
-            supabase.table(_TABLE).delete().eq("id", str(draft_id)).execute()
-        )
+        response = await supabase.table(_TABLE).delete().eq("id", str(draft_id)).execute()
         if not response.data:
             raise not_found(_TABLE, draft_id)
 
@@ -580,12 +557,7 @@ class ContentDraftsService:
         updates: dict[str, Any],
     ) -> ContentDraft:
         """Apply a status-transition update and return the fresh row."""
-        response = await (
-            supabase.table(_TABLE)
-            .update(updates)
-            .eq("id", str(draft_id))
-            .execute()
-        )
+        response = await supabase.table(_TABLE).update(updates).eq("id", str(draft_id)).execute()
         if not response.data:
             raise not_found(_TABLE, draft_id)
         return ContentDraft.model_validate(response.data[0])
@@ -611,11 +583,7 @@ class ContentDraftsService:
         re-deliveries) and must not clobber the original timestamp.
         """
         response = await (
-            supabase.table(_TABLE)
-            .update(updates)
-            .eq("id", str(draft_id))
-            .is_(gate_column, "null")
-            .execute()
+            supabase.table(_TABLE).update(updates).eq("id", str(draft_id)).is_(gate_column, "null").execute()
         )
         if response.data:
             return ContentDraft.model_validate(response.data[0])
@@ -664,9 +632,7 @@ class ContentDraftsService:
             update_query = update_query.eq(col, val)
         await update_query.execute()
 
-        full = await (
-            supabase.table(_TABLE).select("*").in_("id", ids).execute()
-        )
+        full = await supabase.table(_TABLE).select("*").in_("id", ids).execute()
         return [ContentDraft.model_validate(r) for r in extract_list(full)]
 
     @classmethod
@@ -691,13 +657,7 @@ class ContentDraftsService:
         on a gated UPDATE; this function then does the diagnostic SELECT.
         """
         select_cols = "status, version" if require_status else "id"
-        response = await (
-            supabase.table(_TABLE)
-            .select(select_cols)
-            .eq("id", str(draft_id))
-            .limit(1)
-            .execute()
-        )
+        response = await supabase.table(_TABLE).select(select_cols).eq("id", str(draft_id)).limit(1).execute()
         row = extract_one(response)
         if not row:
             raise not_found(_TABLE, draft_id)
@@ -706,7 +666,9 @@ class ContentDraftsService:
             if current_status != require_status.value:
                 logger.warning(
                     "Draft %s in status %s (require_status=%s)",
-                    draft_id, current_status, require_status.value,
+                    draft_id,
+                    current_status,
+                    require_status.value,
                 )
                 raise conflict(
                     f"Draft is in status '{current_status}' – this "
@@ -715,14 +677,15 @@ class ContentDraftsService:
                 )
             logger.warning(
                 "Draft resolve optimistic-lock conflict (id=%s, db_version=%s)",
-                draft_id, row.get("version"),
+                draft_id,
+                row.get("version"),
             )
             raise conflict(
-                "Draft was modified by another session. Please refresh the "
-                "conflict preview and retry.",
+                "Draft was modified by another session. Please refresh the conflict preview and retry.",
             )
         logger.warning(
-            "Draft optimistic-lock conflict (id=%s)", draft_id,
+            "Draft optimistic-lock conflict (id=%s)",
+            draft_id,
         )
         raise conflict(
             "Draft was modified by another session. Please refresh and retry.",

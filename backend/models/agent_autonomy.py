@@ -110,9 +110,7 @@ class MoodletCreate(BaseModel):
     moodlet_type: str
     emotion: str
     strength: int = Field(..., ge=-20, le=20)
-    source_type: str = Field(
-        ..., pattern=r"^(event|relationship|zone|building|social|memory|system)$"
-    )
+    source_type: str = Field(..., pattern=r"^(event|relationship|zone|building|social|memory|system)$")
     source_id: UUID | None = None
     source_description: str | None = None
     decay_type: str = Field("timed", pattern=r"^(permanent|timed|decaying)$")

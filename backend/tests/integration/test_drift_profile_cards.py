@@ -69,24 +69,16 @@ class TestProfileLedger:
         _drop_profile(admin_client, user)
         assert await DriftService.get_profile(async_admin_client, user) is None
 
-    async def test_rank_progress_and_exam_predicate(
-        self, admin_client, async_admin_client, test_user_ids, anchor_sim
-    ):
+    async def test_rank_progress_and_exam_predicate(self, admin_client, async_admin_client, test_user_ids, anchor_sim):
         user = test_user_ids[3]
         tuning = (
-            admin_client.table("drift_tuning")
-            .select("value")
-            .eq("setting_key", "clearance_thresholds")
-            .execute()
+            admin_client.table("drift_tuning").select("value").eq("setting_key", "clearance_thresholds").execute()
         ).data[0]["value"]
         threshold = int(tuning["feldkartograph"])
         fee = int(
-            (
-                admin_client.table("drift_tuning")
-                .select("value")
-                .eq("setting_key", "clearance_exam_fee")
-                .execute()
-            ).data[0]["value"]["feldkartograph"]
+            (admin_client.table("drift_tuning").select("value").eq("setting_key", "clearance_exam_fee").execute()).data[
+                0
+            ]["value"]["feldkartograph"]
         )
         try:
             # Half the VP, no Siegel → half a bar, no exam.
@@ -115,9 +107,7 @@ class TestProfileLedger:
         finally:
             _drop_profile(admin_client, user)
 
-    async def test_progress_never_exceeds_full_bar(
-        self, admin_client, async_admin_client, test_user_ids, anchor_sim
-    ):
+    async def test_progress_never_exceeds_full_bar(self, admin_client, async_admin_client, test_user_ids, anchor_sim):
         user = test_user_ids[3]
         try:
             _seed_profile(admin_client, user, anchor_sim, vp=100_000, siegel=100_000)
@@ -134,9 +124,7 @@ class TestProfileLedger:
         an empty bar toward an unreachable rank would be a lie the UI tells every session."""
         user = test_user_ids[3]
         try:
-            _seed_profile(
-                admin_client, user, anchor_sim, vp=500, siegel=500, clearance_rank="feldkartograph"
-            )
+            _seed_profile(admin_client, user, anchor_sim, vp=500, siegel=500, clearance_rank="feldkartograph")
             p = await DriftService.get_profile(async_admin_client, user)
             assert p is not None
             assert p.next_rank is None
@@ -155,34 +143,27 @@ class TestEffectCards:
         """An applied spawn_event card names the world, carries its slug, and links the
         actual event the gate wrote (resolved via metadata.quest_instance_id)."""
         instance_id = uuid4()
-        sim = (
-            admin_client.table("simulations")
-            .select("id, name, slug")
-            .eq("id", anchor_sim)
-            .execute()
-        ).data[0]
+        sim = (admin_client.table("simulations").select("id, name, slug").eq("id", anchor_sim).execute()).data[0]
         agent = (
-            admin_client.table("active_agents")
-            .select("id, name")
-            .eq("simulation_id", anchor_sim)
-            .limit(1)
-            .execute()
+            admin_client.table("active_agents").select("id, name").eq("simulation_id", anchor_sim).limit(1).execute()
         ).data
         event = (
             admin_client.table("events")
-            .insert({
-                "simulation_id": sim["id"],
-                "title": "Test-Depesche eingetroffen",
-                "event_type": "travel_dispatch",
-                "description": "Testbeleg.",
-                "impact_level": 1,
-                "metadata": {
-                    "drift": True,
-                    "kind": "spawn_event",
-                    "source": "quest",
-                    "quest_instance_id": str(instance_id),
-                },
-            })
+            .insert(
+                {
+                    "simulation_id": sim["id"],
+                    "title": "Test-Depesche eingetroffen",
+                    "event_type": "travel_dispatch",
+                    "description": "Testbeleg.",
+                    "impact_level": 1,
+                    "metadata": {
+                        "drift": True,
+                        "kind": "spawn_event",
+                        "source": "quest",
+                        "quest_instance_id": str(instance_id),
+                    },
+                }
+            )
             .execute()
         ).data[0]
         try:
@@ -198,20 +179,20 @@ class TestEffectCards:
                     },
                 ]
                 + (
-                    [{
-                        "kind": "inject_agent_memory",
-                        "target_agent": agent[0]["id"],
-                        "target_sim": sim["id"],
-                        "hospitality": "standard",
-                    }]
+                    [
+                        {
+                            "kind": "inject_agent_memory",
+                            "target_agent": agent[0]["id"],
+                            "target_sim": sim["id"],
+                            "hospitality": "standard",
+                        }
+                    ]
                     if agent
                     else []
                 ),
                 skipped=[],
             )
-            cards = await DriftService._build_effect_cards(
-                async_admin_client, instance_id, effects
-            )
+            cards = await DriftService._build_effect_cards(async_admin_client, instance_id, effects)
 
             by_kind = {c.kind: c for c in cards}
             assert set(by_kind) >= {"emit_fragment", "spawn_event"}
@@ -224,9 +205,7 @@ class TestEffectCards:
             assert event_card.target_kind == "simulation"
             assert event_card.target_label == sim["name"], "the world is NAMED, not counted"
             assert event_card.simulation_slug == sim["slug"]
-            assert str(event_card.event_id) == event["id"], (
-                "the card links the receipt the gate actually wrote"
-            )
+            assert str(event_card.event_id) == event["id"], "the card links the receipt the gate actually wrote"
 
             if agent:
                 agent_card = by_kind["inject_agent_memory"]
@@ -240,9 +219,7 @@ class TestEffectCards:
     ):
         """A world that only admits echoes is exercising its hospitality setting — the card
         says so, in the gate's own words, and links nothing (nothing was written)."""
-        sim = (
-            admin_client.table("simulations").select("id, name").eq("id", anchor_sim).execute()
-        ).data[0]
+        sim = (admin_client.table("simulations").select("id, name").eq("id", anchor_sim).execute()).data[0]
         effects = QuestEffectsResponse(
             already_applied=False,
             applied=[],
@@ -272,15 +249,9 @@ class TestEffectCards:
         dropped (migration 255). Without the slots fallback a filtered card reads
         "Unbekanntes Ziel", which is exactly the wrong sentence: the entire point of the card
         is that a NAMED world refused you. (Found in the W1 browser run.)"""
-        sim = (
-            admin_client.table("simulations").select("id, name, slug").eq("id", anchor_sim).execute()
-        ).data[0]
+        sim = (admin_client.table("simulations").select("id, name, slug").eq("id", anchor_sim).execute()).data[0]
         agent = (
-            admin_client.table("active_agents")
-            .select("id, name")
-            .eq("simulation_id", anchor_sim)
-            .limit(1)
-            .execute()
+            admin_client.table("active_agents").select("id, name").eq("simulation_id", anchor_sim).limit(1).execute()
         ).data
 
         effects = QuestEffectsResponse(
@@ -293,9 +264,7 @@ class TestEffectCards:
             ],
         )
         slots = {"target_sim": sim["id"], "target_agent": agent[0]["id"] if agent else None}
-        cards = await DriftService._build_effect_cards(
-            async_admin_client, uuid4(), effects, slots
-        )
+        cards = await DriftService._build_effect_cards(async_admin_client, uuid4(), effects, slots)
 
         event_card = next(c for c in cards if c.kind == "spawn_event")
         assert event_card.target_label == sim["name"], "the refusing world is NAMED"
@@ -306,9 +275,7 @@ class TestEffectCards:
             agent_card = next(c for c in cards if c.kind == "inject_agent_memory")
             assert agent_card.target_label == agent[0]["name"]
 
-    async def test_receipt_is_read_from_the_public_events_view(
-        self, admin_client, async_admin_client, anchor_sim
-    ):
+    async def test_receipt_is_read_from_the_public_events_view(self, admin_client, async_admin_client, anchor_sim):
         """The receipt must resolve for a FOREIGN world — which is the only kind a Depesche
         is ever delivered to. `events.events_select` gates the base table on
         user_has_simulation_access, so a traveller (never a member of the target world) got
@@ -318,27 +285,25 @@ class TestEffectCards:
         sim = (admin_client.table("simulations").select("id").eq("id", anchor_sim).execute()).data[0]
         event = (
             admin_client.table("events")
-            .insert({
-                "simulation_id": sim["id"],
-                "title": "Echo aus dem Drift",
-                "event_type": "travel_echo",
-                "description": "Testbeleg.",
-                "impact_level": 1,
-                "metadata": {"kind": "emit_echo", "quest_instance_id": str(instance_id)},
-            })
+            .insert(
+                {
+                    "simulation_id": sim["id"],
+                    "title": "Echo aus dem Drift",
+                    "event_type": "travel_echo",
+                    "description": "Testbeleg.",
+                    "impact_level": 1,
+                    "metadata": {"kind": "emit_echo", "quest_instance_id": str(instance_id)},
+                }
+            )
             .execute()
         ).data[0]
         try:
             cards = await DriftService._build_effect_cards(
                 async_admin_client,
                 instance_id,
-                QuestEffectsResponse(
-                    applied=[{"kind": "emit_echo", "target_sim": sim["id"]}], skipped=[]
-                ),
+                QuestEffectsResponse(applied=[{"kind": "emit_echo", "target_sim": sim["id"]}], skipped=[]),
             )
-            assert str(cards[0].event_id) == event["id"], (
-                "the applied card links the receipt the gate actually wrote"
-            )
+            assert str(cards[0].event_id) == event["id"], "the applied card links the receipt the gate actually wrote"
         finally:
             admin_client.table("events").delete().eq("id", event["id"]).execute()
 
@@ -361,29 +326,51 @@ class TestRunResponseLiftsSignals:
     def _row(self, checkpoint: dict) -> dict:
         now = "2026-07-13T00:00:00+00:00"
         return {
-            "id": str(uuid4()), "user_id": str(uuid4()), "status": "active",
-            "run_version": 3, "kohaerenz": 80, "bandbreite": 6, "dissonanz": 4,
-            "frequency": "memory", "scale": "drift", "window_remaining": 7,
-            "takt_count": 5, "checkpoint": checkpoint, "event_seq": 5,
-            "opened_at": now, "created_at": now, "updated_at": now,
+            "id": str(uuid4()),
+            "user_id": str(uuid4()),
+            "status": "active",
+            "run_version": 3,
+            "kohaerenz": 80,
+            "bandbreite": 6,
+            "dissonanz": 4,
+            "frequency": "memory",
+            "scale": "drift",
+            "window_remaining": 7,
+            "takt_count": 5,
+            "checkpoint": checkpoint,
+            "event_seq": 5,
+            "opened_at": now,
+            "created_at": now,
+            "updated_at": now,
         }
 
     async def test_pending_signal_is_lifted(self):
-        run = TravelRunResponse(**self._row({
-            "pending_signal": {
-                "template_key": "stoerung_frequenzscherung",
-                "signal_class": "stoerung",
-                "takt": 5,
-                "prose": {"title_de": "Frequenzscherung", "title_en": "Frequency Shear",
-                          "body_de": "de", "body_en": "en"},
-                "options": [
-                    {"key": "durchdruecken", "label_de": "drücken", "label_en": "push",
-                     "check": {"vector": "architecture", "difficulty": 7}},
-                    {"key": "treiben_lassen", "label_de": "treiben", "label_en": "drift",
-                     "cost": {"takt": 1}},
-                ],
-            }
-        }))
+        run = TravelRunResponse(
+            **self._row(
+                {
+                    "pending_signal": {
+                        "template_key": "stoerung_frequenzscherung",
+                        "signal_class": "stoerung",
+                        "takt": 5,
+                        "prose": {
+                            "title_de": "Frequenzscherung",
+                            "title_en": "Frequency Shear",
+                            "body_de": "de",
+                            "body_en": "en",
+                        },
+                        "options": [
+                            {
+                                "key": "durchdruecken",
+                                "label_de": "drücken",
+                                "label_en": "push",
+                                "check": {"vector": "architecture", "difficulty": 7},
+                            },
+                            {"key": "treiben_lassen", "label_de": "treiben", "label_en": "drift", "cost": {"takt": 1}},
+                        ],
+                    }
+                }
+            )
+        )
         assert run.pending_signal is not None
         assert run.pending_signal.signal_class == "stoerung"
         assert run.pending_signal.prose.title_de == "Frequenzscherung"
@@ -392,16 +379,20 @@ class TestRunResponseLiftsSignals:
         assert run.last_signal is None
 
     async def test_resolved_signal_is_lifted(self):
-        run = TravelRunResponse(**self._row({
-            "last_signal": {
-                "template_key": "stoerung_bandbreitenfrass",
-                "signal_class": "stoerung",
-                "option_key": "abschirmen",
-                "success": True,
-                "outcome": {"text_de": "de", "text_en": "en", "deltas": {"bb": 1}},
-                "applied": {"bb": 1},
-            }
-        }))
+        run = TravelRunResponse(
+            **self._row(
+                {
+                    "last_signal": {
+                        "template_key": "stoerung_bandbreitenfrass",
+                        "signal_class": "stoerung",
+                        "option_key": "abschirmen",
+                        "success": True,
+                        "outcome": {"text_de": "de", "text_en": "en", "deltas": {"bb": 1}},
+                        "applied": {"bb": 1},
+                    }
+                }
+            )
+        )
         assert run.last_signal is not None
         assert run.last_signal.option_key == "abschirmen"
         assert run.last_signal.applied.bb == 1

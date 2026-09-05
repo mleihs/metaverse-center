@@ -90,8 +90,16 @@ def _mock_admin_supabase(execute_results: list[MagicMock]) -> MagicMock:
     mock = MagicMock()
     chain = MagicMock()
     for method in (
-        "select", "insert", "update", "delete",
-        "eq", "in_", "is_", "order", "range", "limit",
+        "select",
+        "insert",
+        "update",
+        "delete",
+        "eq",
+        "in_",
+        "is_",
+        "order",
+        "range",
+        "limit",
     ):
         getattr(chain, method).return_value = chain
     chain.execute = AsyncMock(side_effect=execute_results)
@@ -100,9 +108,7 @@ def _mock_admin_supabase(execute_results: list[MagicMock]) -> MagicMock:
 
 
 def _make_unique_violation() -> PostgrestAPIError:
-    return PostgrestAPIError(
-        {"code": "23505", "message": "duplicate key value violates unique constraint"}
-    )
+    return PostgrestAPIError({"code": "23505", "message": "duplicate key value violates unique constraint"})
 
 
 @pytest.fixture()
@@ -196,16 +202,18 @@ class TestWebhookEndpoint:
         #   4) SELECT content_drafts WHERE id IN (...)            (re-fetch)
         #   5) UPDATE github_webhook_events SET processed_at,...
         merged_row = _draft_row(
-            draft_id=d_id, status=ContentDraftStatus.MERGED, pr_number=42,
+            draft_id=d_id,
+            status=ContentDraftStatus.MERGED,
+            pr_number=42,
         )
         merged_row["merged_at"] = datetime.now(UTC).isoformat()
         supabase = _mock_admin_supabase(
             [
-                _exec_result(data=[]),                      # INSERT
+                _exec_result(data=[]),  # INSERT
                 _exec_result(data=[_draft_row(draft_id=d_id, pr_number=42)]),  # SELECT by pr
-                _exec_result(data=[]),                      # UPDATE bulk
-                _exec_result(data=[merged_row]),            # SELECT re-fetch
-                _exec_result(data=[]),                      # UPDATE event row
+                _exec_result(data=[]),  # UPDATE bulk
+                _exec_result(data=[merged_row]),  # SELECT re-fetch
+                _exec_result(data=[]),  # UPDATE event row
             ]
         )
         _override_admin_supabase(supabase)
@@ -229,7 +237,9 @@ class TestWebhookEndpoint:
         body = json.dumps(payload).encode()
 
         reverted_row = _draft_row(
-            draft_id=d_id, status=ContentDraftStatus.DRAFT, pr_number=43,
+            draft_id=d_id,
+            status=ContentDraftStatus.DRAFT,
+            pr_number=43,
         )
         reverted_row["pr_number"] = None
         reverted_row["pr_url"] = None
@@ -239,11 +249,11 @@ class TestWebhookEndpoint:
 
         supabase = _mock_admin_supabase(
             [
-                _exec_result(data=[]),                                 # INSERT event
+                _exec_result(data=[]),  # INSERT event
                 _exec_result(data=[_draft_row(draft_id=d_id, pr_number=43)]),  # SELECT by pr
-                _exec_result(data=[]),                                 # UPDATE revert bulk
-                _exec_result(data=[reverted_row]),                     # SELECT re-fetch
-                _exec_result(data=[]),                                 # UPDATE event row
+                _exec_result(data=[]),  # UPDATE revert bulk
+                _exec_result(data=[reverted_row]),  # SELECT re-fetch
+                _exec_result(data=[]),  # UPDATE event row
             ]
         )
         _override_admin_supabase(supabase)
@@ -358,9 +368,9 @@ class TestWebhookEndpoint:
         body = json.dumps(payload).encode()
         supabase = _mock_admin_supabase(
             [
-                _exec_result(data=[]),                                  # INSERT
-                _exec_result(data=[_draft_row(pr_number=99)]),          # SELECT by pr
-                _exec_result(data=[]),                                  # UPDATE event row
+                _exec_result(data=[]),  # INSERT
+                _exec_result(data=[_draft_row(pr_number=99)]),  # SELECT by pr
+                _exec_result(data=[]),  # UPDATE event row
             ]
         )
         _override_admin_supabase(supabase)
@@ -413,9 +423,9 @@ class TestWebhookEndpoint:
         chain = supabase.table.return_value
         chain.execute = AsyncMock(
             side_effect=[
-                _exec_result(data=[]),                  # INSERT event
-                RuntimeError("simulated DB blip"),      # SELECT by pr (boom)
-                _exec_result(data=[]),                  # UPDATE event row (always last)
+                _exec_result(data=[]),  # INSERT event
+                RuntimeError("simulated DB blip"),  # SELECT by pr (boom)
+                _exec_result(data=[]),  # UPDATE event row (always last)
             ]
         )
         _override_admin_supabase(supabase)

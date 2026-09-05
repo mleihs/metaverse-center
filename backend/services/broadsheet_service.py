@@ -43,14 +43,18 @@ class BroadsheetService:
                 "p_period_end": period_end.isoformat(),
             },
         ).execute()
-        return response.data if response.data else {
-            "events": [],
-            "activities": [],
-            "resonance_impacts": [],
-            "mood_summary": {},
-            "gazette_entries": [],
-            "health": None,
-        }
+        return (
+            response.data
+            if response.data
+            else {
+                "events": [],
+                "activities": [],
+                "resonance_impacts": [],
+                "mood_summary": {},
+                "gazette_entries": [],
+                "health": None,
+            }
+        )
 
     # ── Compile edition ─────────────────────────────────────────────────────
 
@@ -108,43 +112,49 @@ class BroadsheetService:
 
         for event in source.get("events", []):
             impact = event.get("impact_level") or 0
-            ranked.append({
-                "source_type": "event",
-                "source_id": str(event.get("id", "")),
-                "priority": impact * 10,
-                "headline": event.get("title", "Untitled Event"),
-                "headline_de": event.get("title_de"),
-                "content": event.get("description", ""),
-                "content_de": event.get("description_de"),
-                "layout_hint": "hero" if impact >= 8 else "column",
-                "impact_level": impact,
-                "tags": event.get("tags"),
-            })
+            ranked.append(
+                {
+                    "source_type": "event",
+                    "source_id": str(event.get("id", "")),
+                    "priority": impact * 10,
+                    "headline": event.get("title", "Untitled Event"),
+                    "headline_de": event.get("title_de"),
+                    "content": event.get("description", ""),
+                    "content_de": event.get("description_de"),
+                    "layout_hint": "hero" if impact >= 8 else "column",
+                    "impact_level": impact,
+                    "tags": event.get("tags"),
+                }
+            )
 
         for impact in source.get("resonance_impacts", []):
             magnitude = impact.get("effective_magnitude") or 0
-            ranked.append({
-                "source_type": "resonance",
-                "source_id": str(impact.get("id", "")),
-                "priority": int(magnitude * 80),
-                "headline": impact.get("resonance_title", "Cross-Reality Disturbance"),
-                "content": impact.get("narrative_context", ""),
-                "layout_hint": "column",
-            })
+            ranked.append(
+                {
+                    "source_type": "resonance",
+                    "source_id": str(impact.get("id", "")),
+                    "priority": int(magnitude * 80),
+                    "headline": impact.get("resonance_title", "Cross-Reality Disturbance"),
+                    "content": impact.get("narrative_context", ""),
+                    "layout_hint": "column",
+                }
+            )
 
         for activity in source.get("activities", []):
             significance = activity.get("significance") or 0
             agent_name = activity.get("agent_name", "Unknown")
-            ranked.append({
-                "source_type": "activity",
-                "source_id": str(activity.get("id", "")),
-                "priority": significance * 8,
-                "headline": f"{agent_name}: {activity.get('activity_type', 'activity')}",
-                "content": activity.get("narrative_text", ""),
-                "content_de": activity.get("narrative_text_de"),
-                "layout_hint": "sidebar",
-                "agent_name": agent_name,
-            })
+            ranked.append(
+                {
+                    "source_type": "activity",
+                    "source_id": str(activity.get("id", "")),
+                    "priority": significance * 8,
+                    "headline": f"{agent_name}: {activity.get('activity_type', 'activity')}",
+                    "content": activity.get("narrative_text", ""),
+                    "content_de": activity.get("narrative_text_de"),
+                    "layout_hint": "sidebar",
+                    "agent_name": agent_name,
+                }
+            )
 
         ranked.sort(key=lambda a: a["priority"], reverse=True)
 

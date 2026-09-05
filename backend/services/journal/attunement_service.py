@@ -90,19 +90,11 @@ class AttunementService:
         filters by enabled for authenticated readers, but the filter
         is cheap and makes the intent obvious at the call site.
         """
-        resp = await (
-            supabase.table(cls._CATALOG)
-            .select("*")
-            .eq("enabled", True)
-            .order("seeded_at")
-            .execute()
-        )
+        resp = await supabase.table(cls._CATALOG).select("*").eq("enabled", True).order("seeded_at").execute()
         return [_attunement_from_row(r) for r in extract_list(resp)]
 
     @classmethod
-    async def list_unlocks(
-        cls, supabase: Client, user_id: UUID
-    ) -> list[UserAttunementResponse]:
+    async def list_unlocks(cls, supabase: Client, user_id: UUID) -> list[UserAttunementResponse]:
         """Return the caller's unlock log with slugs pre-joined.
 
         Single query via Postgrest's nested-select: the foreign key on
@@ -127,9 +119,7 @@ class AttunementService:
         return out
 
     @classmethod
-    async def list_catalog_with_status(
-        cls, supabase: Client, user_id: UUID
-    ) -> list[AttunementCatalogEntry]:
+    async def list_catalog_with_status(cls, supabase: Client, user_id: UUID) -> list[AttunementCatalogEntry]:
         """Single-shot view model for ``GET /journal/attunements``.
 
         Composes catalog rows with the caller's unlock log so the
@@ -168,9 +158,7 @@ class AttunementService:
     # ── Unlock orchestration ───────────────────────────────────────────
 
     @classmethod
-    async def evaluate(
-        cls, supabase: Client, resonance_type: str
-    ) -> JournalAttunementResponse | None:
+    async def evaluate(cls, supabase: Client, resonance_type: str) -> JournalAttunementResponse | None:
         """Return the attunement that unlocks on crystallizing a
         constellation of the given resonance type, or ``None`` if no
         starter attunement matches.
@@ -221,9 +209,7 @@ class AttunementService:
             "constellation_id": str(constellation_id),
         }
         resp = await (
-            admin.table(cls._UNLOCKS)
-            .upsert(row, on_conflict="user_id,attunement_id", ignore_duplicates=True)
-            .execute()
+            admin.table(cls._UNLOCKS).upsert(row, on_conflict="user_id,attunement_id", ignore_duplicates=True).execute()
         )
         inserted = extract_list(resp)
         newly = len(inserted) > 0

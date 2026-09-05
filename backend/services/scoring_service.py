@@ -73,6 +73,7 @@ class ScoringService:
             )
 
         return scores
+
     # Per-dimension scoring lives in SQL: fn_compute_cycle_scores
     # (migration 127, refreshed in 187) computes all five raw dimensions,
     # normalises them and applies the weighted composite in one statement.

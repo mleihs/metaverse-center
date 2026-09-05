@@ -136,25 +136,26 @@ class TestGenerateNewsTransformation:
 
     async def test_extracts_json_fields_from_full_output(self, generation_service):
         """LLM output with **Titel:**, narrative, ---, and JSON block."""
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": LLM_OUTPUT_FULL,
-                "model_used": "test-model",
-                "template_source": "db",
-                "locale": "de",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_FULL,
+                    "model_used": "test-model",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content")
 
         # JSON fields extracted
         assert result["title"] == "Velgarische Eispinguine verlegen Brutzeit nach Nordsektor"
@@ -173,25 +174,26 @@ class TestGenerateNewsTransformation:
 
     async def test_no_json_still_returns_narrative(self, generation_service):
         """LLM output without JSON block — should still produce a clean narrative."""
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": LLM_OUTPUT_NO_JSON,
-                "model_used": "test-model",
-                "template_source": "db",
-                "locale": "de",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_NO_JSON,
+                    "model_used": "test-model",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content")
 
         # No JSON fields should be set
         assert "title" not in result
@@ -205,25 +207,26 @@ class TestGenerateNewsTransformation:
 
     async def test_only_json_block(self, generation_service):
         """LLM output that is just a JSON block."""
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": LLM_OUTPUT_ONLY_JSON,
-                "model_used": "test-model",
-                "template_source": "db",
-                "locale": "de",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_ONLY_JSON,
+                    "model_used": "test-model",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content")
 
         assert result["title"] == "Pure JSON Event"
         assert result["event_type"] == "news"
@@ -233,25 +236,26 @@ class TestGenerateNewsTransformation:
 
     async def test_preserves_base_fields(self, generation_service):
         """model_used, template_source, locale from _generate() are preserved."""
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": LLM_OUTPUT_FULL,
-                "model_used": "openai/gpt-4o",
-                "template_source": "db",
-                "locale": "de",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": LLM_OUTPUT_FULL,
+                    "model_used": "openai/gpt-4o",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content")
 
         assert result["model_used"] == "openai/gpt-4o"
         assert result["template_source"] == "db"
@@ -259,25 +263,26 @@ class TestGenerateNewsTransformation:
 
     async def test_empty_content(self, generation_service):
         """Empty LLM response should not crash."""
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": "",
-                "model_used": "test-model",
-                "template_source": "db",
-                "locale": "de",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": "",
+                    "model_used": "test-model",
+                    "template_source": "db",
+                    "locale": "de",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content")
 
         assert result["narrative"] == ""
         assert "title" not in result
@@ -285,25 +290,26 @@ class TestGenerateNewsTransformation:
     async def test_english_markers_stripped(self, generation_service):
         """English **Title:** and **Article:** markers are also stripped."""
         content = "**Title:** English Event Title\n\n**Article:**\nSome article text."
-        with patch.object(
-            generation_service,
-            "_generate",
-            new_callable=AsyncMock,
-            return_value={
-                "content": content,
-                "model_used": "test-model",
-                "template_source": "db",
-                "locale": "en",
-            },
-        ), patch.object(
-            generation_service,
-            "_get_simulation_name",
-            new_callable=AsyncMock,
-            return_value="Velgarien",
+        with (
+            patch.object(
+                generation_service,
+                "_generate",
+                new_callable=AsyncMock,
+                return_value={
+                    "content": content,
+                    "model_used": "test-model",
+                    "template_source": "db",
+                    "locale": "en",
+                },
+            ),
+            patch.object(
+                generation_service,
+                "_get_simulation_name",
+                new_callable=AsyncMock,
+                return_value="Velgarien",
+            ),
         ):
-            result = await generation_service.generate_news_transformation(
-                "Test News", "Test content", locale="en"
-            )
+            result = await generation_service.generate_news_transformation("Test News", "Test content", locale="en")
 
         narrative = result["narrative"]
         assert "**Title:**" not in narrative

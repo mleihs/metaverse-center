@@ -135,8 +135,7 @@ class TestTheTwoSidesAgree:
         stale = sorted(union_members() - set(declared))
         assert not stale, (
             "Diese Namen stehen im Frontend-Typ, aber kein Router deklariert sie. "
-            "Ein Aufrufer könnte sie senden und FastAPI verwürfe sie wortlos:\n  "
-            + "\n  ".join(stale)
+            "Ein Aufrufer könnte sie senden und FastAPI verwürfe sie wortlos:\n  " + "\n  ".join(stale)
         )
 
     def test_every_declared_param_is_in_the_union(self) -> None:
@@ -163,9 +162,7 @@ class TestTheParticularNamesThatCausedThis:
         declared = declared_query_params()
         assert "event_status" in declared
         files = {site.split(":")[0] for site in declared["event_status"]}
-        assert {"events.py", "public.py"} <= files, (
-            f"event_status fehlt auf einer der beiden Routen: {sorted(files)}"
-        )
+        assert {"events.py", "public.py"} <= files, f"event_status fehlt auf einer der beiden Routen: {sorted(files)}"
 
     def test_the_api_services_no_longer_accept_an_open_record(self) -> None:
         """`Record<string, string>` was the hole; it must stay closed."""
@@ -177,6 +174,4 @@ class TestTheParticularNamesThatCausedThis:
                 continue
             if "params?: Record<string, string>" in text:
                 offenders.append(path.name)
-        assert not offenders, (
-            "Diese API-Dienste nehmen wieder beliebige Parameternamen an: " + ", ".join(offenders)
-        )
+        assert not offenders, "Diese API-Dienste nehmen wieder beliebige Parameternamen an: " + ", ".join(offenders)

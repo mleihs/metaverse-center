@@ -50,9 +50,23 @@ def _mock_supabase() -> MagicMock:
     result.count = 0
     chain.execute = AsyncMock(return_value=result)
     for m in (
-        "select", "eq", "insert", "update", "delete", "upsert",
-        "limit", "single", "maybe_single", "order", "range",
-        "filter", "in_", "is_", "not_", "or_", "ilike",
+        "select",
+        "eq",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
+        "limit",
+        "single",
+        "maybe_single",
+        "order",
+        "range",
+        "filter",
+        "in_",
+        "is_",
+        "not_",
+        "or_",
+        "ilike",
     ):
         getattr(chain, m).return_value = chain
     mock.table.return_value = chain
@@ -543,7 +557,9 @@ class TestAdminDungeonOverride:
         new_callable=AsyncMock,
     )
     def test_update_override_for_simulation(
-        self, mock_upsert: AsyncMock, client: TestClient,
+        self,
+        mock_upsert: AsyncMock,
+        client: TestClient,
     ):
         _setup_admin()
         mock_upsert.return_value = None
@@ -581,7 +597,9 @@ class TestShowcaseImageValidation:
         new_callable=AsyncMock,
     )
     def test_valid_archetype_returns_200(
-        self, mock_generate: AsyncMock, client: TestClient,
+        self,
+        mock_generate: AsyncMock,
+        client: TestClient,
     ):
         _setup_admin()
         mock_generate.return_value = {
@@ -609,7 +627,9 @@ class TestShowcaseImageValidation:
         new_callable=AsyncMock,
     )
     def test_model_failure_returns_503_not_500(
-        self, mock_generate: AsyncMock, client: TestClient,
+        self,
+        mock_generate: AsyncMock,
+        client: TestClient,
     ):
         """An unavailable model is a 503, not a broken server.
 
@@ -635,7 +655,9 @@ class TestShowcaseImageValidation:
         new_callable=AsyncMock,
     )
     def test_rate_limit_subclass_is_also_503(
-        self, mock_generate: AsyncMock, client: TestClient,
+        self,
+        mock_generate: AsyncMock,
+        client: TestClient,
     ):
         """The children must be covered by the parent, not enumerated.
 
@@ -678,7 +700,9 @@ class TestAdminHealthEffects:
         new_callable=AsyncMock,
     )
     def test_get_health_effects_dashboard(
-        self, mock_dashboard: AsyncMock, client: TestClient,
+        self,
+        mock_dashboard: AsyncMock,
+        client: TestClient,
     ):
         _setup_admin()
         mock_dashboard.return_value = {
@@ -696,7 +720,9 @@ class TestAdminHealthEffects:
         new_callable=AsyncMock,
     )
     def test_toggle_simulation_health_effects(
-        self, mock_upsert: AsyncMock, client: TestClient,
+        self,
+        mock_upsert: AsyncMock,
+        client: TestClient,
     ):
         _setup_admin()
         mock_upsert.return_value = None

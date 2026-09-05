@@ -67,17 +67,22 @@ async def _apply_unsubscribe(token: str) -> dict:
         admin.table("notification_preferences").select("user_id").eq("user_id", user_id).maybe_single()
     )
     if existing:
-        await admin.table("notification_preferences").update(dict.fromkeys(columns, False)).eq(
-            "user_id", user_id
-        ).execute()
+        await (
+            admin.table("notification_preferences")
+            .update(dict.fromkeys(columns, False))
+            .eq("user_id", user_id)
+            .execute()
+        )
     else:
         # No preference row yet: every notification defaults to on, so the
         # opt-out has to be WRITTEN rather than assumed. An `.update()` on an
         # absent row is a silent no-op — the same trap `upsert_platform_setting`
         # exists to avoid.
-        await admin.table("notification_preferences").insert(
-            {"user_id": user_id, **dict.fromkeys(columns, False)}
-        ).execute()
+        await (
+            admin.table("notification_preferences")
+            .insert({"user_id": user_id, **dict.fromkeys(columns, False)})
+            .execute()
+        )
 
     # `action` is free text on `audit_log` (measured: no CHECK, 20 distinct
     # verbs in use), so the entry names what happened rather than flattening

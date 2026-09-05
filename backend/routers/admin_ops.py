@@ -123,7 +123,9 @@ async def get_heatmap(
     purpose (default), model, or provider.
     """
     data = await OpsLedgerService.get_heatmap(
-        admin_supabase, days=days, dimension=dimension,
+        admin_supabase,
+        days=days,
+        dimension=dimension,
     )
     return SuccessResponse(data=data)
 
@@ -178,7 +180,9 @@ async def create_budget(
 ) -> SuccessResponse[BudgetCap]:
     """Create a new budget row. Requires a reason (audit log)."""
     data = await BudgetEnforcementService.upsert_budget(
-        admin_supabase, actor_id=user.id, body=body,
+        admin_supabase,
+        actor_id=user.id,
+        body=body,
     )
     return SuccessResponse(data=data)
 
@@ -192,7 +196,10 @@ async def update_budget(
 ) -> SuccessResponse[BudgetCap]:
     """Update a budget by id."""
     data = await BudgetEnforcementService.upsert_budget(
-        admin_supabase, actor_id=user.id, body=body, budget_id=budget_id,
+        admin_supabase,
+        actor_id=user.id,
+        body=body,
+        budget_id=budget_id,
     )
     return SuccessResponse(data=data)
 
@@ -206,7 +213,10 @@ async def delete_budget(
 ) -> SuccessResponse[DeleteResponse]:
     """Delete a budget. ``reason`` is required for the audit log."""
     await BudgetEnforcementService.delete_budget(
-        admin_supabase, actor_id=user.id, budget_id=budget_id, reason=reason,
+        admin_supabase,
+        actor_id=user.id,
+        budget_id=budget_id,
+        reason=reason,
     )
     return SuccessResponse(data=DeleteResponse(id=str(budget_id)))
 
@@ -324,7 +334,9 @@ async def create_sentry_rule(
     next event.
     """
     data = await SentryRuleService.upsert_rule(
-        admin_supabase, actor_id=user.id, body=body,
+        admin_supabase,
+        actor_id=user.id,
+        body=body,
     )
     return SuccessResponse(data=data)
 
@@ -338,7 +350,10 @@ async def update_sentry_rule(
 ) -> SuccessResponse[SentryRule]:
     """Update a Sentry rule by id."""
     data = await SentryRuleService.upsert_rule(
-        admin_supabase, actor_id=user.id, body=body, rule_id=rule_id,
+        admin_supabase,
+        actor_id=user.id,
+        body=body,
+        rule_id=rule_id,
     )
     return SuccessResponse(data=data)
 
@@ -352,6 +367,9 @@ async def delete_sentry_rule(
 ) -> SuccessResponse[DeleteResponse]:
     """Delete a Sentry rule. ``reason`` is required for the audit log."""
     await SentryRuleService.delete_rule(
-        admin_supabase, actor_id=user.id, rule_id=rule_id, reason=reason,
+        admin_supabase,
+        actor_id=user.id,
+        rule_id=rule_id,
+        reason=reason,
     )
     return SuccessResponse(data=DeleteResponse(id=str(rule_id)))

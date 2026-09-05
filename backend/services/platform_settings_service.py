@@ -141,13 +141,8 @@ class PlatformSettingsService:
         dadurch verstecken, dass niemand ihn aufgeschrieben hat — und das ist
         der Zustand, aus dem dieser ganze Abschnitt entstanden ist.
         """
-        response = await (
-            admin_supabase.table(cls.table_name).select("setting_key, setting_value").execute()
-        )
-        rows = {
-            str(row["setting_key"]): row.get("setting_value")
-            for row in extract_list(response)
-        }
+        response = await admin_supabase.table(cls.table_name).select("setting_key, setting_value").execute()
+        rows = {str(row["setting_key"]): row.get("setting_value") for row in extract_list(response)}
 
         def _raw(value: object) -> str | None:
             if value is None:
@@ -353,10 +348,7 @@ class PlatformSettingsService:
             .in_("setting_key", [_ALPHA_FC_ENABLED, _ALPHA_FC_VERSION])
             .execute()
         )
-        by_key = {
-            row["setting_key"]: str(row.get("setting_value", "")).strip('"')
-            for row in (response.data or [])
-        }
+        by_key = {row["setting_key"]: str(row.get("setting_value", "")).strip('"') for row in (response.data or [])}
         enabled_raw = by_key.get(_ALPHA_FC_ENABLED, "false").lower()
         return AlphaFirstContactConfig(
             enabled=enabled_raw in ("true", "1", "yes"),

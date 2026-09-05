@@ -67,7 +67,7 @@ class Outcome:
     wipe: bool
     stalemate: bool
     rounds: int
-    agent_severity: int   # summed condition severity of the party at the end
+    agent_severity: int  # summed condition severity of the party at the end
     stress_taken: int
     enemies_left: int
 
@@ -107,9 +107,7 @@ def _choose_actions(agents, enemies, archetype: str) -> list[AgentAction]:
     Still deliberately dumb (strongest damage ability, weakest target first) and
     deliberately CONSTANT: the point is to compare two versions of the rules.
     """
-    living = sorted(
-        (e for e in enemies if e.is_alive), key=lambda e: e.condition_steps_remaining
-    )
+    living = sorted((e for e in enemies if e.is_alive), key=lambda e: e.condition_steps_remaining)
     if not living:
         return []
 
@@ -131,10 +129,7 @@ def _choose_actions(agents, enemies, archetype: str) -> list[AgentAction]:
         # Move on once the current target has enough attacks aimed at it to
         # fall — one attack per remaining condition step, the same arithmetic a
         # player does by eye.
-        while (
-            target_index < len(living) - 1
-            and committed >= living[target_index].condition_steps_remaining
-        ):
+        while target_index < len(living) - 1 and committed >= living[target_index].condition_steps_remaining:
             target_index += 1
             committed = 0
 
@@ -201,9 +196,7 @@ def measure(archetypes: list[str], runs: int, seed: int) -> dict:
             if not spawns:
                 continue
             for _ in range(runs):
-                outcomes.append(
-                    _one_fight(archetype, random.choice(spawns), difficulty, depth)
-                )
+                outcomes.append(_one_fight(archetype, random.choice(spawns), difficulty, depth))
         if not outcomes:
             continue
         n = len(outcomes)
@@ -235,8 +228,9 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(report, indent=2))
         return 0
 
-    print(f"Archetypen: {len(archetypes)}   Kämpfe je Stufe: {report[1]['fights'] if report else 0}"
-          f"   Saat: {args.seed}\n")
+    print(
+        f"Archetypen: {len(archetypes)}   Kämpfe je Stufe: {report[1]['fights'] if report else 0}   Saat: {args.seed}\n"
+    )
     print(f"{'Stufe':>6} {'Sieg':>7} {'Wipe':>7} {'Patt':>7} {'Runden':>8} {'Gruppe∅':>9} {'Stress':>8}")
     print("─" * 56)
     for difficulty, row in sorted(report.items()):

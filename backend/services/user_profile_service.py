@@ -34,12 +34,15 @@ class UserProfileService:
         Uses admin client because user_profiles may not be readable via user RLS.
         Returns an empty dict if no profile row exists.
         """
-        return await maybe_single_data(
-            admin_supabase.table("user_profiles")
-            .select("onboarding_completed, academy_epochs_played")
-            .eq("id", str(user_id))
-            .maybe_single()
-        ) or {}
+        return (
+            await maybe_single_data(
+                admin_supabase.table("user_profiles")
+                .select("onboarding_completed, academy_epochs_played")
+                .eq("id", str(user_id))
+                .maybe_single()
+            )
+            or {}
+        )
 
     @classmethod
     async def get_notification_preferences(
@@ -110,12 +113,7 @@ class UserProfileService:
         admin-client docstring claim ("may require elevated access") was
         verified false in the 2026-07 deep audit.
         """
-        await (
-            supabase.table("user_profiles")
-            .update({"onboarding_completed": True})
-            .eq("id", str(user_id))
-            .execute()
-        )
+        await supabase.table("user_profiles").update({"onboarding_completed": True}).eq("id", str(user_id)).execute()
         logger.info(
             "Onboarding completed",
             extra={"user_id": str(user_id)},

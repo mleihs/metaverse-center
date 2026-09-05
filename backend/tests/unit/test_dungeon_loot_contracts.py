@@ -54,11 +54,7 @@ def _sql_effect_types() -> set[str]:
 def _applier_param_reads() -> set[str]:
     """Parameter names `apply_run_buff` actually reads out of effect_params."""
     tree = ast.parse(_APPLIER.read_text(encoding="utf-8"))
-    fn = next(
-        node
-        for node in ast.walk(tree)
-        if isinstance(node, ast.FunctionDef) and node.name == "apply_run_buff"
-    )
+    fn = next(node for node in ast.walk(tree) if isinstance(node, ast.FunctionDef) and node.name == "apply_run_buff")
     names: set[str] = set()
     for node in ast.walk(fn):
         # effect_params.get("<name>") — the only way this function reads a param
@@ -103,8 +99,7 @@ class TestEveryDeclaredEffectHasAConsumer:
             if "SQL" not in contract.consumer:
                 continue
             assert name in sql_types, (
-                f"Der Vertrag sagt, '{name}' werde in SQL angewandt — "
-                f"die laufende Funktion verzweigt aber nicht darauf"
+                f"Der Vertrag sagt, '{name}' werde in SQL angewandt — die laufende Funktion verzweigt aber nicht darauf"
             )
 
     def test_the_two_restored_branches_are_present(self):
@@ -130,12 +125,10 @@ class TestEveryDeclaredEffectHasAConsumer:
         else_branch = sql[start:end]
 
         assert "'effect_type', v_effect_type" in else_branch, (
-            "Der ELSE-Zweig zählt hoch, nennt aber den Typ nicht — "
-            "dann sagt die Warnung nicht, WAS verfallen ist"
+            "Der ELSE-Zweig zählt hoch, nennt aber den Typ nicht — dann sagt die Warnung nicht, WAS verfallen ist"
         )
         assert "v_skipped" in else_branch, (
-            "Der ELSE-Zweig schreibt nicht nach `skipped` — dann bleibt der "
-            "Verlust so unsichtbar wie vorher"
+            "Der ELSE-Zweig schreibt nicht nach `skipped` — dann bleibt der Verlust so unsichtbar wie vorher"
         )
 
 
@@ -143,16 +136,13 @@ class TestBuffShapesMatchTheApplier:
     def test_wired_shapes_are_read_by_the_applier(self):
         reads = _applier_param_reads()
         for key in WIRED_BUFF_KEYS:
-            assert key in reads, (
-                f"'{key}' gilt als verdrahtet, apply_run_buff liest ihn aber nicht"
-            )
+            assert key in reads, f"'{key}' gilt als verdrahtet, apply_run_buff liest ihn aber nicht"
 
     def test_open_shapes_are_not_read(self):
         reads = _applier_param_reads()
         for key in OPEN_BUFF_KEYS:
             assert key not in reads, (
-                f"'{key}' gilt als offen, wird aber gelesen — "
-                f"dann gehört er nach WIRED (Vertrag anpassen)"
+                f"'{key}' gilt als offen, wird aber gelesen — dann gehört er nach WIRED (Vertrag anpassen)"
             )
 
     def test_every_shape_is_classified(self):
@@ -162,8 +152,7 @@ class TestBuffShapesMatchTheApplier:
     def test_open_shapes_carry_a_reason(self):
         for key in OPEN_BUFF_KEYS:
             assert BUFF_SHAPES[key].reason.strip(), (
-                f"'{key}' ist offen ohne Begründung — dann ist es kein Beschluss, "
-                f"sondern ein Versäumnis"
+                f"'{key}' ist offen ohne Begründung — dann ist es kein Beschluss, sondern ein Versäumnis"
             )
 
 
@@ -180,10 +169,7 @@ def _instance() -> DungeonInstance:
         personality={"openness": 0.5},
         resilience=0.5,
     )
-    rooms = [
-        RoomNode(index=i, depth=i, room_type="combat", connections=[], loot_tier=1)
-        for i in range(3)
-    ]
+    rooms = [RoomNode(index=i, depth=i, room_type="combat", connections=[], loot_tier=1) for i in range(3)]
     return DungeonInstance(
         run_id=__import__("uuid").uuid4(),
         simulation_id=__import__("uuid").uuid4(),

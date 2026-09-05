@@ -378,18 +378,25 @@ class InstagramImageService:
 
             # ── 2. Atmospheric effects (content zone only) ───────────
             self._add_decorative_grid_if_solid(
-                content_img, ImageDraw.Draw(content_img),
-                primary_rgb, width, FEED_CONTENT_HEIGHT,
+                content_img,
+                ImageDraw.Draw(content_img),
+                primary_rgb,
+                width,
+                FEED_CONTENT_HEIGHT,
             )
             vignette = create_vignette(width, FEED_CONTENT_HEIGHT, intensity=0.3)
             content_img.alpha_composite(vignette)
             content_img = add_noise_grain(content_img, sigma=10, opacity=0.04)
             content_img = bleach_bypass(
-                content_img, desaturation=0.65,
-                contrast_boost=1.25, highlight_rolloff=0.90,
+                content_img,
+                desaturation=0.65,
+                contrast_boost=1.25,
+                highlight_rolloff=0.90,
             )
             content_img = chromatic_aberration(
-                content_img, offset_r=(2, 1), offset_b=(-2, -1),
+                content_img,
+                offset_r=(2, 1),
+                offset_b=(-2, -1),
             )
 
             # ── 3. Create full canvas + paste content zone ───────────
@@ -492,7 +499,11 @@ class InstagramImageService:
             if cipher_hint:
                 try:
                     self._render_cipher_margin(
-                        canvas, cipher_hint, primary_rgb, width, height,
+                        canvas,
+                        cipher_hint,
+                        primary_rgb,
+                        width,
+                        height,
                     )
                 except (OSError, ValueError, TypeError) as cipher_exc:
                     logger.warning(
@@ -701,11 +712,14 @@ class InstagramImageService:
 
         # ── Channel 1: Edges (Laplacian on luminance) ──
         # Kernel from smartcrop.js edgeDetect() — standard discrete Laplacian
-        gray = small.convert("L").filter(ImageFilter.Kernel(
-            size=(3, 3),
-            kernel=(0, -1, 0, -1, 4, -1, 0, -1, 0),
-            scale=1, offset=128,
-        ))
+        gray = small.convert("L").filter(
+            ImageFilter.Kernel(
+                size=(3, 3),
+                kernel=(0, -1, 0, -1, 4, -1, 0, -1, 0),
+                scale=1,
+                offset=128,
+            )
+        )
         edges = np.asarray(gray, dtype=np.float32) / 255.0
 
         # ── Channel 2: Skin tone detection ──
@@ -750,9 +764,9 @@ class InstagramImageService:
         y_norm = np.linspace(0, 1, h, dtype=np.float32)
         upper_weight = 0.4 if portrait_bias else 0.2
         lower_weight = 0.2
-        thirds_bonus = np.maximum(0, 1.0 - (y_norm * 2 - 2/3) ** 6) * upper_weight
-        thirds_bonus += np.maximum(0, 1.0 - (y_norm * 2 - 4/3) ** 6) * lower_weight
-        attention *= (1.0 + thirds_bonus[:, np.newaxis])
+        thirds_bonus = np.maximum(0, 1.0 - (y_norm * 2 - 2 / 3) ** 6) * upper_weight
+        thirds_bonus += np.maximum(0, 1.0 - (y_norm * 2 - 4 / 3) ** 6) * lower_weight
+        attention *= 1.0 + thirds_bonus[:, np.newaxis]
 
         # ── Center of mass → vertical offset ──
         col_sums = attention.sum(axis=1)  # sum per row → vertical profile

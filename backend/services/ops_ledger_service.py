@@ -138,9 +138,7 @@ class OpsLedgerService:
         resp = await admin_supabase.rpc("get_ops_ledger", {}).execute()
         data = resp.data or {}
         generated_at_raw = data.get("generated_at")
-        generated_at = (
-            _parse_timestamp(generated_at_raw) if generated_at_raw else datetime.now(UTC)
-        )
+        generated_at = _parse_timestamp(generated_at_raw) if generated_at_raw else datetime.now(UTC)
         snap = LedgerSnapshot(
             today=_parse_metric(data.get("today")),
             month=_parse_metric(data.get("month")),
@@ -290,7 +288,8 @@ class OpsLedgerService:
                 continue
             bucket_key = (hour, key)
             bucket = buckets.setdefault(
-                bucket_key, {"calls": 0, "tokens": 0, "usd": 0.0},
+                bucket_key,
+                {"calls": 0, "tokens": 0, "usd": 0.0},
             )
             bucket["calls"] += int(row.get("calls") or 0)
             bucket["tokens"] += int(row.get("tokens") or 0)
@@ -354,11 +353,7 @@ class OpsLedgerService:
         (pre-migration-228 DB state) is treated as zero without raising.
         """
         try:
-            resp = await (
-                admin_supabase.table("ai_circuit_state")
-                .select("scope, scope_key, revert_at")
-                .execute()
-            )
+            resp = await admin_supabase.table("ai_circuit_state").select("scope, scope_key, revert_at").execute()
         except Exception:  # noqa: BLE001 — startup path must not fail on DB hiccups
             logger.warning(
                 "rehydrate_circuit_kills: ai_circuit_state read failed; "

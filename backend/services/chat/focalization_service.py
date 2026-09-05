@@ -213,8 +213,8 @@ class FocalizationService:
     #:
     #: NICHT dazu gehoeren Sternchen (*…*). Das ist Handlung, keine Rede, und
     #: Handlung ist genau das, was gemessen werden soll.
-    _ANF_AUF = "\u201e\u201c\u201d\"\u00ab\u00bb"
-    _ANF_ZU = "\u201c\u201d\"\u00ab\u00bb"
+    _ANF_AUF = '\u201e\u201c\u201d"\u00ab\u00bb'
+    _ANF_ZU = '\u201c\u201d"\u00ab\u00bb'
 
     #: Die Obergrenze, und sie ist der Preis der Klassifizierung.
     #:
@@ -227,9 +227,7 @@ class FocalizationService:
     #: diesen Faeden und knapp genug, dass ein Ausrutscher hoechstens einen
     #: Absatz kostet.
     _REDE_MAX = 400
-    _REDE = re.compile(
-        rf"[{_ANF_AUF}][\s\S]{{2,{_REDE_MAX}}}?[{_ANF_ZU}]"
-    )
+    _REDE = re.compile(rf"[{_ANF_AUF}][\s\S]{{2,{_REDE_MAX}}}?[{_ANF_ZU}]")
 
     @classmethod
     def _ohne_rede(cls, text: str) -> str:
@@ -534,8 +532,7 @@ class FocalizationService:
         response = await (
             supabase.table("conversation_focalization")
             .select(
-                "gemessen, allwissend, im_horizont, unklar, "
-                "unter_entschiedenen_prozent, von_allen_prozent, zuletzt"
+                "gemessen, allwissend, im_horizont, unklar, unter_entschiedenen_prozent, von_allen_prozent, zuletzt"
             )
             .eq("conversation_id", str(conversation_id))
             .eq("method", method)

@@ -261,9 +261,7 @@ class DungeonMovementService:
         # Apply ambient stress (archetype may multiply, e.g. Tower structural failure)
         ambient = calculate_ambient_stress(instance.depth, instance.difficulty)
         # Loot-borne stress resistance ticks down here — once per room entered.
-        ambient = int(
-            ambient * strategy.get_ambient_stress_multiplier(instance) * consume_stress_resist(instance)
-        )
+        ambient = int(ambient * strategy.get_ambient_stress_multiplier(instance) * consume_stress_resist(instance))
         for agent in instance.party:
             if can_act(agent.condition):
                 agent.stress = min(1000, agent.stress + ambient)
@@ -302,9 +300,7 @@ class DungeonMovementService:
         # Generate banter — one helper, so every trigger gets the same treatment
         # (recorded as used, witness achievement, {agent} substitution). Room
         # entry used to do all three and retreat none of them.
-        banter_text = await emit_banter(
-            admin_supabase, instance, banter_trigger, depth=target_room.depth
-        )
+        banter_text = await emit_banter(admin_supabase, instance, banter_trigger, depth=target_room.depth)
 
         # Anchor Object Text
         anchor_texts = select_anchor_text(instance, target_room)
@@ -1048,7 +1044,10 @@ class DungeonMovementService:
         """Set up encounter / rest / treasure room."""
         room_type: str = room.room_type
         encounter = select_encounter(
-            room_type, instance.depth, instance.difficulty, instance.archetype,
+            room_type,
+            instance.depth,
+            instance.difficulty,
+            instance.archetype,
             used_ids=instance.used_encounter_ids,
         )
 

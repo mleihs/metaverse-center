@@ -42,28 +42,39 @@ class TestCounterIntelSweep:
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
         # Look up a real agent from Gaslit Reach
-        agent_resp = admin_client.table("agents").select("id").eq(
-            "simulation_id", str(SIM_GASLIT_REACH),
-        ).limit(1).execute()
+        agent_resp = (
+            admin_client.table("agents")
+            .select("id")
+            .eq(
+                "simulation_id",
+                str(SIM_GASLIT_REACH),
+            )
+            .limit(1)
+            .execute()
+        )
         agent_id = agent_resp.data[0]["id"]
 
         # Insert an enemy mission targeting Velgarien
         mission_id = uuid4()
-        admin_client.table("operative_missions").insert({
-            "id": str(mission_id),
-            "epoch_id": str(epoch.epoch_id),
-            "agent_id": agent_id,
-            "operative_type": "spy",
-            "source_simulation_id": str(SIM_GASLIT_REACH),
-            "target_simulation_id": str(SIM_VELGARIEN),
-            "status": "active",
-            "cost_rp": 3,
-            "deployed_at": datetime.now(UTC).isoformat(),
-            "resolves_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat(),
-        }).execute()
+        admin_client.table("operative_missions").insert(
+            {
+                "id": str(mission_id),
+                "epoch_id": str(epoch.epoch_id),
+                "agent_id": agent_id,
+                "operative_type": "spy",
+                "source_simulation_id": str(SIM_GASLIT_REACH),
+                "target_simulation_id": str(SIM_VELGARIEN),
+                "status": "active",
+                "cost_rp": 3,
+                "deployed_at": datetime.now(UTC).isoformat(),
+                "resolves_at": (datetime.now(UTC) + timedelta(hours=24)).isoformat(),
+            }
+        ).execute()
 
         detected = await OperativeMissionService.counter_intel_sweep(
-            async_admin_client, epoch.epoch_id, SIM_VELGARIEN,
+            async_admin_client,
+            epoch.epoch_id,
+            SIM_VELGARIEN,
         )
 
         assert len(detected) == 1
@@ -71,11 +82,7 @@ class TestCounterIntelSweep:
 
         # Mission status should now be 'detected'
         mission = (
-            admin_client.table("operative_missions")
-            .select("status")
-            .eq("id", str(mission_id))
-            .single()
-            .execute()
+            admin_client.table("operative_missions").select("status").eq("id", str(mission_id)).single().execute()
         ).data
         assert mission["status"] == "detected"
 
@@ -89,7 +96,9 @@ class TestCounterIntelSweep:
 
         with pytest.raises(HTTPException) as exc:
             await OperativeMissionService.counter_intel_sweep(
-                async_admin_client, epoch.epoch_id, SIM_VELGARIEN,
+                async_admin_client,
+                epoch.epoch_id,
+                SIM_VELGARIEN,
             )
         assert exc.value.status_code == 400
         # RP unchanged
@@ -108,16 +117,15 @@ class TestFortifyZone:
 
         # Snapshot zone security before fortification (for cleanup)
         zone_before = (
-            admin_client.table("zones")
-            .select("security_level")
-            .eq("id", str(ZONE_ALTSTADT))
-            .single()
-            .execute()
+            admin_client.table("zones").select("security_level").eq("id", str(ZONE_ALTSTADT)).single().execute()
         ).data
 
         try:
             result = await OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
+                async_admin_client,
+                epoch.epoch_id,
+                SIM_VELGARIEN,
+                ZONE_ALTSTADT,
             )
 
             assert result is not None
@@ -137,9 +145,9 @@ class TestFortifyZone:
             assert len(fort) == 1
         finally:
             # Restore zone security to pre-test state (fortify mutates seed data)
-            admin_client.table("zones").update(
-                {"security_level": zone_before["security_level"]}
-            ).eq("id", str(ZONE_ALTSTADT)).execute()
+            admin_client.table("zones").update({"security_level": zone_before["security_level"]}).eq(
+                "id", str(ZONE_ALTSTADT)
+            ).execute()
 
     @pytest.mark.asyncio
     async def test_fortify_wrong_phase_rejected(self, admin_client, async_admin_client, epoch_factory):
@@ -148,7 +156,10 @@ class TestFortifyZone:
 
         with pytest.raises(HTTPException) as exc:
             await OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, SIM_VELGARIEN, ZONE_ALTSTADT,
+                async_admin_client,
+                epoch.epoch_id,
+                SIM_VELGARIEN,
+                ZONE_ALTSTADT,
             )
         assert exc.value.status_code == 400
 
@@ -162,29 +173,39 @@ class TestMissionResolution:
         """Missions past their resolves_at time get resolved."""
         epoch: EpochFixture = epoch_factory(status="competition", cycle=3, rp=20)
 
-        agent_resp = admin_client.table("agents").select("id").eq(
-            "simulation_id", str(SIM_VELGARIEN),
-        ).limit(1).execute()
+        agent_resp = (
+            admin_client.table("agents")
+            .select("id")
+            .eq(
+                "simulation_id",
+                str(SIM_VELGARIEN),
+            )
+            .limit(1)
+            .execute()
+        )
         agent_id = agent_resp.data[0]["id"]
 
         # Insert a mission that should have resolved already
         mission_id = uuid4()
-        admin_client.table("operative_missions").insert({
-            "id": str(mission_id),
-            "epoch_id": str(epoch.epoch_id),
-            "agent_id": agent_id,
-            "operative_type": "spy",
-            "source_simulation_id": str(SIM_VELGARIEN),
-            "target_simulation_id": str(SIM_GASLIT_REACH),
-            "status": "active",
-            "cost_rp": 3,
-            "success_probability": 0.75,
-            "deployed_at": (datetime.now(UTC) - timedelta(hours=48)).isoformat(),
-            "resolves_at": (datetime.now(UTC) - timedelta(hours=1)).isoformat(),
-        }).execute()
+        admin_client.table("operative_missions").insert(
+            {
+                "id": str(mission_id),
+                "epoch_id": str(epoch.epoch_id),
+                "agent_id": agent_id,
+                "operative_type": "spy",
+                "source_simulation_id": str(SIM_VELGARIEN),
+                "target_simulation_id": str(SIM_GASLIT_REACH),
+                "status": "active",
+                "cost_rp": 3,
+                "success_probability": 0.75,
+                "deployed_at": (datetime.now(UTC) - timedelta(hours=48)).isoformat(),
+                "resolves_at": (datetime.now(UTC) - timedelta(hours=1)).isoformat(),
+            }
+        ).execute()
 
         resolved = await OperativeMissionService.resolve_pending_missions(
-            async_admin_client, epoch.epoch_id,
+            async_admin_client,
+            epoch.epoch_id,
         )
 
         assert len(resolved) >= 1
@@ -197,10 +218,6 @@ class TestMissionResolution:
         # omitted 'detected' and was probabilistically flaky (~11.25%
         # failure rate at default success_prob=0.75 + detection=0.45).
         mission = (
-            admin_client.table("operative_missions")
-            .select("status")
-            .eq("id", str(mission_id))
-            .single()
-            .execute()
+            admin_client.table("operative_missions").select("status").eq("id", str(mission_id)).single().execute()
         ).data
         assert mission["status"] in ("success", "failed", "detected")

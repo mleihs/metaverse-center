@@ -116,13 +116,7 @@ class EpochParticipationService:
             raise conflict("This simulation or user is already in the epoch.")
 
         # Fetch full participant record for response
-        participant = await (
-            supabase.table("epoch_participants")
-            .select("*")
-            .eq("id", str(resp.data))
-            .single()
-            .execute()
-        )
+        participant = await supabase.table("epoch_participants").select("*").eq("id", str(resp.data)).single().execute()
         return participant.data if participant.data else {}
 
     @classmethod
@@ -349,10 +343,7 @@ class EpochParticipationService:
         # Verify bot exists
         # maybe_single: `.single()` raises on 0 rows, so this 404 never ran.
         bot_row = await maybe_single_data(
-            supabase.table("bot_players")
-            .select("id, name, personality")
-            .eq("id", str(bot_player_id))
-            .maybe_single()
+            supabase.table("bot_players").select("id, name, personality").eq("id", str(bot_player_id)).maybe_single()
         )
         if not bot_row:
             raise not_found(detail="Bot player not found.")
@@ -448,8 +439,6 @@ class EpochParticipationService:
         if not p_row.get("is_bot"):
             raise bad_request("This participant is not a bot.")
 
-        resp = await (
-            supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()
-        )
+        resp = await supabase.table("epoch_participants").delete().eq("id", str(participant_id)).execute()
         if not resp.data:
             raise server_error("Failed to remove bot participant.")

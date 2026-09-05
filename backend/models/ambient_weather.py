@@ -147,6 +147,10 @@ CATEGORY_IMPACT: dict[AmbientCategory, int] = {
 # Monthly average temperature (°C) and precipitation probability (0-1)
 # by latitude band. Used with deterministic hash for consistent fallback.
 
+# Die gepackten Zeilen ZEIGEN die Form: zwoelf Monatswerte je Klimazone auf zwei
+# Zeilen. Einzeln untereinander waeren es zwoelf Zeilen je Zone, und die Tabelle
+# waere als Tabelle nicht mehr lesbar. Die einzige Matrix dieser Art im Baum.
+# fmt: off
 CLIMATE_FALLBACK: dict[str, list[tuple[float, float]]] = {
     # (avg_temp_C, precip_probability) per month (Jan-Dec)
     "arctic": [  # lat > 66
@@ -170,6 +174,7 @@ CLIMATE_FALLBACK: dict[str, list[tuple[float, float]]] = {
         (27, 0.6), (27, 0.6), (27, 0.5), (27, 0.4), (26, 0.3), (25, 0.3),
     ],
 }
+# fmt: on
 
 
 def get_climate_zone(lat: float) -> str:
@@ -189,7 +194,11 @@ def get_climate_zone(lat: float) -> str:
 # ── Theme → Template Key Mapping ──────────────────────────────────────────────
 
 AVAILABLE_TEMPLATE_THEMES: set[str] = {
-    "spy-thriller", "scifi", "biopunk", "post-apocalyptic", "medieval",
+    "spy-thriller",
+    "scifi",
+    "biopunk",
+    "post-apocalyptic",
+    "medieval",
 }
 
 DEFAULT_THEME_MAPPING: dict[str, str] = {
@@ -208,6 +217,8 @@ DEFAULT_THEME_MAPPING: dict[str, str] = {
 
 # ── Theme → Default Coordinates (for user-created simulations) ────────────────
 
+# Die Kommentarspalte nennt den Ort zur Koordinate und wird als Spalte gelesen.
+# fmt: off
 THEME_DEFAULT_COORDS: dict[str, tuple[float, float]] = {
     "dystopian": (50.08, 14.44),      # Prague
     "utopian": (43.21, 2.35),         # Carcassonne
@@ -221,6 +232,7 @@ THEME_DEFAULT_COORDS: dict[str, tuple[float, float]] = {
     "post-apocalyptic": (40.63, 14.60),  # Amalfi Coast
     "medieval": (43.21, 2.35),        # Carcassonne
 }
+# fmt: on
 
 
 # ── Moon Phase Calculation (pure math, no API) ────────────────────────────────

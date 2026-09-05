@@ -67,7 +67,10 @@ class TestListForSimulation:
         mock, builder, response = _mock_supabase(data=rows, count=5)
 
         data, total = await EmbassyService.list_for_simulation(
-            mock, SIM_ID, limit=25, offset=0,
+            mock,
+            SIM_ID,
+            limit=25,
+            offset=0,
         )
         assert data == rows
         assert total == 5
@@ -77,7 +80,10 @@ class TestListForSimulation:
         mock, builder, response = _mock_supabase(data=[], count=0)
 
         await EmbassyService.list_for_simulation(
-            mock, SIM_ID, limit=50, offset=10,
+            mock,
+            SIM_ID,
+            limit=50,
+            offset=10,
         )
         builder.range.assert_called_once_with(10, 59)
 
@@ -94,7 +100,9 @@ class TestListForSimulation:
         mock, builder, response = _mock_supabase(data=[], count=0)
 
         await EmbassyService.list_for_simulation(
-            mock, SIM_ID, status_filter="active",
+            mock,
+            SIM_ID,
+            status_filter="active",
         )
         builder.eq.assert_called_with("status", "active")
 
@@ -283,7 +291,9 @@ class TestUpdateEmbassy:
         mock, builder, response = _mock_supabase(data=[updated])
 
         result = await EmbassyService.update_embassy(
-            mock, EMBASSY_ID, {"description": "New description"},
+            mock,
+            EMBASSY_ID,
+            {"description": "New description"},
         )
         assert result["description"] == "New description"
         builder.update.assert_called_once()
@@ -303,7 +313,9 @@ class TestUpdateEmbassy:
 
         with pytest.raises(HTTPException) as exc:
             await EmbassyService.update_embassy(
-                mock, EMBASSY_ID, {"description": "Updated"},
+                mock,
+                EMBASSY_ID,
+                {"description": "Updated"},
             )
         assert exc.value.status_code == 404
 

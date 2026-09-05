@@ -24,9 +24,7 @@ import subprocess
 
 import httpx
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 SIM_ID = "60000000-0000-0000-0000-000000000001"
@@ -69,8 +67,16 @@ async def get_auth_token(env: dict) -> str | None:
 def get_entities_local(table: str) -> list[dict]:
     """Fetch entity data from local DB via docker psql."""
     cmd = [
-        "docker", "exec", "supabase_db_velgarien-rebuild",
-        "psql", "-U", "postgres", "-d", "postgres", "-t", "-c",
+        "docker",
+        "exec",
+        "supabase_db_velgarien-rebuild",
+        "psql",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres",
+        "-t",
+        "-c",
         f"SELECT json_agg(t) FROM (SELECT * FROM {table} WHERE simulation_id = '{SIM_ID}') t",
     ]
     try:
@@ -118,8 +124,9 @@ async def get_simulation(env: dict, token: str) -> dict | None:
         return None
 
 
-async def generate_image(env: dict, token: str, entity_id: str, entity_name: str,
-                         entity_type: str, extra_data: dict) -> bool:
+async def generate_image(
+    env: dict, token: str, entity_id: str, entity_name: str, entity_type: str, extra_data: dict
+) -> bool:
     """Call the backend image generation endpoint."""
     url = f"{env['api_base']}/api/v1/simulations/{SIM_ID}/generate/image"
     payload = {
@@ -136,11 +143,9 @@ async def generate_image(env: dict, token: str, entity_id: str, entity_name: str
             resp = await client.post(url, json=payload, headers=headers)
             if resp.status_code == 200:
                 data = resp.json().get("data", {})
-                logger.info("OK %s '%s' -> %s", entity_type, entity_name,
-                            data.get("image_url", "uploaded"))
+                logger.info("OK %s '%s' -> %s", entity_type, entity_name, data.get("image_url", "uploaded"))
                 return True
-            logger.error("FAIL %s '%s': %s - %s", entity_type, entity_name,
-                         resp.status_code, resp.text[:200])
+            logger.error("FAIL %s '%s': %s - %s", entity_type, entity_name, resp.status_code, resp.text[:200])
             return False
     except Exception as e:
         logger.error("ERROR %s '%s': %s", entity_type, entity_name, e)
@@ -167,22 +172,18 @@ async def generate_lore_image(env: dict, token: str, section: dict) -> bool:
     }
     headers = {"Authorization": f"Bearer {token}"}
 
-    logger.info("Generating lore: '%s' (slug: %s)...", section["title"],
-                section.get("image_slug", "?"))
+    logger.info("Generating lore: '%s' (slug: %s)...", section["title"], section.get("image_slug", "?"))
     try:
         async with httpx.AsyncClient(timeout=300.0) as client:
             resp = await client.post(url, json=payload, headers=headers)
             if resp.status_code == 200:
                 data = resp.json().get("data", {})
-                logger.info("OK lore '%s' -> %s", section["title"],
-                            data.get("image_url", "uploaded"))
+                logger.info("OK lore '%s' -> %s", section["title"], data.get("image_url", "uploaded"))
                 return True
             elif resp.status_code == 404:
-                logger.warning("Lore image endpoint not found — skipping. "
-                               "Add POST /generate/lore-image to the router.")
+                logger.warning("Lore image endpoint not found — skipping. Add POST /generate/lore-image to the router.")
                 return False
-            logger.error("FAIL lore '%s': %s - %s", section["title"],
-                         resp.status_code, resp.text[:200])
+            logger.error("FAIL lore '%s': %s - %s", section["title"], resp.status_code, resp.text[:200])
             return False
     except Exception as e:
         logger.error("ERROR lore '%s': %s", section["title"], e)
@@ -190,17 +191,13 @@ async def generate_lore_image(env: dict, token: str, section: dict) -> bool:
 
 
 async def main():
-    parser = argparse.ArgumentParser(
-        description="Generate images for Spengbab's Grease Pit"
-    )
-    parser.add_argument("--production", action="store_true",
-                        help="Run against production (default: local)")
+    parser = argparse.ArgumentParser(description="Generate images for Spengbab's Grease Pit")
+    parser.add_argument("--production", action="store_true", help="Run against production (default: local)")
     parser.add_argument("--banner-only", action="store_true")
     parser.add_argument("--buildings-only", action="store_true")
     parser.add_argument("--lore-only", action="store_true")
     parser.add_argument("--portraits-only", action="store_true")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="List entities without generating")
+    parser.add_argument("--dry-run", action="store_true", help="List entities without generating")
     args = parser.parse_args()
 
     env = PRODUCTION if args.production else LOCAL
@@ -229,9 +226,16 @@ async def main():
                 logger.info("[DRY RUN] Would generate banner for '%s'", sim["name"])
                 stats["skipped"] += 1
             else:
-                ok = await generate_image(env, token, SIM_ID, sim["name"], "banner", {
-                    "description": sim.get("description", ""),
-                })
+                ok = await generate_image(
+                    env,
+                    token,
+                    SIM_ID,
+                    sim["name"],
+                    "banner",
+                    {
+                        "description": sim.get("description", ""),
+                    },
+                )
                 stats["success" if ok else "failed"] += 1
                 await asyncio.sleep(3)
 
@@ -249,11 +253,18 @@ async def main():
                 logger.info("[DRY RUN] Would generate building '%s' (%s)", b["name"], b["id"][:8])
                 stats["skipped"] += 1
                 continue
-            ok = await generate_image(env, token, b["id"], b["name"], "building", {
-                "description": b.get("description", ""),
-                "building_type": b.get("building_type", "residential"),
-                "building_condition": b.get("building_condition", ""),
-            })
+            ok = await generate_image(
+                env,
+                token,
+                b["id"],
+                b["name"],
+                "building",
+                {
+                    "description": b.get("description", ""),
+                    "building_type": b.get("building_type", "residential"),
+                    "building_condition": b.get("building_condition", ""),
+                },
+            )
             stats["success" if ok else "failed"] += 1
             await asyncio.sleep(3)
 
@@ -272,8 +283,7 @@ async def main():
                 stats["skipped"] += 1
                 continue
             if args.dry_run:
-                logger.info("[DRY RUN] Would generate lore '%s' (slug: %s)",
-                            section["title"], section["image_slug"])
+                logger.info("[DRY RUN] Would generate lore '%s' (slug: %s)", section["title"], section["image_slug"])
                 stats["skipped"] += 1
                 continue
             ok = await generate_lore_image(env, token, section)
@@ -291,19 +301,24 @@ async def main():
 
         for agent in agents:
             if args.dry_run:
-                logger.info("[DRY RUN] Would generate portrait '%s' (%s)",
-                            agent["name"], agent["id"][:8])
+                logger.info("[DRY RUN] Would generate portrait '%s' (%s)", agent["name"], agent["id"][:8])
                 stats["skipped"] += 1
                 continue
-            ok = await generate_image(env, token, agent["id"], agent["name"], "agent", {
-                "character": agent.get("character", ""),
-                "background": agent.get("background", ""),
-            })
+            ok = await generate_image(
+                env,
+                token,
+                agent["id"],
+                agent["name"],
+                "agent",
+                {
+                    "character": agent.get("character", ""),
+                    "background": agent.get("background", ""),
+                },
+            )
             stats["success" if ok else "failed"] += 1
             await asyncio.sleep(3)
 
-    logger.info("=== DONE === success=%d failed=%d skipped=%d",
-                stats["success"], stats["failed"], stats["skipped"])
+    logger.info("=== DONE === success=%d failed=%d skipped=%d", stats["success"], stats["failed"], stats["skipped"])
 
 
 if __name__ == "__main__":

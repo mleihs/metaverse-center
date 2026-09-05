@@ -123,11 +123,13 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
                 config["enabled"] = parse_setting_bool(raw[_SETTING_ENABLED])
             if _SETTING_INTERVAL_DAYS in raw:
                 config["interval_days"] = _parse_positive_float(
-                    raw[_SETTING_INTERVAL_DAYS], _DEFAULT_INTERVAL_DAYS,
+                    raw[_SETTING_INTERVAL_DAYS],
+                    _DEFAULT_INTERVAL_DAYS,
                 )
             if _SETTING_MIN_AGE_DAYS in raw:
                 config["min_age_days"] = _parse_positive_float(
-                    raw[_SETTING_MIN_AGE_DAYS], DEFAULT_MIN_AGE_DAYS,
+                    raw[_SETTING_MIN_AGE_DAYS],
+                    DEFAULT_MIN_AGE_DAYS,
                 )
             config["last_run_at"] = _parse_last_run_at(
                 raw.get(_SETTING_LAST_RUN_AT),
@@ -169,7 +171,10 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
 
         try:
             await cls.run_sweep_and_persist(
-                admin, now=now, config=config, trigger="scheduled",
+                admin,
+                now=now,
+                config=config,
+                trigger="scheduled",
             )
         except HTTPException:
             # get_github_repo_config() signals missing env vars via
@@ -257,9 +262,7 @@ class OrphanSweeperScheduler(BaseSchedulerMixin):
                         # Cap to keep the Sentry payload small when a mass
                         # incident (e.g. token revoked) fails every delete.
                         "error_branches": [
-                            {"name": b.name, "error": b.error}
-                            for b in result.branches
-                            if b.error is not None
+                            {"name": b.name, "error": b.error} for b in result.branches if b.error is not None
                         ][:10],
                     },
                 )
@@ -334,5 +337,7 @@ async def _persist_last_run_at(admin: Client, now: datetime) -> None:
     round-trips on the next tick.
     """
     await upsert_platform_setting(
-        admin, _SETTING_LAST_RUN_AT, json.dumps(now.isoformat()),
+        admin,
+        _SETTING_LAST_RUN_AT,
+        json.dumps(now.isoformat()),
     )

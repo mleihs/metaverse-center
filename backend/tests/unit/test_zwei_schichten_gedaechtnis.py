@@ -130,7 +130,7 @@ class TestDieErzeugungHaeltBeideAuseinander:
 
         quelle = inspect.getsource(Digest.ensure_digests)
         assert "hat_protokoll" in quelle and "hat_episode" in quelle
-        assert "not r.get(\"agent_id\")" in quelle
+        assert 'not r.get("agent_id")' in quelle
 
     def test_eine_episode_ohne_protokoll_wird_nicht_geschrieben(self):
         """Die Ich-Schicht ALLEIN misst 17,8 statt 73,3. Sie darf nie die

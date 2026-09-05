@@ -31,7 +31,10 @@ class TestInvitationCreate:
 
         with caplog.at_level(logging.INFO, logger="backend.services.invitation_service"):
             result = await InvitationService.create_invitation(
-                sb, SIM_ID, INVITER_ID, invited_role="editor",
+                sb,
+                SIM_ID,
+                INVITER_ID,
+                invited_role="editor",
             )
 
         assert result == inv_row

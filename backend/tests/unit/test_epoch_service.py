@@ -134,10 +134,12 @@ class TestEpochUpdate:
         chain = _make_chain()
         epoch_data = {"id": str(EPOCH_ID), "status": "lobby", "name": "Updated"}
         # First call: get epoch; Second call: update
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
-            MagicMock(data=[epoch_data]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+                MagicMock(data=[epoch_data]),
+            ]
+        )
         sb.table.return_value = chain
 
         result = await EpochService.update(sb, EPOCH_ID, {"name": "Updated"})
@@ -148,9 +150,7 @@ class TestEpochUpdate:
     async def test_rejects_update_in_competition(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition"}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -168,10 +168,12 @@ class TestLifecycleTransitions:
     async def test_advance_foundation_to_competition(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "foundation", "config": {}}),
-            MagicMock(data=[{"id": str(EPOCH_ID), "status": "competition"}]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "foundation", "config": {}}),
+                MagicMock(data=[{"id": str(EPOCH_ID), "status": "competition"}]),
+            ]
+        )
         sb.table.return_value = chain
 
         await EpochService.advance_phase(sb, EPOCH_ID)
@@ -184,10 +186,12 @@ class TestLifecycleTransitions:
     async def test_advance_competition_to_reckoning(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "competition", "config": {}}),
-            MagicMock(data=[{"id": str(EPOCH_ID), "status": "reckoning"}]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "competition", "config": {}}),
+                MagicMock(data=[{"id": str(EPOCH_ID), "status": "reckoning"}]),
+            ]
+        )
         sb.table.return_value = chain
 
         await EpochService.advance_phase(sb, EPOCH_ID)
@@ -204,10 +208,12 @@ class TestLifecycleTransitions:
         sb = MagicMock()
         admin_sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "reckoning", "config": {}}),
-            MagicMock(data=[{"id": str(EPOCH_ID), "status": "completed"}]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "reckoning", "config": {}}),
+                MagicMock(data=[{"id": str(EPOCH_ID), "status": "completed"}]),
+            ]
+        )
         sb.table.return_value = chain
 
         # Completing an epoch now also scores the final cycle so the achievement
@@ -222,9 +228,7 @@ class TestLifecycleTransitions:
     async def test_cannot_advance_from_lobby(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby", "config": {}}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -235,9 +239,9 @@ class TestLifecycleTransitions:
     async def test_cannot_advance_from_completed(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "completed", "config": {}}
-        ))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "completed", "config": {}})
+        )
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -248,9 +252,9 @@ class TestLifecycleTransitions:
     async def test_cannot_advance_from_cancelled(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}}
-        ))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "cancelled", "config": {}})
+        )
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -267,10 +271,12 @@ class TestCancelEpoch:
     async def test_cancel_lobby_epoch(self, _mock_log):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
-            MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+                MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
+            ]
+        )
         sb.table.return_value = chain
 
         await EpochService.cancel_epoch(sb, EPOCH_ID)
@@ -287,10 +293,12 @@ class TestCancelEpoch:
         sb = MagicMock()
         admin_sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}),
-            MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}),
+                MagicMock(data=[{"id": str(EPOCH_ID), "status": "cancelled"}]),
+            ]
+        )
         sb.table.return_value = chain
 
         await EpochService.cancel_epoch(sb, EPOCH_ID, admin_supabase=admin_sb)
@@ -301,9 +309,7 @@ class TestCancelEpoch:
     async def test_cannot_cancel_completed_epoch(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "completed"}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "completed"}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -314,9 +320,7 @@ class TestCancelEpoch:
     async def test_cannot_cancel_already_cancelled_epoch(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "cancelled"}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "cancelled"}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -345,12 +349,16 @@ class TestParticipants:
         epoch_chain = _make_chain()
         sim_chain = _make_chain()
         fetch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
-        ))
-        sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "template"}],
-        ))
+        epoch_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
+            )
+        )
+        sim_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[{"simulation_type": "template"}],
+            )
+        )
         fetch_chain.execute = AsyncMock(return_value=MagicMock(data=participant))
 
         def table_router(name):
@@ -379,14 +387,10 @@ class TestParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         sim_chain = _make_chain()
-        sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "game_instance"}]
-        ))
+        sim_chain.execute = AsyncMock(return_value=MagicMock(data=[{"simulation_type": "game_instance"}]))
 
         call_counts: dict[str, int] = {}
 
@@ -409,9 +413,7 @@ class TestParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}))
 
         sb.table.side_effect = lambda name: epoch_chain if name == "game_epochs" else _make_chain()
 
@@ -425,19 +427,21 @@ class TestParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
-        ))
+        epoch_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
+            )
+        )
 
         sim_chain = _make_chain()
-        sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "template"}],
-        ))
+        sim_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[{"simulation_type": "template"}],
+            )
+        )
 
         sb.table.side_effect = lambda name: (
-            epoch_chain if name == "game_epochs"
-            else sim_chain if name == "simulations"
-            else _make_chain()
+            epoch_chain if name == "game_epochs" else sim_chain if name == "simulations" else _make_chain()
         )
 
         # RPC returns None = duplicate
@@ -456,19 +460,17 @@ class TestParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
-        ))
+        epoch_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data={"id": str(EPOCH_ID), "status": "lobby", "config": {}},
+            )
+        )
 
         sim_chain = _make_chain()
-        sim_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"simulation_type": "template"}]
-        ))
+        sim_chain.execute = AsyncMock(return_value=MagicMock(data=[{"simulation_type": "template"}]))
 
         sb.table.side_effect = lambda name: (
-            epoch_chain if name == "game_epochs"
-            else sim_chain if name == "simulations"
-            else _make_chain()
+            epoch_chain if name == "game_epochs" else sim_chain if name == "simulations" else _make_chain()
         )
 
         # RPC returns None = duplicate user
@@ -485,10 +487,12 @@ class TestParticipants:
     async def test_leave_epoch_in_lobby(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(side_effect=[
-            MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
-            MagicMock(data=[]),  # delete
-        ])
+        chain.execute = AsyncMock(
+            side_effect=[
+                MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}),
+                MagicMock(data=[]),  # delete
+            ]
+        )
         sb.table.return_value = chain
 
         # Should not raise
@@ -498,9 +502,7 @@ class TestParticipants:
     async def test_leave_rejects_non_lobby(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition"}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -517,28 +519,30 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         bot_chain = _make_chain()
-        bot_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(BOT_ID), "name": "TestBot", "personality": "sentinel"}
-        ))
+        bot_chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(BOT_ID), "name": "TestBot", "personality": "sentinel"})
+        )
 
         existing_chain = _make_chain()
         existing_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         insert_chain = _make_chain()
-        insert_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{
-                "id": str(uuid4()),
-                "epoch_id": str(EPOCH_ID),
-                "simulation_id": str(SIM_ID),
-                "is_bot": True,
-                "bot_player_id": str(BOT_ID),
-            }]
-        ))
+        insert_chain.execute = AsyncMock(
+            return_value=MagicMock(
+                data=[
+                    {
+                        "id": str(uuid4()),
+                        "epoch_id": str(EPOCH_ID),
+                        "simulation_id": str(SIM_ID),
+                        "is_bot": True,
+                        "bot_player_id": str(BOT_ID),
+                    }
+                ]
+            )
+        )
 
         call_counts: dict[str, int] = {}
 
@@ -566,9 +570,7 @@ class TestBotParticipants:
     async def test_add_bot_rejects_non_lobby(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "competition"}
-        ))
+        chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "competition"}))
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -580,9 +582,7 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         bot_chain = _make_chain()
         bot_chain.execute = AsyncMock(return_value=MagicMock(data=None))
@@ -605,19 +605,15 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         bot_chain = _make_chain()
-        bot_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(BOT_ID), "name": "Bot", "personality": "sentinel"}
-        ))
+        bot_chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(BOT_ID), "name": "Bot", "personality": "sentinel"})
+        )
 
         existing_chain = _make_chain()
-        existing_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(uuid4())}]
-        ))
+        existing_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": str(uuid4())}]))
 
         def table_router(name):
             if name == "game_epochs":
@@ -640,23 +636,17 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         p_chain = _make_chain()
-        p_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(participant_id), "is_bot": True}
-        ))
+        p_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(participant_id), "is_bot": True}))
 
         # PostgREST returns the deleted rows. An empty list means nothing was
         # removed — remove_bot now surfaces that instead of reporting success
         # (bot rows carry no user_id, so the RLS DELETE policy used to filter
         # them out and the removal silently did nothing).
         delete_chain = _make_chain()
-        delete_chain.execute = AsyncMock(return_value=MagicMock(
-            data=[{"id": str(participant_id)}]
-        ))
+        delete_chain.execute = AsyncMock(return_value=MagicMock(data=[{"id": str(participant_id)}]))
 
         call_counts: dict[str, int] = {}
 
@@ -682,13 +672,9 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
         p_chain = _make_chain()
-        p_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(participant_id), "is_bot": True}
-        ))
+        p_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(participant_id), "is_bot": True}))
         delete_chain = _make_chain()
         delete_chain.execute = AsyncMock(return_value=MagicMock(data=[]))
 
@@ -714,14 +700,10 @@ class TestBotParticipants:
         sb = MagicMock()
 
         epoch_chain = _make_chain()
-        epoch_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby"}
-        ))
+        epoch_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby"}))
 
         p_chain = _make_chain()
-        p_chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(participant_id), "is_bot": False}
-        ))
+        p_chain.execute = AsyncMock(return_value=MagicMock(data={"id": str(participant_id), "is_bot": False}))
 
         def table_router(name):
             if name == "game_epochs":
@@ -803,9 +785,9 @@ class TestResolveCycle:
     async def test_resolve_rejects_lobby_phase(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "lobby", "config": {}, "current_cycle": 1}
-        ))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "lobby", "config": {}, "current_cycle": 1})
+        )
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
@@ -816,15 +798,14 @@ class TestResolveCycle:
     async def test_resolve_rejects_completed_phase(self):
         sb = MagicMock()
         chain = _make_chain()
-        chain.execute = AsyncMock(return_value=MagicMock(
-            data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 10}
-        ))
+        chain.execute = AsyncMock(
+            return_value=MagicMock(data={"id": str(EPOCH_ID), "status": "completed", "config": {}, "current_cycle": 10})
+        )
         sb.table.return_value = chain
 
         with pytest.raises(HTTPException) as exc:
             await EpochService.resolve_cycle(sb, EPOCH_ID)
         assert exc.value.status_code == 400
-
 
 
 # ── Operative RP Costs ─────────────────────────────────────────

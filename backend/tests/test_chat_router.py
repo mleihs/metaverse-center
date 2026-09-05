@@ -83,9 +83,23 @@ def _make_chainable(data=None):
     """Create a chainable Supabase query builder mock."""
     b = MagicMock()
     for method in (
-        "select", "eq", "in_", "lt", "gt", "or_", "order",
-        "limit", "single", "maybe_single", "is_", "not_",
-        "range", "insert", "update", "delete", "upsert",
+        "select",
+        "eq",
+        "in_",
+        "lt",
+        "gt",
+        "or_",
+        "order",
+        "limit",
+        "single",
+        "maybe_single",
+        "is_",
+        "not_",
+        "range",
+        "insert",
+        "update",
+        "delete",
+        "upsert",
     ):
         getattr(b, method).return_value = b
     resp = MagicMock()
@@ -864,7 +878,11 @@ class TestChatStreamingRoleGate:
     @patch.object(chat_module._service, "send_message", new_callable=AsyncMock)
     @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
     def test_stream_message_passes_role_gate_for_editor(
-        self, mock_verify, mock_send, mock_stream, editor_client,
+        self,
+        mock_verify,
+        mock_send,
+        mock_stream,
+        editor_client,
     ):
         """POST /messages/stream returns 200 for editor role (SSE response)."""
         mock_verify.return_value = None
@@ -887,7 +905,10 @@ class TestChatStreamingRoleGate:
     @patch.object(chat_module._service, "stream_regenerate", new_callable=AsyncMock)
     @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
     def test_regenerate_passes_role_gate_for_editor(
-        self, mock_verify, mock_stream, editor_client,
+        self,
+        mock_verify,
+        mock_stream,
+        editor_client,
     ):
         """POST /regenerate returns 200 for editor role (SSE response)."""
         mock_verify.return_value = None

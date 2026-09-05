@@ -126,10 +126,7 @@ class TestRedMeansLoss:
         assert red_rows, "Rot kommt gar nicht vor — dann prüft dieser Test nichts"
 
         for row in red_rows:
-            assert "WENN DER ZYKLUS" in row, (
-                "Rot außerhalb des Konsequenzblocks: "
-                + re.sub(r"\s+", " ", row)[:160]
-            )
+            assert "WENN DER ZYKLUS" in row, "Rot außerhalb des Konsequenzblocks: " + re.sub(r"\s+", " ", row)[:160]
 
     def test_the_call_to_action_is_not_red(self):
         html = _render()

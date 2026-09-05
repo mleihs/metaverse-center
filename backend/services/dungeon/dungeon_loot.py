@@ -272,8 +272,6 @@ def roll_loot(
     if tier == 1 and selected and selected[0].tier == 1 and random.random() < (quality - 1.0):
         tier2_table = loot_tables.get(2, [])
         if tier2_table:
-            selected = random.choices(
-                tier2_table, weights=[item.drop_weight for item in tier2_table], k=1
-            )
+            selected = random.choices(tier2_table, weights=[item.drop_weight for item in tier2_table], k=1)
 
     return selected

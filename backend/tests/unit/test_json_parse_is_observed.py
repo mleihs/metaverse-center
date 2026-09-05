@@ -122,7 +122,7 @@ class TestNoSiteBypassesTheObserver:
                     "Laufzeit gebautes Etikett lässt sich hier nicht prüfen"
                 )
                 assert quelle.value.value == fn, (
-                    f"Zeile {ln}: `source=\"{quelle.value.value}\"` steht in `{fn}` — "
+                    f'Zeile {ln}: `source="{quelle.value.value}"` steht in `{fn}` — '
                     "das Etikett zeigt auf die falsche Stelle"
                 )
 
@@ -149,8 +149,7 @@ class TestTheObserverActuallyObserves:
         code = ast.unparse(objekt)
         assert "isinstance(parsed, dict)" in code
         assert "not_an_object" in code, (
-            "eine Liste kommt stillschweigend durch — und der Aufrufer liest "
-            "danach `.get(...)` darauf"
+            "eine Liste kommt stillschweigend durch — und der Aufrufer liest danach `.get(...)` darauf"
         )
 
     def test_the_annotation_no_longer_lies(self, tree: ast.Module) -> None:
@@ -203,9 +202,7 @@ class TestTheRepairIsReachableAndClosed:
             if isinstance(n, ast.FunctionDef | ast.AsyncFunctionDef) and n.name == "json_repair_allowed"
         )
         code = ast.unparse(fn)
-        assert "parse_setting_bool" in code, (
-            "ohne den Positivabgleich aus F32 öffnete eine jsonb-Null den Riegel"
-        )
+        assert "parse_setting_bool" in code, "ohne den Positivabgleich aus F32 öffnete eine jsonb-Null den Riegel"
         assert "True" not in code.split("return")[-1], "der Ausfallweg ist offen statt geschlossen"
 
     def test_the_key_is_seeded_by_a_migration(self) -> None:

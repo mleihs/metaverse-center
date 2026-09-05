@@ -85,9 +85,7 @@ router = APIRouter(
 # Statuses for which DELETE is allowed. The state machine in migration 226
 # also enforces this at the DB level, but the route surfaces a friendly 409
 # instead of the raw trigger error.
-_DELETABLE_STATUSES = frozenset(
-    {ContentDraftStatus.DRAFT, ContentDraftStatus.CONFLICT}
-)
+_DELETABLE_STATUSES = frozenset({ContentDraftStatus.DRAFT, ContentDraftStatus.CONFLICT})
 
 
 # ── Read ──────────────────────────────────────────────────────────────────
@@ -207,7 +205,9 @@ async def create_content_draft(
 ) -> SuccessResponse[ContentDraft]:
     """Open a new draft on a resource."""
     draft = await ContentDraftsService.create(
-        supabase, author_id=user.id, payload=body,
+        supabase,
+        author_id=user.id,
+        payload=body,
     )
     await AuditService.safe_log(
         supabase,
@@ -307,7 +307,8 @@ async def get_conflict_preview(
     Rate-limited as `EXTERNAL_API` because each call hits GitHub Contents API.
     """
     preview = await ContentPacksConflictService.generate_preview(
-        supabase, draft_id=draft_id,
+        supabase,
+        draft_id=draft_id,
     )
     return SuccessResponse(data=preview)
 

@@ -134,9 +134,7 @@ class DungeonContentAdminService:
                 supabase.table(table).select("*").eq(pk[0], parent_id).eq(pk[1], child_id).maybe_single()
             )
         else:
-            data = await maybe_single_data(
-                supabase.table(table).select("*").eq(pk, item_id).maybe_single()
-            )
+            data = await maybe_single_data(supabase.table(table).select("*").eq(pk, item_id).maybe_single())
 
         if not data:
             raise not_found(content_type, item_id)

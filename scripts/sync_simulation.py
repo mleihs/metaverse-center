@@ -94,9 +94,7 @@ LOCAL_SERVICE_KEY = (
 
 PROD_PROJECT_REF = "bffjoupddfjaljqrwqck"
 PROD_SUPABASE_URL = f"https://{PROD_PROJECT_REF}.supabase.co"
-PROD_MANAGEMENT_API = (
-    f"https://api.supabase.com/v1/projects/{PROD_PROJECT_REF}/database/query"
-)
+PROD_MANAGEMENT_API = f"https://api.supabase.com/v1/projects/{PROD_PROJECT_REF}/database/query"
 
 PLATFORM_ADMIN_EMAIL = os.environ.get("PLATFORM_ADMIN_EMAIL", "matthias@leihs.at")
 
@@ -125,11 +123,25 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "simulations",
         "group": "core",
         "columns": [
-            "id", "name", "slug", "description", "description_de",
-            "theme", "status", "content_locale", "additional_locales",
-            "owner_id", "icon_url", "banner_url",
-            "simulation_type", "source_template_id", "epoch_id",
-            "created_at", "updated_at", "archived_at", "deleted_at",
+            "id",
+            "name",
+            "slug",
+            "description",
+            "description_de",
+            "theme",
+            "status",
+            "content_locale",
+            "additional_locales",
+            "owner_id",
+            "icon_url",
+            "banner_url",
+            "simulation_type",
+            "source_template_id",
+            "epoch_id",
+            "created_at",
+            "updated_at",
+            "archived_at",
+            "deleted_at",
         ],
         "filter_col": "slug",
         "conflict_col": "id",
@@ -140,8 +152,14 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "simulation_settings",
         "group": "core",
         "columns": [
-            "id", "simulation_id", "category", "setting_key", "setting_value",
-            "updated_by_id", "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "category",
+            "setting_key",
+            "setting_value",
+            "updated_by_id",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -152,9 +170,18 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "simulation_taxonomies",
         "group": "core",
         "columns": [
-            "id", "simulation_id", "taxonomy_type", "value", "label",
-            "description", "sort_order", "is_default", "is_active",
-            "metadata", "game_weight", "created_at",
+            "id",
+            "simulation_id",
+            "taxonomy_type",
+            "value",
+            "label",
+            "description",
+            "sort_order",
+            "is_default",
+            "is_active",
+            "metadata",
+            "game_weight",
+            "created_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -166,9 +193,17 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "cities",
         "group": "geography",
         "columns": [
-            "id", "simulation_id", "name", "layout_type", "description",
-            "population", "map_center_lat", "map_center_lng",
-            "map_default_zoom", "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "name",
+            "layout_type",
+            "description",
+            "population",
+            "map_center_lat",
+            "map_center_lng",
+            "map_default_zoom",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -178,10 +213,19 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "zones",
         "group": "geography",
         "columns": [
-            "id", "simulation_id", "city_id", "name", "description",
-            "description_de", "zone_type", "zone_type_de",
-            "population_estimate", "security_level", "data_source",
-            "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "city_id",
+            "name",
+            "description",
+            "description_de",
+            "zone_type",
+            "zone_type_de",
+            "population_estimate",
+            "security_level",
+            "data_source",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -191,9 +235,17 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "city_streets",
         "group": "geography",
         "columns": [
-            "id", "simulation_id", "city_id", "zone_id", "name",
-            "street_type", "street_type_de", "length_km", "geojson",
-            "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "city_id",
+            "zone_id",
+            "name",
+            "street_type",
+            "street_type_de",
+            "length_km",
+            "geojson",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -205,13 +257,26 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "agents",
         "group": "entities",
         "columns": [
-            "id", "simulation_id", "name", "system", "character",
-            "character_de", "background", "background_de", "gender",
-            "primary_profession", "primary_profession_de",
-            "portrait_image_url", "portrait_description",
+            "id",
+            "simulation_id",
+            "name",
+            "system",
+            "character",
+            "character_de",
+            "background",
+            "background_de",
+            "gender",
+            "primary_profession",
+            "primary_profession_de",
+            "portrait_image_url",
+            "portrait_description",
             "style_reference_url",
-            "data_source", "created_by_id", "ambassador_blocked_until",
-            "created_at", "updated_at", "deleted_at",
+            "data_source",
+            "created_by_id",
+            "ambassador_blocked_until",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -221,14 +286,33 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "buildings",
         "group": "entities",
         "columns": [
-            "id", "simulation_id", "name", "building_type", "building_type_de",
-            "description", "description_de", "style", "style_reference_url",
-            "location", "city_id", "zone_id", "street_id", "address",
-            "population_capacity", "construction_year",
-            "building_condition", "building_condition_de",
-            "geojson", "image_url", "image_prompt_text",
-            "special_type", "special_attributes", "data_source",
-            "created_at", "updated_at", "deleted_at",
+            "id",
+            "simulation_id",
+            "name",
+            "building_type",
+            "building_type_de",
+            "description",
+            "description_de",
+            "style",
+            "style_reference_url",
+            "location",
+            "city_id",
+            "zone_id",
+            "street_id",
+            "address",
+            "population_capacity",
+            "construction_year",
+            "building_condition",
+            "building_condition_de",
+            "geojson",
+            "image_url",
+            "image_prompt_text",
+            "special_type",
+            "special_attributes",
+            "data_source",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -239,12 +323,28 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "events",
         "group": "entities",
         "columns": [
-            "id", "simulation_id", "title", "title_de", "event_type",
-            "description", "description_de", "occurred_at", "data_source",
-            "metadata", "source_platform", "propaganda_type",
-            "target_demographic", "urgency_level", "original_trend_data",
-            "impact_level", "location", "tags", "external_refs",
-            "created_at", "updated_at", "deleted_at",
+            "id",
+            "simulation_id",
+            "title",
+            "title_de",
+            "event_type",
+            "description",
+            "description_de",
+            "occurred_at",
+            "data_source",
+            "metadata",
+            "source_platform",
+            "propaganda_type",
+            "target_demographic",
+            "urgency_level",
+            "original_trend_data",
+            "impact_level",
+            "location",
+            "tags",
+            "external_refs",
+            "created_at",
+            "updated_at",
+            "deleted_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -259,9 +359,17 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "agent_professions",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "agent_id", "profession",
-            "qualification_level", "specialization", "certified_at",
-            "certified_by", "is_primary", "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "agent_id",
+            "profession",
+            "qualification_level",
+            "specialization",
+            "certified_at",
+            "certified_by",
+            "is_primary",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -271,8 +379,12 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "building_agent_relations",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "building_id", "agent_id",
-            "relation_type", "created_at",
+            "id",
+            "simulation_id",
+            "building_id",
+            "agent_id",
+            "relation_type",
+            "created_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -282,8 +394,12 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "building_event_relations",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "building_id", "event_id",
-            "relation_type", "created_at",
+            "id",
+            "simulation_id",
+            "building_id",
+            "event_id",
+            "relation_type",
+            "created_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -293,8 +409,13 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "building_profession_requirements",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "building_id", "profession",
-            "min_qualification_level", "is_mandatory", "description",
+            "id",
+            "simulation_id",
+            "building_id",
+            "profession",
+            "min_qualification_level",
+            "is_mandatory",
+            "description",
             "created_at",
         ],
         "filter_col": "simulation_id",
@@ -305,9 +426,18 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "event_reactions",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "event_id", "agent_id", "agent_name",
-            "reaction_text", "occurred_at", "emotion", "confidence_score",
-            "data_source", "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "event_id",
+            "agent_id",
+            "agent_name",
+            "reaction_text",
+            "occurred_at",
+            "emotion",
+            "confidence_score",
+            "data_source",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -317,9 +447,17 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "agent_relationships",
         "group": "relations",
         "columns": [
-            "id", "simulation_id", "source_agent_id", "target_agent_id",
-            "relationship_type", "is_bidirectional", "intensity",
-            "description", "metadata", "created_at", "updated_at",
+            "id",
+            "simulation_id",
+            "source_agent_id",
+            "target_agent_id",
+            "relationship_type",
+            "is_bidirectional",
+            "intensity",
+            "description",
+            "metadata",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -331,13 +469,26 @@ TABLE_SPECS: list[dict[str, Any]] = [
         "name": "simulation_lore",
         "group": "narrative",
         "columns": [
-            "id", "simulation_id", "sort_order", "chapter", "arcanum",
-            "title", "title_de", "epigraph", "epigraph_de",
-            "body", "body_de",
-            "image_slug", "image_caption", "image_caption_de",
+            "id",
+            "simulation_id",
+            "sort_order",
+            "chapter",
+            "arcanum",
+            "title",
+            "title_de",
+            "epigraph",
+            "epigraph_de",
+            "body",
+            "body_de",
+            "image_slug",
+            "image_caption",
+            "image_caption_de",
             "image_generated_at",
-            "evolved_at", "evolution_count", "evolution_log",
-            "created_at", "updated_at",
+            "evolved_at",
+            "evolution_count",
+            "evolution_log",
+            "created_at",
+            "updated_at",
         ],
         "filter_col": "simulation_id",
         "conflict_col": "id",
@@ -389,7 +540,10 @@ def _get_prod_service_key() -> str:
     try:
         result = subprocess.run(
             ["railway", "variables", "--json"],
-            capture_output=True, text=True, check=True, timeout=15,
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=15,
         )
         variables = json.loads(result.stdout)
         key = variables.get("SUPABASE_SERVICE_ROLE_KEY", "")
@@ -421,8 +575,11 @@ def _get_local_connection():
 
     try:
         return psycopg2.connect(
-            host=LOCAL_DB_HOST, port=LOCAL_DB_PORT,
-            dbname=LOCAL_DB_NAME, user=LOCAL_DB_USER, password=LOCAL_DB_PASS,
+            host=LOCAL_DB_HOST,
+            port=LOCAL_DB_PORT,
+            dbname=LOCAL_DB_NAME,
+            user=LOCAL_DB_USER,
+            password=LOCAL_DB_PASS,
         )
     except psycopg2.OperationalError as e:
         print(f"ERROR: Cannot connect to local Postgres — is Supabase running?\n  {e}")
@@ -541,10 +698,7 @@ def write_local(
     col_list = ", ".join(cols)
     update_clause = ", ".join(f"{c} = EXCLUDED.{c}" for c in update_cols)
 
-    sql = (
-        f"INSERT INTO {table} ({col_list}) VALUES %s "
-        f"ON CONFLICT ({conflict_col}) DO UPDATE SET {update_clause}"
-    )
+    sql = f"INSERT INTO {table} ({col_list}) VALUES %s ON CONFLICT ({conflict_col}) DO UPDATE SET {update_clause}"
 
     jcols = jsonb_cols or set()
     adapted = [_adapt_row_for_psycopg(r, jcols) for r in rows]
@@ -732,7 +886,8 @@ def _validate_slugs(slugs: list[str]) -> None:
 
 
 def _resolve_simulations(
-    env: str, slugs: list[str],
+    env: str,
+    slugs: list[str],
 ) -> list[dict]:
     """Look up simulations by slug on the source environment.
 
@@ -850,13 +1005,16 @@ def sync_data(
             # ── Write: split by target environment ────────────────────────
             if target == "local":
                 write_local(
-                    local_conn, table, rows,
+                    local_conn,
+                    table,
+                    rows,
                     conflict_col=spec.get("conflict_col", "id"),
                     jsonb_cols=spec.get("jsonb_cols"),
                 )
             else:
                 sql = build_upsert_sql(
-                    table, rows,
+                    table,
+                    rows,
                     conflict_col=spec.get("conflict_col", "id"),
                 )
                 write_prod(sql)
@@ -976,12 +1134,16 @@ def _extract_storage_path(url: str, bucket: str) -> str | None:
     idx = url.find(marker)
     if idx == -1:
         return None
-    return url[idx + len(marker):]
+    return url[idx + len(marker) :]
 
 
 def _sync_file_pair(
-    source: str, target: str, bucket: str, base_path: str,
-    dry_run: bool, stats: dict,
+    source: str,
+    target: str,
+    bucket: str,
+    base_path: str,
+    dry_run: bool,
+    stats: dict,
 ) -> None:
     """Download thumb + full-res from source, upload to target.
 
@@ -1032,8 +1194,7 @@ def sync_storage(
     # ── Agent portraits ───────────────────────────────────────────────────
     agents = query_db(
         source,
-        f"SELECT portrait_image_url FROM agents "
-        f"WHERE simulation_id IN ({id_list}) AND portrait_image_url IS NOT NULL",
+        f"SELECT portrait_image_url FROM agents WHERE simulation_id IN ({id_list}) AND portrait_image_url IS NOT NULL",
     )
     if agents:
         print(f"\n  agent.portraits ({len(agents)} agents):")
@@ -1046,8 +1207,7 @@ def sync_storage(
     # ── Building images ───────────────────────────────────────────────────
     buildings = query_db(
         source,
-        f"SELECT image_url FROM buildings "
-        f"WHERE simulation_id IN ({id_list}) AND image_url IS NOT NULL",
+        f"SELECT image_url FROM buildings WHERE simulation_id IN ({id_list}) AND image_url IS NOT NULL",
     )
     if buildings:
         print(f"\n  building.images ({len(buildings)} buildings):")
@@ -1105,15 +1265,20 @@ def main() -> None:
         ),
     )
     parser.add_argument(
-        "source", choices=["local", "prod"],
+        "source",
+        choices=["local", "prod"],
         help="Source environment to read from",
     )
     parser.add_argument(
-        "target", choices=["local", "prod"],
+        "target",
+        choices=["local", "prod"],
         help="Target environment to write to",
     )
     parser.add_argument(
-        "--sim", action="append", required=True, dest="sims",
+        "--sim",
+        action="append",
+        required=True,
+        dest="sims",
         help="Simulation slug(s) to sync (repeatable)",
     )
     parser.add_argument(
@@ -1121,15 +1286,18 @@ def main() -> None:
         help="Comma-separated table groups to sync (default: all)",
     )
     parser.add_argument(
-        "--data-only", action="store_true",
+        "--data-only",
+        action="store_true",
         help="Skip image file sync (DB rows only)",
     )
     parser.add_argument(
-        "--images-only", action="store_true",
+        "--images-only",
+        action="store_true",
         help="Skip DB row sync (storage files only, still rewrites URLs)",
     )
     parser.add_argument(
-        "--dry-run", action="store_true",
+        "--dry-run",
+        action="store_true",
         help="Read from source but don't write to target",
     )
     args = parser.parse_args()
@@ -1180,21 +1348,32 @@ def main() -> None:
     if not args.images_only:
         print("Data sync:")
         total_rows = sync_data(
-            args.source, args.target, sim_slugs, sim_ids,
-            active_groups, args.dry_run,
+            args.source,
+            args.target,
+            sim_slugs,
+            sim_ids,
+            active_groups,
+            args.dry_run,
         )
 
         # URL rewriting (only when source ≠ target base URL)
         if _storage_url(args.source) != _storage_url(args.target):
             url_updates = rewrite_urls(
-                args.source, args.target, sim_ids, args.dry_run,
+                args.source,
+                args.target,
+                sim_ids,
+                args.dry_run,
             )
 
     # ── Storage sync ──────────────────────────────────────────────────────
     if not args.data_only:
         print("\nStorage sync:")
         storage_stats = sync_storage(
-            args.source, args.target, sim_ids, sim_slugs, args.dry_run,
+            args.source,
+            args.target,
+            sim_ids,
+            sim_slugs,
+            args.dry_run,
         )
 
     # ── Summary ───────────────────────────────────────────────────────────

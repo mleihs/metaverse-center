@@ -209,9 +209,7 @@ class TestCombatSubmission:
     """Validate actions min_length=1."""
 
     def test_valid_single_action(self):
-        sub = CombatSubmission(
-            actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")]
-        )
+        sub = CombatSubmission(actions=[CombatAction(agent_id=uuid4(), ability_id="spy_observe")])
         assert len(sub.actions) == 1
 
     def test_valid_multiple_actions(self):
@@ -481,9 +479,17 @@ class TestCheckpointRoundTrip:
         # Checkpoint must have at least the structural state keys
         # (new fields are fine — they use .get() with defaults in restore)
         structural_keys = {
-            "current_room", "party", "combat", "archetype_state",
-            "phase", "depth", "rooms_cleared", "turn",
-            "room_cleared_flags", "room_revealed_flags", "room_scouted_flags",
+            "current_room",
+            "party",
+            "combat",
+            "archetype_state",
+            "phase",
+            "depth",
+            "rooms_cleared",
+            "turn",
+            "room_cleared_flags",
+            "room_revealed_flags",
+            "room_scouted_flags",
             "room_encounter_ids",
         }
         assert structural_keys <= set(checkpoint.keys()), (

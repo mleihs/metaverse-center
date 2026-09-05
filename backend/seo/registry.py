@@ -138,7 +138,11 @@ def get_view(key: str) -> PublicSimulationView | None:
 
 
 def build_view_content(
-    client: Client, sim_id: str, sim_name: str, slug: str, view: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
+    view: str,
 ) -> tuple[str, str]:
     """Dispatch to the registered list builder for `view`.
 
@@ -152,14 +156,21 @@ def build_view_content(
         return entry.list_builder(client, sim_id, sim_name, slug)
     except Exception:
         logger.warning(
-            "Failed to build view content for %s/%s", slug, view, exc_info=True,
+            "Failed to build view content for %s/%s",
+            slug,
+            view,
+            exc_info=True,
         )
         return "", ""
 
 
 def build_entity_detail_content(
-    client: Client, sim_id: str, sim_name: str, slug: str,
-    view: str, entity_id: str,
+    client: Client,
+    sim_id: str,
+    sim_name: str,
+    slug: str,
+    view: str,
+    entity_id: str,
 ) -> EntityDetailResult:
     """Dispatch to the registered detail builder for `view` / `entity_id`.
 
@@ -175,6 +186,9 @@ def build_entity_detail_content(
     except Exception:
         logger.warning(
             "Failed to build entity detail for %s/%s/%s",
-            slug, view, entity_id, exc_info=True,
+            slug,
+            view,
+            entity_id,
+            exc_info=True,
         )
         return EntityDetailResult()

@@ -98,10 +98,7 @@ class TestDispatch:
         with caplog.at_level(logging.INFO, logger="backend.middleware.logging_context"):
             client.get("/health")
 
-        completed_records = [
-            r for r in caplog.records
-            if "Request completed" in r.getMessage()
-        ]
+        completed_records = [r for r in caplog.records if "Request completed" in r.getMessage()]
         assert len(completed_records) >= 1
         record = completed_records[0]
         assert record.status_code == 200

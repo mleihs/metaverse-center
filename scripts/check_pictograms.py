@@ -186,9 +186,7 @@ def main() -> int:
 
     results = [measure(p) for p in files]
     failed = 0
-    print(
-        f"{'':2} {'Datei':30} {'Deckung':>8} {'Aussparung':>11} {'zu eng':>7} {'Rauschen':>9}  Befund"
-    )
+    print(f"{'':2} {'Datei':30} {'Deckung':>8} {'Aussparung':>11} {'zu eng':>7} {'Rauschen':>9}  Befund")
     for r in results:
         if "error" in r:
             print(f"{'!!':2} {r['name']:30} {r['error']}")

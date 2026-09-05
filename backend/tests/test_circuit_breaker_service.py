@@ -44,7 +44,8 @@ class FakeClock:
 def clock(monkeypatch: pytest.MonkeyPatch) -> FakeClock:
     fake = FakeClock()
     monkeypatch.setattr(
-        "backend.services.circuit_breaker_service.time.monotonic", fake,
+        "backend.services.circuit_breaker_service.time.monotonic",
+        fake,
     )
     return fake
 

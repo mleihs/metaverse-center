@@ -143,13 +143,13 @@ class TestDeriveVoice:
     @pytest.mark.parametrize(
         "health_pct,expected",
         [
-            (0.10, "alarmed"),    # <25%
-            (0.24, "alarmed"),    # boundary
+            (0.10, "alarmed"),  # <25%
+            (0.24, "alarmed"),  # boundary
             (0.25, "concerned"),  # 25-50%
             (0.49, "concerned"),  # boundary
-            (0.50, "neutral"),    # 50-85%
-            (0.85, "neutral"),    # boundary
-            (0.86, "optimistic"), # >85%
+            (0.50, "neutral"),  # 50-85%
+            (0.85, "neutral"),  # boundary
+            (0.86, "optimistic"),  # >85%
             (1.00, "optimistic"),
         ],
     )

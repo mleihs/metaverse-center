@@ -85,18 +85,13 @@ _SIGNAL_TOKENS: frozenset[str] = _ALLOWED_TOKENS | {"{building}"}
 _TOKEN_RE = re.compile(r"\{[^}]*\}")
 
 
-def _reject_unknown_tokens(
-    *texts: str | None, allowed: frozenset[str] = _ALLOWED_TOKENS
-) -> None:
+def _reject_unknown_tokens(*texts: str | None, allowed: frozenset[str] = _ALLOWED_TOKENS) -> None:
     for text in texts:
         if text is None:
             continue
         for token in _TOKEN_RE.findall(text):
             if token not in allowed:
-                raise ValueError(
-                    f"unknown prose token {token!r} "
-                    f"(only {sorted(allowed)} are substituted)"
-                )
+                raise ValueError(f"unknown prose token {token!r} (only {sorted(allowed)} are substituted)")
 
 
 class CargoSpec(StrictModel):
@@ -109,9 +104,7 @@ class CargoSpec(StrictModel):
     def _vector_matches_family(self) -> CargoSpec:
         expected = CARGO_FAMILY_TO_VECTOR[self.family]
         if self.vector != expected:
-            raise ValueError(
-                f"cargo family '{self.family}' carries vector '{expected}', not '{self.vector}'"
-            )
+            raise ValueError(f"cargo family '{self.family}' carries vector '{expected}', not '{self.vector}'")
         return self
 
 
@@ -378,19 +371,14 @@ class SignalOption(StrictModel):
     def _shape_by_check(self) -> SignalOption:
         if self.check is not None:
             if not (self.success and self.failure):
-                raise ValueError(
-                    f"option '{self.key}' has a check and therefore needs both "
-                    "success and failure"
-                )
+                raise ValueError(f"option '{self.key}' has a check and therefore needs both success and failure")
             if self.result is not None:
                 raise ValueError(f"option '{self.key}' has a check – use success/failure, not result")
         else:
             if self.result is None:
                 raise ValueError(f"option '{self.key}' has no check and therefore needs a result")
             if self.success is not None or self.failure is not None:
-                raise ValueError(
-                    f"option '{self.key}' has no check – use result, not success/failure"
-                )
+                raise ValueError(f"option '{self.key}' has no check – use result, not success/failure")
         _reject_unknown_tokens(self.label_de, self.label_en, allowed=_SIGNAL_TOKENS)
         return self
 
@@ -405,9 +393,7 @@ class SignalProse(StrictModel):
 
     @model_validator(mode="after")
     def _no_unknown_tokens(self) -> SignalProse:
-        _reject_unknown_tokens(
-            self.title_de, self.title_en, self.body_de, self.body_en, allowed=_SIGNAL_TOKENS
-        )
+        _reject_unknown_tokens(self.title_de, self.title_en, self.body_de, self.body_en, allowed=_SIGNAL_TOKENS)
         return self
 
 
@@ -440,9 +426,7 @@ class SignalTemplate(StrictModel):
         if any(weight < 0 or weight > 100 for weight in self.band_weights.values()):
             raise ValueError("band_weights must be in [0, 100]")
         if not any(weight > 0 for weight in self.band_weights.values()):
-            raise ValueError(
-                f"template '{self.template_key}' has weight 0 in every band – it could never be drawn"
-            )
+            raise ValueError(f"template '{self.template_key}' has weight 0 in every band – it could never be drawn")
         keys = [option.key for option in self.options]
         if len(set(keys)) != len(keys):
             raise ValueError(f"template '{self.template_key}' repeats an option key")
@@ -485,8 +469,7 @@ class SignalPack(VersionedPack):
                     )
                 if template.options:
                     raise ValueError(
-                        f"'{template.template_key}': class '{self.signal_class}' never asks – "
-                        "it must not carry options"
+                        f"'{template.template_key}': class '{self.signal_class}' never asks – it must not carry options"
                     )
         return self
 

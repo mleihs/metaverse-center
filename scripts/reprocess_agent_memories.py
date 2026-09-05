@@ -12,6 +12,7 @@ Usage:
     # Dry run (shows what would be re-processed, no changes):
     python scripts/reprocess_agent_memories.py --agent-name "Doktor Fenn" --simulation-slug velgarien --dry-run
 """
+
 from __future__ import annotations
 
 import argparse
@@ -87,8 +88,7 @@ async def supabase_post(path: str, data: dict) -> dict:
         return resp.json()[0] if resp.json() else {}
 
 
-async def openrouter_generate(agent_name: str, sim_name: str,
-                               user_msg: str, agent_resp: str) -> list[dict]:
+async def openrouter_generate(agent_name: str, sim_name: str, user_msg: str, agent_resp: str) -> list[dict]:
     """Call OpenRouter to extract observations from a chat exchange."""
     prompt = (
         f"Analyze this conversation between a user and {agent_name} in {sim_name}:\n\n"
@@ -167,10 +167,13 @@ async def main() -> None:
         sys.exit(1)
 
     # 1. Find simulation
-    sims = await supabase_get("simulations", {
-        "select": "id,name",
-        "slug": f"eq.{args.simulation_slug}",
-    })
+    sims = await supabase_get(
+        "simulations",
+        {
+            "select": "id,name",
+            "slug": f"eq.{args.simulation_slug}",
+        },
+    )
     if not sims:
         print(f"ERROR: Simulation '{args.simulation_slug}' not found", file=sys.stderr)
         sys.exit(1)
@@ -180,11 +183,14 @@ async def main() -> None:
     print(f"Simulation: {sim_name} ({sim_id})")
 
     # 2. Find agent
-    agents = await supabase_get("agents", {
-        "select": "id,name",
-        "simulation_id": f"eq.{sim_id}",
-        "name": f"eq.{args.agent_name}",
-    })
+    agents = await supabase_get(
+        "agents",
+        {
+            "select": "id,name",
+            "simulation_id": f"eq.{sim_id}",
+            "name": f"eq.{args.agent_name}",
+        },
+    )
     if not agents:
         print(f"ERROR: Agent '{args.agent_name}' not found in {sim_name}", file=sys.stderr)
         sys.exit(1)
@@ -193,16 +199,22 @@ async def main() -> None:
     print(f"Agent: {agent['name']} ({agent_id})")
 
     # 3. Find conversations — both direct (agent_id on conversation) and group (agent_id on messages)
-    direct_convs = await supabase_get("chat_conversations", {
-        "select": "id",
-        "agent_id": f"eq.{agent_id}",
-        "simulation_id": f"eq.{sim_id}",
-    })
+    direct_convs = await supabase_get(
+        "chat_conversations",
+        {
+            "select": "id",
+            "agent_id": f"eq.{agent_id}",
+            "simulation_id": f"eq.{sim_id}",
+        },
+    )
     # Also find conversations where this agent has messages (group chats)
-    agent_messages = await supabase_get("chat_messages", {
-        "select": "conversation_id",
-        "agent_id": f"eq.{agent_id}",
-    })
+    agent_messages = await supabase_get(
+        "chat_messages",
+        {
+            "select": "conversation_id",
+            "agent_id": f"eq.{agent_id}",
+        },
+    )
     group_conv_ids = {m["conversation_id"] for m in agent_messages}
     direct_conv_ids = {c["id"] for c in direct_convs}
     all_conv_ids = direct_conv_ids | group_conv_ids
@@ -218,11 +230,14 @@ async def main() -> None:
     affected_pairs = []
     for conv in conversations:
         conv_id = conv["id"]
-        messages = await supabase_get("chat_messages", {
-            "select": "sender_role,content,created_at,agent_id",
-            "conversation_id": f"eq.{conv_id}",
-            "order": "created_at.asc",
-        })
+        messages = await supabase_get(
+            "chat_messages",
+            {
+                "select": "sender_role,content,created_at,agent_id",
+                "conversation_id": f"eq.{conv_id}",
+                "order": "created_at.asc",
+            },
+        )
 
         # Build user→agent pairs: for each agent response, find the nearest preceding user message
         last_user_msg = None
@@ -231,19 +246,19 @@ async def main() -> None:
             if m["sender_role"] == "user":
                 last_user_msg = m["content"]
                 last_user_date = m["created_at"]
-            elif (m["sender_role"] == "assistant"
-                    and m.get("agent_id") == agent_id
-                    and last_user_msg is not None):
+            elif m["sender_role"] == "assistant" and m.get("agent_id") == agent_id and last_user_msg is not None:
                 agent_resp = m["content"]
                 was_truncated = len(last_user_msg) > CHAR_LIMIT_OLD or len(agent_resp) > CHAR_LIMIT_OLD
                 if was_truncated:
-                    affected_pairs.append({
-                        "user_message": last_user_msg,
-                        "agent_response": agent_resp,
-                        "user_len": len(last_user_msg),
-                        "agent_len": len(agent_resp),
-                        "date": last_user_date,
-                    })
+                    affected_pairs.append(
+                        {
+                            "user_message": last_user_msg,
+                            "agent_response": agent_resp,
+                            "user_len": len(last_user_msg),
+                            "agent_len": len(agent_resp),
+                            "date": last_user_date,
+                        }
+                    )
 
     print(f"\nFound {len(affected_pairs)} message pair(s) where content exceeded 500 chars:")
     for p in affected_pairs:
@@ -258,13 +273,16 @@ async def main() -> None:
         return
 
     # 5. Delete old chat-sourced observations for this agent
-    old_obs = await supabase_get("agent_memories", {
-        "select": "id",
-        "agent_id": f"eq.{agent_id}",
-        "simulation_id": f"eq.{sim_id}",
-        "memory_type": "eq.observation",
-        "source_type": "eq.chat",
-    })
+    old_obs = await supabase_get(
+        "agent_memories",
+        {
+            "select": "id",
+            "agent_id": f"eq.{agent_id}",
+            "simulation_id": f"eq.{sim_id}",
+            "memory_type": "eq.observation",
+            "source_type": "eq.chat",
+        },
+    )
     print(f"\nDeleting {len(old_obs)} old chat observation(s)...")
     if old_obs:
         await supabase_delete(
@@ -279,30 +297,35 @@ async def main() -> None:
     all_pairs = []
     for conv in conversations:
         conv_id = conv["id"]
-        messages = await supabase_get("chat_messages", {
-            "select": "sender_role,content,created_at,agent_id",
-            "conversation_id": f"eq.{conv_id}",
-            "order": "created_at.asc",
-        })
+        messages = await supabase_get(
+            "chat_messages",
+            {
+                "select": "sender_role,content,created_at,agent_id",
+                "conversation_id": f"eq.{conv_id}",
+                "order": "created_at.asc",
+            },
+        )
         last_user_msg = None
         for m in messages:
             if m["sender_role"] == "user":
                 last_user_msg = m["content"]
-            elif (m["sender_role"] == "assistant"
-                    and m.get("agent_id") == agent_id
-                    and last_user_msg is not None):
-                all_pairs.append({
-                    "user_message": last_user_msg,
-                    "agent_response": m["content"],
-                })
+            elif m["sender_role"] == "assistant" and m.get("agent_id") == agent_id and last_user_msg is not None:
+                all_pairs.append(
+                    {
+                        "user_message": last_user_msg,
+                        "agent_response": m["content"],
+                    }
+                )
 
     print(f"\nRe-extracting observations from {len(all_pairs)} message pair(s)...")
     total_new = 0
     for idx, pair in enumerate(all_pairs, 1):
         print(f"  [{idx}/{len(all_pairs)}] Extracting...", end=" ", flush=True)
         observations = await openrouter_generate(
-            agent["name"], sim_name,
-            pair["user_message"], pair["agent_response"],
+            agent["name"],
+            sim_name,
+            pair["user_message"],
+            pair["agent_response"],
         )
         for obs in observations:
             content = obs.get("content", "").strip()
@@ -310,15 +333,18 @@ async def main() -> None:
                 continue
             importance = max(1, min(10, obs.get("importance", 5)))
             embedding = await get_embedding(content)
-            await supabase_post("agent_memories", {
-                "agent_id": agent_id,
-                "simulation_id": sim_id,
-                "memory_type": "observation",
-                "content": content,
-                "importance": importance,
-                "source_type": "chat",
-                "embedding": str(embedding),
-            })
+            await supabase_post(
+                "agent_memories",
+                {
+                    "agent_id": agent_id,
+                    "simulation_id": sim_id,
+                    "memory_type": "observation",
+                    "content": content,
+                    "importance": importance,
+                    "source_type": "chat",
+                    "embedding": str(embedding),
+                },
+            )
             total_new += 1
         print(f"{len(observations)} observation(s)")
         await asyncio.sleep(0.5)  # Rate limit courtesy

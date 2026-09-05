@@ -223,9 +223,7 @@ class TestListTaxonomiesPaginated:
         chain = make_chain_mock(execute_data=rows, execute_count=1)
         sb.table.return_value = chain
 
-        data, total = await TaxonomyService.list_taxonomies_paginated(
-            sb, SIM_ID, taxonomy_type="faction"
-        )
+        data, total = await TaxonomyService.list_taxonomies_paginated(sb, SIM_ID, taxonomy_type="faction")
 
         assert data == rows
         assert total == 1

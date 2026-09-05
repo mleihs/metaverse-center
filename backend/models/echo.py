@@ -8,14 +8,20 @@ from pydantic import BaseModel, Field
 
 # -- Event Echoes --
 
+
 class EchoCreate(BaseModel):
     """Schema for manually triggering an echo."""
 
     source_event_id: UUID
     target_simulation_id: UUID
     echo_vector: Literal[
-        "commerce", "language", "memory", "resonance",
-        "architecture", "dream", "desire",
+        "commerce",
+        "language",
+        "memory",
+        "resonance",
+        "architecture",
+        "dream",
+        "desire",
     ]
     echo_strength: float = Field(1.0, ge=0, le=1)
 
@@ -41,6 +47,7 @@ class EchoResponse(BaseModel):
 
 
 # -- Simulation Connections --
+
 
 class ConnectionCreate(BaseModel):
     """Schema for creating a simulation connection."""

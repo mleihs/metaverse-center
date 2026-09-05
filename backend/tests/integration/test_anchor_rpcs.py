@@ -63,9 +63,7 @@ def anchor_factory(admin_client):
 class TestAnchorJoinLeaveOutcomes:
     """Outcome matrix of fn_anchor_join / fn_anchor_leave via the service."""
 
-    async def test_join_appends_once_and_duplicate_conflicts(
-        self, async_admin_client, anchor_factory
-    ):
+    async def test_join_appends_once_and_duplicate_conflicts(self, async_admin_client, anchor_factory):
         founder = str(uuid4())
         joiner = uuid4()
         anchor_id = anchor_factory(sim_ids=[founder])
@@ -78,9 +76,7 @@ class TestAnchorJoinLeaveOutcomes:
             await AnchorService.join_anchor(async_admin_client, anchor_id, joiner, uuid4())
         assert exc.value.status_code == 409
 
-    async def test_join_missing_and_dissolved_anchor_404(
-        self, async_admin_client, anchor_factory
-    ):
+    async def test_join_missing_and_dissolved_anchor_404(self, async_admin_client, anchor_factory):
         with pytest.raises(HTTPException) as exc:
             await AnchorService.join_anchor(async_admin_client, uuid4(), uuid4(), uuid4())
         assert exc.value.status_code == 404
@@ -90,9 +86,7 @@ class TestAnchorJoinLeaveOutcomes:
             await AnchorService.join_anchor(async_admin_client, dissolved, uuid4(), uuid4())
         assert exc.value.status_code == 404
 
-    async def test_leave_removes_and_last_leave_dissolves(
-        self, async_admin_client, anchor_factory
-    ):
+    async def test_leave_removes_and_last_leave_dissolves(self, async_admin_client, anchor_factory):
         sim_a, sim_b = uuid4(), uuid4()
         anchor_id = anchor_factory(sim_ids=[str(sim_a), str(sim_b)], status="active")
 
@@ -118,18 +112,13 @@ class TestAnchorJoinLeaveOutcomes:
 class TestAnchorJoinConcurrency:
     """The lost-update the old read-append-write path exhibited (ADR-007)."""
 
-    async def test_concurrent_joins_lose_no_participant(
-        self, async_admin_client, anchor_factory
-    ):
+    async def test_concurrent_joins_lose_no_participant(self, async_admin_client, anchor_factory):
         founder = str(uuid4())
         anchor_id = anchor_factory(sim_ids=[founder])
         joiners = [uuid4() for _ in range(8)]
 
         results = await asyncio.gather(
-            *(
-                AnchorService.join_anchor(async_admin_client, anchor_id, sim_id, uuid4())
-                for sim_id in joiners
-            ),
+            *(AnchorService.join_anchor(async_admin_client, anchor_id, sim_id, uuid4()) for sim_id in joiners),
             return_exceptions=True,
         )
         errors = [r for r in results if isinstance(r, BaseException)]
@@ -161,6 +150,4 @@ class TestAnchorRpcSurface:
             },
             timeout=5.0,
         )
-        assert resp.status_code in (401, 403, 404), (
-            f"anon reached {fn}: {resp.status_code} {resp.text}"
-        )
+        assert resp.status_code in (401, 403, 404), f"anon reached {fn}: {resp.status_code} {resp.text}"

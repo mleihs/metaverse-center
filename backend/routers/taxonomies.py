@@ -20,6 +20,7 @@ router = APIRouter(
     tags=["taxonomies"],
 )
 
+
 @router.get("")
 async def list_taxonomies(
     simulation_id: UUID,

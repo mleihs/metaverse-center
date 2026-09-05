@@ -48,12 +48,19 @@ class TestInvitationSurvivesALoreOutage:
             order.append("lore")
             return "Some lore."
 
-        with patch.object(EpochInvitationService, "create_invitation", new=AsyncMock(side_effect=_create)), \
-             patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(side_effect=_lore)), \
-             patch.object(EpochInvitationService, "send_email", new=AsyncMock(return_value=True)):
-
+        with (
+            patch.object(EpochInvitationService, "create_invitation", new=AsyncMock(side_effect=_create)),
+            patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(side_effect=_lore)),
+            patch.object(EpochInvitationService, "send_email", new=AsyncMock(return_value=True)),
+        ):
             await EpochInvitationService.create_and_send(
-                _supabase(), EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "en",
+                _supabase(),
+                EPOCH_ID,
+                INVITER_ID,
+                "a@test.com",
+                168,
+                "https://x",
+                "en",
             )
 
         assert order == ["insert", "lore"]
@@ -65,18 +72,32 @@ class TestInvitationSurvivesALoreOutage:
         would let exactly those through."""
         send = AsyncMock(return_value=True)
 
-        with patch.object(
-            EpochInvitationService, "create_invitation",
-            new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
-        ), patch.object(
-            EpochInvitationService, "generate_lore",
-            new=AsyncMock(side_effect=OpenRouterError("Connection failed after 3 attempts")),
-        ), patch.object(
-            EpochInvitationService, "send_email", new=send,
-        ), patch("backend.services.epoch_invitation_service.sentry_sdk"):
-
+        with (
+            patch.object(
+                EpochInvitationService,
+                "create_invitation",
+                new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
+            ),
+            patch.object(
+                EpochInvitationService,
+                "generate_lore",
+                new=AsyncMock(side_effect=OpenRouterError("Connection failed after 3 attempts")),
+            ),
+            patch.object(
+                EpochInvitationService,
+                "send_email",
+                new=send,
+            ),
+            patch("backend.services.epoch_invitation_service.sentry_sdk"),
+        ):
             invitation = await EpochInvitationService.create_and_send(
-                _supabase(), EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "en",
+                _supabase(),
+                EPOCH_ID,
+                INVITER_ID,
+                "a@test.com",
+                168,
+                "https://x",
+                "en",
             )
 
         assert invitation["email_sent"] is True
@@ -86,18 +107,32 @@ class TestInvitationSurvivesALoreOutage:
     async def test_the_fallback_follows_the_invitee_locale(self):
         send = AsyncMock(return_value=True)
 
-        with patch.object(
-            EpochInvitationService, "create_invitation",
-            new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
-        ), patch.object(
-            EpochInvitationService, "generate_lore",
-            new=AsyncMock(side_effect=OpenRouterError("All retry attempts exhausted")),
-        ), patch.object(
-            EpochInvitationService, "send_email", new=send,
-        ), patch("backend.services.epoch_invitation_service.sentry_sdk"):
-
+        with (
+            patch.object(
+                EpochInvitationService,
+                "create_invitation",
+                new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
+            ),
+            patch.object(
+                EpochInvitationService,
+                "generate_lore",
+                new=AsyncMock(side_effect=OpenRouterError("All retry attempts exhausted")),
+            ),
+            patch.object(
+                EpochInvitationService,
+                "send_email",
+                new=send,
+            ),
+            patch("backend.services.epoch_invitation_service.sentry_sdk"),
+        ):
             await EpochInvitationService.create_and_send(
-                _supabase(), EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "de",
+                _supabase(),
+                EPOCH_ID,
+                INVITER_ID,
+                "a@test.com",
+                168,
+                "https://x",
+                "de",
             )
 
         assert send.await_args.kwargs["lore_text"] == _LORE_FALLBACK["de"]
@@ -106,7 +141,8 @@ class TestInvitationSurvivesALoreOutage:
     async def test_regenerate_still_reports_its_failure(self):
         """The admin action must not silently return a stand-in and look successful."""
         with patch.object(
-            EpochInvitationService, "generate_lore",
+            EpochInvitationService,
+            "generate_lore",
             new=AsyncMock(side_effect=OpenRouterError("boom")),
         ):
             sb = _supabase()
@@ -127,14 +163,21 @@ class TestTheInviteeLanguageIsUsed:
         send = AsyncMock(return_value=True)
         with (
             patch.object(
-                EpochInvitationService, "create_invitation",
+                EpochInvitationService,
+                "create_invitation",
                 new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
             ),
             patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(return_value="Lore.")),
             patch("backend.services.epoch_invitation_service.EmailService.send", new=send),
         ):
             await EpochInvitationService.create_and_send(
-                _supabase(), EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "de",
+                _supabase(),
+                EPOCH_ID,
+                INVITER_ID,
+                "a@test.com",
+                168,
+                "https://x",
+                "de",
             )
 
         html = send.await_args.args[2]
@@ -148,22 +191,27 @@ class TestTheInviteeLanguageIsUsed:
         chain = MagicMock()
         for method in ("select", "eq", "single", "limit"):
             setattr(chain, method, MagicMock(return_value=chain))
-        chain.execute = AsyncMock(
-            return_value=MagicMock(data={"name": "Op", "config": {"cycle_hours": 24}})
-        )
+        chain.execute = AsyncMock(return_value=MagicMock(data={"name": "Op", "config": {"cycle_hours": 24}}))
         sb = MagicMock()
         sb.table = MagicMock(return_value=chain)
 
         with (
             patch.object(
-                EpochInvitationService, "create_invitation",
+                EpochInvitationService,
+                "create_invitation",
                 new=AsyncMock(return_value={"invite_token": "tok", "id": str(uuid4())}),
             ),
             patch.object(EpochInvitationService, "generate_lore", new=AsyncMock(return_value="Lore.")),
             patch("backend.services.epoch_invitation_service.EmailService.send", new=send),
         ):
             await EpochInvitationService.create_and_send(
-                sb, EPOCH_ID, INVITER_ID, "a@test.com", 168, "https://x", "en",
+                sb,
+                EPOCH_ID,
+                INVITER_ID,
+                "a@test.com",
+                168,
+                "https://x",
+                "en",
             )
 
         # The exact sentence, not "24 appears somewhere" — the number occurs in

@@ -76,7 +76,9 @@ async def main() -> None:
         logger.info("\n═══ Phase A.6: Generating world-specific prompt templates ═══\n")
         if not args.dry_run:
             await ForgeThemeService.generate_simulation_templates(
-                supabase, SIM_ID, openrouter_key=openrouter_key,
+                supabase,
+                SIM_ID,
+                openrouter_key=openrouter_key,
             )
             logger.info("✓ Templates generated")
         else:
@@ -91,16 +93,15 @@ async def main() -> None:
         .limit(4)
         .execute()
     )
-    world_context = "\n".join(
-        f"{s['title']}: {(s.get('body') or '')[:400]}" for s in lore_resp.data or []
-    )
+    world_context = "\n".join(f"{s['title']}: {(s.get('body') or '')[:400]}" for s in lore_resp.data or [])
 
     from backend.services.forge_image_service import ForgeImageService
     from backend.utils.responses import extract_list
     from scripts._velgarien_image_prompts import AGENT_PROMPTS, BUILDING_PROMPTS, LORE_PROMPTS
 
     image_service = ForgeImageService(
-        supabase, SIM_ID,
+        supabase,
+        SIM_ID,
         replicate_api_key=replicate_key,
         openrouter_api_key=openrouter_key,
         world_context=world_context,
@@ -129,7 +130,8 @@ async def main() -> None:
 
     # ── Agents ───────────────────────────────────────────────────────────
     agents_resp = await (
-        supabase.table("agents").select("*")
+        supabase.table("agents")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .is_("deleted_at", "null")
         .order("name")
@@ -145,8 +147,7 @@ async def main() -> None:
             continue
 
         override = AGENT_PROMPTS.get(name)
-        logger.info("Generating #%d/%d: %s [%s]...", idx + 1, len(agents), name,
-                     "handcrafted" if override else "auto")
+        logger.info("Generating #%d/%d: %s [%s]...", idx + 1, len(agents), name, "handcrafted" if override else "auto")
         try:
             url = await image_service.generate_agent_portrait(
                 UUID(agent["id"]),
@@ -166,7 +167,8 @@ async def main() -> None:
 
     # ── Buildings ────────────────────────────────────────────────────────
     buildings_resp = await (
-        supabase.table("buildings").select("*")
+        supabase.table("buildings")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .is_("deleted_at", "null")
         .order("name")
@@ -182,8 +184,9 @@ async def main() -> None:
             continue
 
         override = BUILDING_PROMPTS.get(name)
-        logger.info("Generating #%d/%d: %s [%s]...", idx + 1, len(buildings), name,
-                     "handcrafted" if override else "auto")
+        logger.info(
+            "Generating #%d/%d: %s [%s]...", idx + 1, len(buildings), name, "handcrafted" if override else "auto"
+        )
         try:
             url = await image_service.generate_building_image(
                 UUID(bldg["id"]),
@@ -204,7 +207,8 @@ async def main() -> None:
 
     # ── Lore ─────────────────────────────────────────────────────────────
     lore_resp = await (
-        supabase.table("simulation_lore").select("*")
+        supabase.table("simulation_lore")
+        .select("*")
         .eq("simulation_id", str(SIM_ID))
         .neq("image_slug", "")
         .order("sort_order")
@@ -221,8 +225,9 @@ async def main() -> None:
             continue
 
         override = LORE_PROMPTS.get(slug)
-        logger.info("Generating #%d/%d: %s [%s]...", idx + 1, len(lore_sections), title,
-                     "handcrafted" if override else "auto")
+        logger.info(
+            "Generating #%d/%d: %s [%s]...", idx + 1, len(lore_sections), title, "handcrafted" if override else "auto"
+        )
         try:
             url = await image_service.generate_lore_image(
                 section_title=title,

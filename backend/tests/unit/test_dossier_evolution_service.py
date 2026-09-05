@@ -27,9 +27,7 @@ def _make_admin():
     sim_chain.eq.return_value = sim_chain
     sim_chain.single.return_value = sim_chain
     sim_chain.maybe_single.return_value = sim_chain
-    sim_chain.execute = AsyncMock(
-        return_value=MagicMock(data={"name": "Test Sim", "description": "A theme"})
-    )
+    sim_chain.execute = AsyncMock(return_value=MagicMock(data={"name": "Test Sim", "description": "A theme"}))
 
     # simulation_lore / feature_purchases chains are only built as the (ignored)
     # argument to the patched maybe_single_data, so a bare auto-chaining mock is fine.
@@ -61,7 +59,11 @@ async def test_evolve_section_calls_atomic_rpc():
         ),
     ):
         ok = await DossierEvolutionService.evolve_section(
-            admin, SIM_ID, "BETA", "agent_recruited", "Agent Smith",
+            admin,
+            SIM_ID,
+            "BETA",
+            "agent_recruited",
+            "Agent Smith",
         )
 
     assert ok is True
@@ -98,7 +100,11 @@ async def test_evolve_section_body_de_falls_back_to_english_on_translation_failu
         ),
     ):
         ok = await DossierEvolutionService.evolve_section(
-            admin, SIM_ID, "BETA", "event_occurred", "The Incident",
+            admin,
+            SIM_ID,
+            "BETA",
+            "event_occurred",
+            "The Incident",
         )
 
     assert ok is True

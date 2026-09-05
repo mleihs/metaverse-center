@@ -175,8 +175,7 @@ async def reload(admin: Client) -> Snapshot:
         result = await (
             admin.table("sentry_rules")
             .select(
-                "id,kind,match_exception_type,match_message_regex,match_logger,"
-                "fingerprint_template,downgrade_to",
+                "id,kind,match_exception_type,match_message_regex,match_logger,fingerprint_template,downgrade_to",
             )
             .eq("enabled", True)
             .order("created_at", desc=False)

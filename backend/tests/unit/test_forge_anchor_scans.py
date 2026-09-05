@@ -53,9 +53,7 @@ async def _run(draft: dict):
     ):
         cfg.forge_mock_mode = True
         cfg.tavily_api_key = ""
-        await ForgeOrchestratorService.run_astrolabe_research(
-            supabase=object(), user_id=uuid4(), draft_id=uuid4()
-        )
+        await ForgeOrchestratorService.run_astrolabe_research(supabase=object(), user_id=uuid4(), draft_id=uuid4())
     return update
 
 
@@ -170,16 +168,12 @@ async def test_a_partial_anchor_update_keeps_the_reading_budget():
 
     supabase = type("S", (), {"table": lambda _self, _n: _Table()})()
 
-    with patch.object(
-        ForgeDraftService, "get_draft", AsyncMock(return_value=stored)
-    ):
+    with patch.object(ForgeDraftService, "get_draft", AsyncMock(return_value=stored)):
         await ForgeDraftService.update_draft(
             supabase,
             uuid4(),
             uuid4(),
-            ForgeDraftUpdate(
-                philosophical_anchor={"options": [{"title": "One"}], "selected": {"title": "One"}}
-            ),
+            ForgeDraftUpdate(philosophical_anchor={"options": [{"title": "One"}], "selected": {"title": "One"}}),
         )
 
     anchor = captured["philosophical_anchor"]

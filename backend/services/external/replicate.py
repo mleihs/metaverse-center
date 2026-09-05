@@ -148,9 +148,7 @@ class ReplicateService:
         # Kein Rueckfall auf `model`: der fuehrt zum 404 von oben, und ein
         # sprechender Fehler hier ist besser als ein raetselhafter dort.
         if not kennung:
-            raise ReplicateError(
-                f"Replicate model {model!r} has no published version to call."
-            )
+            raise ReplicateError(f"Replicate model {model!r} has no published version to call.")
         self._fassungen[model] = f"{model}:{kennung}"
         return self._fassungen[model]
 

@@ -708,11 +708,7 @@ class ScannerService(BaseSchedulerMixin):
             logger.exception("Failed to attach intake status to %d scan log rows", len(rows))
             return
 
-        by_key = {
-            (c["source_adapter"], c["source_id"]): c["status"]
-            for c in extract_list(resp)
-            if c.get("source_id")
-        }
+        by_key = {(c["source_adapter"], c["source_id"]): c["status"] for c in extract_list(resp) if c.get("source_id")}
         for row in rows:
             key = (row.get("source_name"), row.get("source_id"))
             row["intake_status"] = by_key.get(key)

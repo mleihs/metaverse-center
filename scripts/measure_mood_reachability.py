@@ -166,11 +166,17 @@ def _token() -> str:
 def _query(sql: str) -> list[dict]:
     proc = subprocess.run(
         [
-            "curl", "-sS", "-X", "POST",
+            "curl",
+            "-sS",
+            "-X",
+            "POST",
             f"https://api.supabase.com/v1/projects/{PROJECT}/database/query",
-            "-H", f"Authorization: Bearer {_token()}",
-            "-H", "Content-Type: application/json",
-            "--data", "@-",
+            "-H",
+            f"Authorization: Bearer {_token()}",
+            "-H",
+            "Content-Type: application/json",
+            "--data",
+            "@-",
         ],
         input=json.dumps({"query": sql}),
         capture_output=True,
@@ -223,8 +229,13 @@ def mood_for(levels: dict[str, float], rule: Rule) -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--ticks", type=int, nargs="+", default=[0, 10, 30])
-    parser.add_argument("--share", type=float, nargs="+", default=[1.0, 0.75, 0.5, 0.0],
-                        help="Anteil der gemessenen Deckung: 1,0 = so tätig wie heute")
+    parser.add_argument(
+        "--share",
+        type=float,
+        nargs="+",
+        default=[1.0, 0.75, 0.5, 0.0],
+        help="Anteil der gemessenen Deckung: 1,0 = so tätig wie heute",
+    )
     parser.add_argument(
         "--rules",
         type=str,
@@ -254,8 +265,7 @@ def main() -> int:
         "count(*) filter (where mood_score < -20) as unter20 from agent_mood"
     )[0]
     print(
-        f"Ist-Zustand: Laune {heute['min']} bis {heute['max']}, "
-        f"{heute['unter20']} von {len(rows)} Agenten unter −20\n"
+        f"Ist-Zustand: Laune {heute['min']} bis {heute['max']}, {heute['unter20']} von {len(rows)} Agenten unter −20\n"
     )
 
     for rule in rules:

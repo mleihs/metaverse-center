@@ -37,11 +37,7 @@ pytestmark = [requires_supabase, pytest.mark.gamedb]
 
 def _count_fortifications(client, epoch_id, zone_id=None) -> int:
     """Count fortifications for an epoch (optionally filtered to one zone)."""
-    query = (
-        client.table("zone_fortifications")
-        .select("id", count="exact")
-        .eq("epoch_id", str(epoch_id))
-    )
+    query = client.table("zone_fortifications").select("id", count="exact").eq("epoch_id", str(epoch_id))
     if zone_id is not None:
         query = query.eq("zone_id", str(zone_id))
     return query.execute().count or 0
@@ -49,13 +45,7 @@ def _count_fortifications(client, epoch_id, zone_id=None) -> int:
 
 def _get_zones_for_simulation(client, simulation_id, limit=3) -> list[UUID]:
     """Return the first N zones belonging to a simulation, for fortify targets."""
-    resp = (
-        client.table("zones")
-        .select("id")
-        .eq("simulation_id", str(simulation_id))
-        .limit(limit)
-        .execute()
-    )
+    resp = client.table("zones").select("id").eq("simulation_id", str(simulation_id)).limit(limit).execute()
     return [UUID(row["id"]) for row in resp.data]
 
 
@@ -69,16 +59,18 @@ def _insert_test_lore_sections(client, simulation_id, count: int = 3) -> list[UU
     section_ids: list[UUID] = []
     for i in range(count):
         sid = uuid4()
-        client.table("simulation_lore").insert({
-            "id": str(sid),
-            "simulation_id": str(simulation_id),
-            "chapter": "I",
-            "arcanum": "Test Arcanum",
-            "title": f"Test Section {i}",
-            "body": f"Body {i}",
-            "slug": f"test-section-{sid}",
-            "sort_order": i,
-        }).execute()
+        client.table("simulation_lore").insert(
+            {
+                "id": str(sid),
+                "simulation_id": str(simulation_id),
+                "chapter": "I",
+                "arcanum": "Test Arcanum",
+                "title": f"Test Section {i}",
+                "body": f"Body {i}",
+                "slug": f"test-section-{sid}",
+                "sort_order": i,
+            }
+        ).execute()
         section_ids.append(sid)
     return section_ids
 
@@ -113,7 +105,10 @@ class TestConcurrentFortifyZone:
 
     @pytest.mark.asyncio
     async def test_concurrent_fortify_same_zone_single_wins(
-        self, admin_client, async_admin_client, epoch_factory,
+        self,
+        admin_client,
+        async_admin_client,
+        epoch_factory,
     ):
         """Two concurrent fortify calls on the SAME zone with enough RP.
 
@@ -130,10 +125,18 @@ class TestConcurrentFortifyZone:
 
         results = await asyncio.gather(
             OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, sim_id, zone_id, async_admin_client,
+                async_admin_client,
+                epoch.epoch_id,
+                sim_id,
+                zone_id,
+                async_admin_client,
             ),
             OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, sim_id, zone_id, async_admin_client,
+                async_admin_client,
+                epoch.epoch_id,
+                sim_id,
+                zone_id,
+                async_admin_client,
             ),
             return_exceptions=True,
         )
@@ -153,7 +156,10 @@ class TestConcurrentFortifyZone:
 
     @pytest.mark.asyncio
     async def test_concurrent_fortify_rp_starved(
-        self, admin_client, async_admin_client, epoch_factory,
+        self,
+        admin_client,
+        async_admin_client,
+        epoch_factory,
     ):
         """Two concurrent fortify calls on DIFFERENT zones with RP for one.
 
@@ -164,7 +170,10 @@ class TestConcurrentFortifyZone:
         to "RP-abundant" and make the concurrency assertion vacuous.
         """
         epoch: EpochFixture = epoch_factory(
-            status="foundation", cycle=1, rp=FORTIFICATION_RP_COST, rp_cap=40,
+            status="foundation",
+            cycle=1,
+            rp=FORTIFICATION_RP_COST,
+            rp_cap=40,
         )
         sim_id = SIM_VELGARIEN
         zones = _get_zones_for_simulation(admin_client, sim_id, limit=2)
@@ -172,10 +181,18 @@ class TestConcurrentFortifyZone:
 
         results = await asyncio.gather(
             OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, sim_id, zones[0], async_admin_client,
+                async_admin_client,
+                epoch.epoch_id,
+                sim_id,
+                zones[0],
+                async_admin_client,
             ),
             OperativeMissionService.fortify_zone(
-                async_admin_client, epoch.epoch_id, sim_id, zones[1], async_admin_client,
+                async_admin_client,
+                epoch.epoch_id,
+                sim_id,
+                zones[1],
+                async_admin_client,
             ),
             return_exceptions=True,
         )
@@ -200,7 +217,9 @@ class TestConcurrentLoreReorder:
 
     @pytest.mark.asyncio
     async def test_concurrent_reorder_final_state_is_deterministic(
-        self, admin_client, async_admin_client,
+        self,
+        admin_client,
+        async_admin_client,
     ):
         """Two concurrent reorders with DIFFERENT orderings.
 
@@ -258,7 +277,9 @@ class TestAtomicLoreDelete:
 
     @pytest.mark.asyncio
     async def test_delete_rewrites_sort_order_contiguously(
-        self, admin_client, async_admin_client,
+        self,
+        admin_client,
+        async_admin_client,
     ):
         """Delete a middle section; remaining rows must have contiguous sort_order.
 
@@ -274,22 +295,26 @@ class TestAtomicLoreDelete:
         base = 10000
         for i in range(4):
             sid = uuid4()
-            admin_client.table("simulation_lore").insert({
-                "id": str(sid),
-                "simulation_id": str(sim_id),
-                "chapter": "I",
-                "arcanum": "Test Arcanum",
-                "title": f"Delete-Test {i}",
-                "body": f"Body {i}",
-                "slug": f"delete-test-{sid}",
-                "sort_order": base + i,
-            }).execute()
+            admin_client.table("simulation_lore").insert(
+                {
+                    "id": str(sid),
+                    "simulation_id": str(sim_id),
+                    "chapter": "I",
+                    "arcanum": "Test Arcanum",
+                    "title": f"Delete-Test {i}",
+                    "body": f"Body {i}",
+                    "slug": f"delete-test-{sid}",
+                    "sort_order": base + i,
+                }
+            ).execute()
             section_ids.append(sid)
 
         try:
             # Delete the middle section (index 1, sort_order base+1)
             result = await LoreService.delete_section(
-                async_admin_client, sim_id, section_ids[1],
+                async_admin_client,
+                sim_id,
+                section_ids[1],
             )
             assert result["id"] == str(section_ids[1])
 

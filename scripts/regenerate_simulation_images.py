@@ -208,11 +208,7 @@ async def resolve_simulation(supabase, ident: str) -> dict:
     except ValueError:
         column = "slug"
     resp = await (
-        supabase.table("simulations")
-        .select("id, name, slug, description")
-        .eq(column, ident)
-        .maybe_single()
-        .execute()
+        supabase.table("simulations").select("id, name, slug, description").eq(column, ident).maybe_single().execute()
     )
     row = resp.data if resp else None
     if not row:
@@ -308,35 +304,42 @@ async def audit_types(resolver, supabase, sim_id: str, types: list[str], results
         has_custom_style = f"image_style_prompt_{STYLE_PURPOSE[t]}" in sim_style_keys
         logger.info(
             "  %-10s → %-30s ~$%.3f  guidance=%s steps=%s style=%s  (source=%s)",
-            t, rm.model, results[t]["price"], guidance, steps,
-            "custom" if has_custom_style else "platform-default", rm.source,
+            t,
+            rm.model,
+            results[t]["price"],
+            guidance,
+            steps,
+            "custom" if has_custom_style else "platform-default",
+            rm.source,
         )
         # Playbook red flags.
         if is_flux and guidance is not None and guidance > FLUX_OPTIMAL_GUIDANCE + 0.01:
             logger.warning(
                 "    ⚠ %s guidance=%s > flux-optimal %s (SD-era value; lower for natural results)",
-                t, guidance, FLUX_OPTIMAL_GUIDANCE,
+                t,
+                guidance,
+                FLUX_OPTIMAL_GUIDANCE,
             )
         if is_flux and steps is not None and steps != FLUX_OPTIMAL_STEPS:
             logger.warning("    ⚠ %s steps=%s (flux-optimal is %s)", t, steps, FLUX_OPTIMAL_STEPS)
         if not has_custom_style:
             logger.info(
                 "    ℹ %s has no per-sim image_style_prompt_%s — using generic platform style",
-                t, STYLE_PURPOSE[t],
+                t,
+                STYLE_PURPOSE[t],
             )
 
 
 def audit_thin_descriptions(kind: str, rows: list, fields: tuple[str, ...]) -> None:
     """Warn about entities whose source text is too thin for quality images."""
-    thin = [
-        r.get("name", "?")
-        for r in rows
-        if sum(len(r.get(f) or "") for f in fields) < THIN_DESCRIPTION_CHARS
-    ]
+    thin = [r.get("name", "?") for r in rows if sum(len(r.get(f) or "") for f in fields) < THIN_DESCRIPTION_CHARS]
     if thin:
         logger.warning(
             "    ⚠ %d %s with thin descriptions (<%d chars) — consider enriching: %s",
-            len(thin), kind, THIN_DESCRIPTION_CHARS, ", ".join(thin[:8]) + ("…" if len(thin) > 8 else ""),
+            len(thin),
+            kind,
+            THIN_DESCRIPTION_CHARS,
+            ", ".join(thin[:8]) + ("…" if len(thin) > 8 else ""),
         )
 
 
@@ -387,12 +390,14 @@ async def regenerate_one(
     world_context = "\n\n".join(parts)
     logger.info(
         "Lore world_context: %d chars  (md=%d from %s, db=%d)",
-        len(world_context), len(md_lore), lore_md_path or "—", len(db_lore),
+        len(world_context),
+        len(md_lore),
+        lore_md_path or "—",
+        len(db_lore),
     )
     if not world_context:
         logger.warning(
-            "  ⚠ no lore (neither concept-lore.md section nor simulation_lore rows) — "
-            "prompts will be generic."
+            "  ⚠ no lore (neither concept-lore.md section nor simulation_lore rows) — prompts will be generic."
         )
     elif dry_run:
         logger.info("  preview: %s…", world_context[:400].replace("\n", " | "))
@@ -407,9 +412,7 @@ async def regenerate_one(
         from backend.services.forge_theme_service import ForgeThemeService
 
         logger.info("\n— A.6: regenerating world-specific prompt templates —")
-        await ForgeThemeService.generate_simulation_templates(
-            supabase, UUID(sim_id), openrouter_key=openrouter_key
-        )
+        await ForgeThemeService.generate_simulation_templates(supabase, UUID(sim_id), openrouter_key=openrouter_key)
         logger.info("✓ templates regenerated")
     elif regenerate_templates:
         logger.info("[DRY RUN] would regenerate A.6 prompt templates")
@@ -451,16 +454,18 @@ async def regenerate_one(
         await run_entity(
             "banner",
             sim["name"],
-            lambda: image_service.generate_banner_image(
-                sim["name"], sim.get("description") or "", anchor_data=None
-            ),
+            lambda: image_service.generate_banner_image(sim["name"], sim.get("description") or "", anchor_data=None),
         )
 
     # ── Portraits ─────────────────────────────────────────────────────────
     if "portraits" in types:
         agents_resp = await (
-            supabase.table("agents").select("*")
-            .eq("simulation_id", sim_id).is_("deleted_at", "null").order("name").execute()
+            supabase.table("agents")
+            .select("*")
+            .eq("simulation_id", sim_id)
+            .is_("deleted_at", "null")
+            .order("name")
+            .execute()
         )
         agents = capped(extract_list(agents_resp))
         have = sum(1 for a in agents if a.get("portrait_image_url"))
@@ -487,12 +492,18 @@ async def regenerate_one(
     # ── Buildings ─────────────────────────────────────────────────────────
     if "buildings" in types:
         buildings_resp = await (
-            supabase.table("buildings").select("*")
-            .eq("simulation_id", sim_id).is_("deleted_at", "null").order("name").execute()
+            supabase.table("buildings")
+            .select("*")
+            .eq("simulation_id", sim_id)
+            .is_("deleted_at", "null")
+            .order("name")
+            .execute()
         )
         buildings = capped(extract_list(buildings_resp))
         have = sum(1 for b in buildings if b.get("image_url"))
-        logger.info("\n— BUILDINGS (%d; %d already have an image, %d missing) —", len(buildings), have, len(buildings) - have)
+        logger.info(
+            "\n— BUILDINGS (%d; %d already have an image, %d missing) —", len(buildings), have, len(buildings) - have
+        )
         audit_thin_descriptions("buildings", buildings, ("description",))
         for bldg in buildings:
             name = bldg["name"]
@@ -516,8 +527,12 @@ async def regenerate_one(
     # ── Lore ──────────────────────────────────────────────────────────────
     if "lore" in types:
         lore_resp = await (
-            supabase.table("simulation_lore").select("*")
-            .eq("simulation_id", sim_id).neq("image_slug", "").order("sort_order").execute()
+            supabase.table("simulation_lore")
+            .select("*")
+            .eq("simulation_id", sim_id)
+            .neq("image_slug", "")
+            .order("sort_order")
+            .execute()
         )
         sections = capped([s for s in extract_list(lore_resp) if s.get("image_slug")])
         have = sum(1 for s in sections if s.get("image_generated_at"))
@@ -556,7 +571,12 @@ def print_summary(all_results: dict[str, dict], *, dry_run: bool) -> None:
             grand_cost += cost
             logger.info(
                 "  %-16s %-10s ok=%-3d fail=%-3d  %-26s ~$%.2f",
-                sim_slug, t, r["ok"], r["fail"], r["model"], cost,
+                sim_slug,
+                t,
+                r["ok"],
+                r["fail"],
+                r["model"],
+                cost,
             )
     logger.info("%s", "─" * 72)
     logger.info("  TOTAL  ok=%d  fail=%d  ~$%.2f", grand_ok, grand_fail, grand_cost)
@@ -568,8 +588,12 @@ async def main() -> None:
     parser.add_argument("--sim", action="append", required=True, help="Simulation slug or UUID (repeatable)")
     parser.add_argument("--types", default="portraits,lore,banner", help=f"Comma list: {','.join(VALID_TYPES)}")
     parser.add_argument("--env", choices=("prod", "local"), default="local")
-    parser.add_argument("--llm-env", choices=("development", "production"), default="development",
-                        help="Model tier that authors prompt descriptions (image model unaffected)")
+    parser.add_argument(
+        "--llm-env",
+        choices=("development", "production"),
+        default="development",
+        help="Model tier that authors prompt descriptions (image model unaffected)",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--yes", action="store_true", help="Required to write to PROD")
     parser.add_argument("--limit", type=int, default=0, help="Cap entities per type (0 = no cap)")
@@ -577,8 +601,9 @@ async def main() -> None:
     parser.add_argument("--prompts-module", default=None)
     parser.add_argument("--lore-sections", type=int, default=8)
     parser.add_argument("--lore-chars", type=int, default=1000)
-    parser.add_argument("--lore-md", default=DEFAULT_LORE_MD,
-                        help="Markdown design-lore file folded into world_context; '' to disable")
+    parser.add_argument(
+        "--lore-md", default=DEFAULT_LORE_MD, help="Markdown design-lore file folded into world_context; '' to disable"
+    )
     parser.add_argument("--lore-md-chars", type=int, default=6000, help="Max chars from the .md lore section")
     parser.add_argument("--sleep", type=float, default=2.0)
     args = parser.parse_args()
@@ -610,7 +635,12 @@ async def main() -> None:
 
     logger.info(
         "ENV=%s  LLM_ENV=%s  URL=%s  types=%s  dry_run=%s  limit=%s",
-        args.env, args.llm_env, url, types, args.dry_run, args.limit or "∞",
+        args.env,
+        args.llm_env,
+        url,
+        types,
+        args.dry_run,
+        args.limit or "∞",
     )
     if args.prompts_module:
         logger.info("Prompt overrides from: %s", args.prompts_module)
@@ -630,7 +660,10 @@ async def main() -> None:
         for ident in args.sim:
             sim = await resolve_simulation(supabase, ident)
             all_results[sim["slug"]] = await regenerate_one(
-                supabase, sim, types, overrides,
+                supabase,
+                sim,
+                types,
+                overrides,
                 dry_run=args.dry_run,
                 limit=args.limit,
                 regenerate_templates=args.regenerate_templates,

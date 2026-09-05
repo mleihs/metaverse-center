@@ -90,7 +90,9 @@ class TestSimulationServiceDelete:
             result = await SimulationService.hard_delete_simulation(sb, SIM_ID)
 
         assert result == sim_info
-        warning_records = [r for r in caplog.records if r.levelno == logging.WARNING and "hard-deleted" in r.message.lower()]
+        warning_records = [
+            r for r in caplog.records if r.levelno == logging.WARNING and "hard-deleted" in r.message.lower()
+        ]
         assert len(warning_records) >= 1
         record = warning_records[0]
         assert record.simulation_id == str(SIM_ID)

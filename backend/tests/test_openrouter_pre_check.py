@@ -48,7 +48,10 @@ async def test_pre_check_budget_forwards_context_fields() -> None:
     ) as pre_check_mock:
         await _pre_check_budget(ctx)
     pre_check_mock.assert_awaited_once_with(
-        admin, purpose="chat_memory", simulation_id=_SIM, user_id=_USER,
+        admin,
+        purpose="chat_memory",
+        simulation_id=_SIM,
+        user_id=_USER,
     )
 
 

@@ -48,10 +48,7 @@ class TestJournalFragmentTravel:
                 }
             ).execute()
             resp = (
-                admin_client.table("journal_fragments")
-                .select("source_type,fragment_type")
-                .eq("id", frag_id)
-                .execute()
+                admin_client.table("journal_fragments").select("source_type,fragment_type").eq("id", frag_id).execute()
             )
             assert resp.data[0]["source_type"] == "travel"
             assert resp.data[0]["fragment_type"] == "journey"
@@ -99,12 +96,7 @@ class TestAchievementCategoryTravel:
                     "description_de": "Überquere den Zwischenraum.",
                 }
             ).execute()
-            resp = (
-                admin_client.table("achievement_definitions")
-                .select("category")
-                .eq("id", ach_id)
-                .execute()
-            )
+            resp = admin_client.table("achievement_definitions").select("category").eq("id", ach_id).execute()
             assert resp.data[0]["category"] == "travel"
         finally:
             admin_client.table("achievement_definitions").delete().eq("id", ach_id).execute()
@@ -127,12 +119,7 @@ class TestSanctuaryView:
     """buildings.sanctuary is surfaced through active_buildings (CLAUDE.md view rule)."""
 
     def test_chapel_is_sanctuary_via_view(self, admin_client):
-        resp = (
-            admin_client.table("active_buildings")
-            .select("name,sanctuary")
-            .eq("name", "Chapel of Silence")
-            .execute()
-        )
+        resp = admin_client.table("active_buildings").select("name,sanctuary").eq("name", "Chapel of Silence").execute()
         if not resp.data:
             pytest.skip("Chapel of Silence not seeded in this environment")
         assert resp.data[0]["sanctuary"] is True, "Chapel of Silence should be a sanctuary"

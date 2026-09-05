@@ -63,7 +63,9 @@ class TestListForReaction:
         chain.in_.return_value.execute = AsyncMock(return_value=MagicMock(data=agents))
 
         result = await AgentService.list_for_reaction(
-            mock_sb, MOCK_SIM_ID, agent_ids=ids,
+            mock_sb,
+            MOCK_SIM_ID,
+            agent_ids=ids,
         )
 
         assert result == agents
@@ -78,7 +80,9 @@ class TestListForReaction:
         chain.limit.return_value.execute = AsyncMock(return_value=MagicMock(data=[]))
 
         await AgentService.list_for_reaction(
-            mock_sb, MOCK_SIM_ID, select="id, name",
+            mock_sb,
+            MOCK_SIM_ID,
+            select="id, name",
         )
 
         mock_sb.table.return_value.select.assert_called_once_with("id, name")
@@ -106,5 +110,6 @@ class TestListForReaction:
         await AgentService.list_for_reaction(mock_sb, MOCK_SIM_ID)
 
         mock_sb.table.return_value.select.return_value.eq.assert_called_once_with(
-            "simulation_id", str(MOCK_SIM_ID),
+            "simulation_id",
+            str(MOCK_SIM_ID),
         )

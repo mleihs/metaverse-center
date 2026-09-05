@@ -60,7 +60,9 @@ class TestRetreatCosts:
 
     def test_grants_are_restored_after_the_drop(self, sql):
         """A DROP takes the grants with it; they have to come back explicitly."""
-        assert "GRANT EXECUTE ON FUNCTION fn_abandon_dungeon_run(UUID, UUID, JSONB, INTEGER, INTEGER, JSONB, JSONB)" in sql
+        assert (
+            "GRANT EXECUTE ON FUNCTION fn_abandon_dungeon_run(UUID, UUID, JSONB, INTEGER, INTEGER, JSONB, JSONB)" in sql
+        )
         assert "TO service_role" in sql
 
     def test_not_granted_to_anon_or_authenticated(self, sql):

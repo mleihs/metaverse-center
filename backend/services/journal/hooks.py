@@ -328,10 +328,7 @@ async def enqueue_simulation_echo(
     # None, which is the wrong failure mode for a fire-and-forget hook.
     try:
         owner_row = await maybe_single_data(
-            admin.table("simulations")
-            .select("owner_id")
-            .eq("id", str(simulation_id))
-            .maybe_single()
+            admin.table("simulations").select("owner_id").eq("id", str(simulation_id)).maybe_single()
         )
     except Exception as err:  # noqa: BLE001 -- fire-and-forget
         logger.warning(
@@ -393,10 +390,7 @@ async def _lookup_achievement_metadata(admin: Client, slug: str) -> dict:
     # named ``achievements``.
     try:
         row = await maybe_single_data(
-            admin.table("achievement_definitions")
-            .select("id, name_en, description_en")
-            .eq("id", slug)
-            .maybe_single()
+            admin.table("achievement_definitions").select("id, name_en, description_en").eq("id", slug).maybe_single()
         )
     except Exception:  # noqa: BLE001 -- fire-and-forget: journal must never block
         # Lookup failure is non-critical: the prompt accepts a slug-only
@@ -530,10 +524,7 @@ async def enqueue_bleed_tremor(
     # rather than raising.
     try:
         owner_row = await maybe_single_data(
-            admin.table("simulations")
-            .select("owner_id")
-            .eq("id", str(target_simulation_id))
-            .maybe_single()
+            admin.table("simulations").select("owner_id").eq("id", str(target_simulation_id)).maybe_single()
         )
     except Exception as err:  # noqa: BLE001 -- fire-and-forget
         logger.warning(

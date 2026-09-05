@@ -79,8 +79,7 @@ class TestTheLabelHasOneSource:
         i_platt = body.index("fn_building_condition_label")
         i_roh = body.rindex("p_value")
         assert i_welt < i_platt < i_roh, (
-            "die Reihenfolge der Quellen ist vertauscht — eine Welt muss ihr "
-            "eigenes Wort behalten dürfen"
+            "die Reihenfolge der Quellen ist vertauscht — eine Welt muss ihr eigenes Wort behalten dürfen"
         )
 
     def test_the_backfill_reads_that_function_and_not_a_table_of_its_own(self, sql: str) -> None:
@@ -134,8 +133,7 @@ class TestTheAcceptanceMeasuresEffectNotExistence:
         code = _code_only(sql)
         block = code[code.index("DO $$") :]
         assert "EXCEPTION WHEN OTHERS THEN" in block, (
-            "ohne Untertransaktion bliebe bei einem Fehlschlag ein verfallener "
-            "Bau stehen"
+            "ohne Untertransaktion bliebe bei einem Fehlschlag ein verfallener Bau stehen"
         )
 
     def test_the_acceptance_demands_zero_of_each_measured_defect(self, sql: str) -> None:

@@ -97,8 +97,7 @@ class TestDieBibliothekIstWIRKLICHSO:
         merkmal = inspect.getattr_static(AgentRunResult, "usage", None)
         assert merkmal is not None, "pydantic-ai hat `usage` entfernt"
         assert isinstance(merkmal, property) or callable(merkmal), (
-            "`usage` ist weder property noch aufrufbar — die Leseregel in "
-            "`_record_attempt` muss angepasst werden."
+            "`usage` ist weder property noch aufrufbar — die Leseregel in `_record_attempt` muss angepasst werden."
         )
 
     def test_die_leseregel_passt_zur_echten_form(self):
@@ -107,21 +106,15 @@ class TestDieBibliothekIstWIRKLICHSO:
         from pydantic_ai.agent import AgentRunResult
 
         merkmal = inspect.getattr_static(AgentRunResult, "usage", None)
-        roh = inspect.getsource(
-            __import__("backend.services.ai_utils", fromlist=["_record_attempt"])._record_attempt
-        )
+        roh = inspect.getsource(__import__("backend.services.ai_utils", fromlist=["_record_attempt"])._record_attempt)
         # ⚠ OHNE die Kommentarzeilen. Die Erklaerung ueber der Leseregel nennt
         # die alte, kaputte Form beim Namen — ein Tor, das die Prosa mitliest,
         # schlaegt an der Dokumentation seiner eigenen Reparatur an. Genau das
         # ist beim ersten Lauf passiert.
-        quelle = "\n".join(
-            z for z in roh.splitlines() if not z.lstrip().startswith("#")
-        )
+        quelle = "\n".join(z for z in roh.splitlines() if not z.lstrip().startswith("#"))
         assert "usage = result.usage" in quelle
         assert "if callable(usage):" in quelle, (
             "Die Leseregel muss BEIDE Formen bedienen; heute ist es "
             f"{'eine property' if isinstance(merkmal, property) else 'eine Methode'}."
         )
-        assert "result.usage()" not in quelle, (
-            "Der Aufruf mit Klammern scheitert an der property und bucht still null."
-        )
+        assert "result.usage()" not in quelle, "Der Aufruf mit Klammern scheitert an der property und bucht still null."

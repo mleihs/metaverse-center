@@ -111,9 +111,7 @@ class TestAnonReadMatrix:
                 "impacts_at": datetime.now(UTC).isoformat(),
             }
         ).execute()
-        admin_client.table("game_epochs").insert(
-            {"id": epoch_id, "name": f"rls-matrix-{epoch_id[:8]}"}
-        ).execute()
+        admin_client.table("game_epochs").insert({"id": epoch_id, "name": f"rls-matrix-{epoch_id[:8]}"}).execute()
         try:
             for table, row_id in (
                 ("substrate_resonances", res_id),
@@ -121,9 +119,7 @@ class TestAnonReadMatrix:
             ):
                 resp = _anon_get(table, {"id": f"eq.{row_id}", "select": "id"})
                 assert resp.status_code == 200, f"{table}: {resp.status_code} {resp.text}"
-                assert any(r["id"] == row_id for r in resp.json()), (
-                    f"anon cannot read public {table} row"
-                )
+                assert any(r["id"] == row_id for r in resp.json()), f"anon cannot read public {table} row"
         finally:
             admin_client.table("substrate_resonances").delete().eq("id", res_id).execute()
             admin_client.table("game_epochs").delete().eq("id", epoch_id).execute()
@@ -135,9 +131,7 @@ class TestAnonReadMatrix:
             {"setting_key": marker_key, "setting_value": "secret-probe"}
         ).execute()
         try:
-            resp = _anon_get(
-                "platform_settings", {"setting_key": f"eq.{marker_key}", "select": "setting_key"}
-            )
+            resp = _anon_get("platform_settings", {"setting_key": f"eq.{marker_key}", "select": "setting_key"})
             leaked = resp.status_code == 200 and len(resp.json()) > 0
             assert not leaked, f"anon can read platform_settings: {resp.text}"
         finally:
@@ -172,14 +166,10 @@ class TestOwnerScopedJournal:
 
     def test_owner_sees_fragment_other_user_does_not(self, owned_fragment, user_clients):
         owner, other = user_clients[0], user_clients[1]
-        owner_rows = (
-            owner.table("journal_fragments").select("id").eq("id", owned_fragment).execute().data
-        )
+        owner_rows = owner.table("journal_fragments").select("id").eq("id", owned_fragment).execute().data
         assert owner_rows, "owner cannot read their own journal fragment"
         try:
-            other_rows = (
-                other.table("journal_fragments").select("id").eq("id", owned_fragment).execute().data
-            )
+            other_rows = other.table("journal_fragments").select("id").eq("id", owned_fragment).execute().data
         except APIError:
             other_rows = []
         assert not other_rows, "a foreign user can read someone else's journal fragment"
@@ -246,9 +236,7 @@ class TestAnonWriteMatrix:
             },
         )
         assert resp.status_code >= 400, f"anon INSERT into journal_fragments accepted: {resp.text}"
-        rows = (
-            admin_client.table("journal_fragments").select("id").eq("content_en", marker).execute().data
-        )
+        rows = admin_client.table("journal_fragments").select("id").eq("content_en", marker).execute().data
         if rows:
             admin_client.table("journal_fragments").delete().eq("content_en", marker).execute()
         assert not rows, "anon INSERT into journal_fragments persisted a row"
@@ -277,9 +265,7 @@ class TestSecdefRpcSurface:
             headers=_ANON_HEADERS,
             timeout=5.0,
         )
-        assert resp.status_code in (401, 403, 404), (
-            f"anon reached {fn}: {resp.status_code} {resp.text}"
-        )
+        assert resp.status_code in (401, 403, 404), f"anon reached {fn}: {resp.status_code} {resp.text}"
 
     @pytest.mark.parametrize(("fn", "args"), SYSTEM_RPCS, ids=[f[0] for f in SYSTEM_RPCS])
     def test_authenticated_cannot_call_system_rpc(self, user_clients, fn, args):

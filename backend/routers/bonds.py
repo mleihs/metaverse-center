@@ -65,7 +65,9 @@ async def get_recognition_candidates(
 ) -> SuccessResponse[list[RecognitionCandidate]]:
     """Check for agents that crossed the attention/observation threshold."""
     data = await BondService.get_recognition_candidates(
-        supabase, user.id, simulation_id,
+        supabase,
+        user.id,
+        simulation_id,
     )
     return SuccessResponse(data=data)
 
@@ -87,12 +89,19 @@ async def track_attention(
     Frontend should debounce: max 1 call per agent per 5 minutes.
     """
     data = await BondService.track_attention(
-        supabase, user.id, body.agent_id, simulation_id,
+        supabase,
+        user.id,
+        body.agent_id,
+        simulation_id,
         admin_supabase=admin_supabase,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "agent_bonds", data.get("id"), "track_attention",
+        supabase,
+        simulation_id,
+        user.id,
+        "agent_bonds",
+        data.get("id"),
+        "track_attention",
     )
     return SuccessResponse(data=data)
 
@@ -110,11 +119,18 @@ async def form_bond(
     Enforces the 5-bond-per-simulation limit.
     """
     data = await BondService.form_bond(
-        supabase, user.id, body.agent_id, simulation_id,
+        supabase,
+        user.id,
+        body.agent_id,
+        simulation_id,
     )
     await AuditService.safe_log(
-        supabase, simulation_id, user.id,
-        "agent_bonds", data.get("id"), "form_bond",
+        supabase,
+        simulation_id,
+        user.id,
+        "agent_bonds",
+        data.get("id"),
+        "form_bond",
     )
     return SuccessResponse(data=data)
 
@@ -143,7 +159,11 @@ async def list_whispers(
 ) -> PaginatedResponse[WhisperResponse]:
     """Get paginated whispers for a bond (newest first)."""
     data, total = await BondService.list_whispers(
-        supabase, user.id, bond_id, limit=limit, offset=offset,
+        supabase,
+        user.id,
+        bond_id,
+        limit=limit,
+        offset=offset,
     )
     return paginated(data, total, limit, offset)
 
@@ -157,12 +177,19 @@ async def mark_whisper_read(
 ) -> SuccessResponse[WhisperResponse]:
     """Mark a whisper as read. Triggers depth progression check."""
     data = await BondService.mark_whisper_read(
-        supabase, user.id, bond_id, whisper_id,
+        supabase,
+        user.id,
+        bond_id,
+        whisper_id,
     )
     await BondService.check_depth_progression(supabase, bond_id)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "bond_whispers", whisper_id, "read",
+        supabase,
+        None,
+        user.id,
+        "bond_whispers",
+        whisper_id,
+        "read",
     )
     return SuccessResponse(data=data)
 
@@ -176,11 +203,18 @@ async def mark_whisper_acted(
 ) -> SuccessResponse[WhisperResponse]:
     """Mark a whisper as acted upon. Creates an 'action' bond memory."""
     data = await BondService.mark_whisper_acted(
-        supabase, user.id, bond_id, whisper_id,
+        supabase,
+        user.id,
+        bond_id,
+        whisper_id,
     )
     await BondService.check_depth_progression(supabase, bond_id)
     await AuditService.safe_log(
-        supabase, None, user.id,
-        "bond_whispers", whisper_id, "acted",
+        supabase,
+        None,
+        user.id,
+        "bond_whispers",
+        whisper_id,
+        "acted",
     )
     return SuccessResponse(data=data)

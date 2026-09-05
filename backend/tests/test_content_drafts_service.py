@@ -73,9 +73,18 @@ def _summary_row(**kwargs: Any) -> dict[str, Any]:
     """Summary-shaped row (subset of full row)."""
     full = _row(**kwargs)
     keep = {
-        "id", "author_id", "pack_slug", "resource_path", "status", "version",
-        "pr_number", "pr_url", "created_at", "updated_at",
-        "published_at", "merged_at",
+        "id",
+        "author_id",
+        "pack_slug",
+        "resource_path",
+        "status",
+        "version",
+        "pr_number",
+        "pr_url",
+        "created_at",
+        "updated_at",
+        "published_at",
+        "merged_at",
     }
     return {k: v for k, v in full.items() if k in keep}
 
@@ -91,8 +100,16 @@ def _mock_supabase(execute_results: list[MagicMock]) -> MagicMock:
     mock = MagicMock()
     chain = MagicMock()
     for method in (
-        "select", "insert", "update", "delete",
-        "eq", "in_", "is_", "order", "range", "limit",
+        "select",
+        "insert",
+        "update",
+        "delete",
+        "eq",
+        "in_",
+        "is_",
+        "order",
+        "range",
+        "limit",
     ):
         getattr(chain, method).return_value = chain
     chain.execute = AsyncMock(side_effect=execute_results)
@@ -133,12 +150,12 @@ class TestContentDraftCreateValidation:
     @pytest.mark.parametrize(
         "bad_slug",
         [
-            "Uppercase",         # uppercase not allowed
-            "1leading_digit",    # must start with letter
-            "has-dash",          # hyphen not allowed
-            "has.dot",           # dot not allowed in slug
-            "has space",         # whitespace
-            "",                  # empty rejected by min_length
+            "Uppercase",  # uppercase not allowed
+            "1leading_digit",  # must start with letter
+            "has-dash",  # hyphen not allowed
+            "has.dot",  # dot not allowed in slug
+            "has space",  # whitespace
+            "",  # empty rejected by min_length
         ],
     )
     def test_rejects_malformed_pack_slug(self, bad_slug: str):
@@ -152,12 +169,12 @@ class TestContentDraftCreateValidation:
     @pytest.mark.parametrize(
         "bad_path",
         [
-            "../etc/passwd",         # parent traversal
-            "foo/../bar",            # embedded traversal
-            "/absolute/path",        # leading slash
-            "has space",             # whitespace disallowed by regex
-            "weird;chars",           # semicolon disallowed by regex
-            "",                      # empty rejected by min_length
+            "../etc/passwd",  # parent traversal
+            "foo/../bar",  # embedded traversal
+            "/absolute/path",  # leading slash
+            "has space",  # whitespace disallowed by regex
+            "weird;chars",  # semicolon disallowed by regex
+            "",  # empty rejected by min_length
         ],
     )
     def test_rejects_malformed_resource_path(self, bad_path: str):
@@ -185,7 +202,9 @@ class TestCreate:
             working_content={"text_de": "Neu"},
         )
         result = await ContentDraftsService.create(
-            supabase, author_id=author_id, payload=payload,
+            supabase,
+            author_id=author_id,
+            payload=payload,
         )
         assert isinstance(result, ContentDraft)
         assert result.pack_slug == "shadow_banter"
@@ -201,7 +220,9 @@ class TestCreate:
         )
         with pytest.raises(HTTPException) as exc_info:
             await ContentDraftsService.create(
-                supabase, author_id=uuid4(), payload=payload,
+                supabase,
+                author_id=uuid4(),
+                payload=payload,
             )
         assert exc_info.value.status_code == status.HTTP_403_FORBIDDEN
 
@@ -237,7 +258,8 @@ class TestListDrafts:
         supabase = _mock_supabase([_exec_result(data=rows, count=2)])
 
         drafts, total = await ContentDraftsService.list_drafts(
-            supabase, author_id=author_id,
+            supabase,
+            author_id=author_id,
         )
         assert len(drafts) == 2
         assert total == 2
@@ -269,7 +291,8 @@ class TestListDrafts:
         supabase = _mock_supabase([_exec_result(data=rows, count=None)])
 
         drafts, total = await ContentDraftsService.list_drafts(
-            supabase, author_id=author_id,
+            supabase,
+            author_id=author_id,
         )
         assert total == 1
         assert len(drafts) == 1
@@ -287,9 +310,7 @@ class TestListDrafts:
         assert total == 2
         # Critical: no eq('author_id', ...) call when author_id is None.
         chain = supabase.table.return_value
-        assert not any(
-            c.args[0] == "author_id" for c in chain.eq.call_args_list
-        )
+        assert not any(c.args[0] == "author_id" for c in chain.eq.call_args_list)
 
 
 # ── list_open_for_resource ────────────────────────────────────────────────
@@ -335,9 +356,7 @@ class TestUpdateWorking:
         assert update_call.args[0]["working_content"] == {"text_de": "Neu²"}
         # eq(version, expected_version) must be in the chain
         eq_calls = chain.eq.call_args_list
-        assert any(
-            c.args == ("version", 2) for c in eq_calls
-        ), f"eq(version, 2) not found in {eq_calls}"
+        assert any(c.args == ("version", 2) for c in eq_calls), f"eq(version, 2) not found in {eq_calls}"
 
     async def test_version_mismatch_raises_409(self):
         draft_id = uuid4()
@@ -362,9 +381,7 @@ class TestUpdateWorking:
     async def test_not_found_raises_404_not_409(self):
         draft_id = uuid4()
         # First call (update): 0 rows. Second call (SELECT): also 0 → truly absent.
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=[])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=[])])
 
         with pytest.raises(HTTPException) as exc_info:
             await ContentDraftsService.update_working(
@@ -408,9 +425,9 @@ class TestStatusTransitions:
         assert update_payload["commit_sha"] == "def456"
         assert "published_at" in update_payload  # ISO timestamp present
         # Idempotency gate: update filtered on published_at IS NULL.
-        assert any(
-            c.args == ("published_at", "null") for c in chain.is_.call_args_list
-        ), f"is_('published_at', 'null') missing in {chain.is_.call_args_list}"
+        assert any(c.args == ("published_at", "null") for c in chain.is_.call_args_list), (
+            f"is_('published_at', 'null') missing in {chain.is_.call_args_list}"
+        )
 
     async def test_mark_published_idempotent_on_retry(self):
         """Re-calling mark_published on an already-published draft returns
@@ -425,9 +442,7 @@ class TestStatusTransitions:
         existing_row["published_at"] = datetime.now(UTC).isoformat()
         # 1st execute: update returns 0 rows (gate `published_at IS NULL` fails).
         # 2nd execute: get() SELECT returns the existing row.
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=[existing_row])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=[existing_row])])
 
         result = await ContentDraftsService.mark_published(
             supabase,
@@ -446,7 +461,8 @@ class TestStatusTransitions:
         supabase = _mock_supabase([_exec_result(data=[merged_row])])
 
         result = await ContentDraftsService.mark_merged(
-            supabase, draft_id=draft_id,
+            supabase,
+            draft_id=draft_id,
         )
         assert result.status == ContentDraftStatus.MERGED
 
@@ -455,9 +471,9 @@ class TestStatusTransitions:
         assert update_payload["status"] == "merged"
         assert "merged_at" in update_payload
         # Idempotency gate: update filtered on merged_at IS NULL.
-        assert any(
-            c.args == ("merged_at", "null") for c in chain.is_.call_args_list
-        ), f"is_('merged_at', 'null') missing in {chain.is_.call_args_list}"
+        assert any(c.args == ("merged_at", "null") for c in chain.is_.call_args_list), (
+            f"is_('merged_at', 'null') missing in {chain.is_.call_args_list}"
+        )
 
     async def test_mark_merged_idempotent_on_webhook_redelivery(self):
         """GitHub retries webhook deliveries on timeout. The 2nd delivery
@@ -466,12 +482,11 @@ class TestStatusTransitions:
         draft_id = uuid4()
         existing_row = _row(draft_id=draft_id, status=ContentDraftStatus.MERGED)
         existing_row["merged_at"] = datetime.now(UTC).isoformat()
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=[existing_row])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=[existing_row])])
 
         result = await ContentDraftsService.mark_merged(
-            supabase, draft_id=draft_id,
+            supabase,
+            draft_id=draft_id,
         )
         assert result.status == ContentDraftStatus.MERGED
         assert result.merged_at is not None
@@ -482,7 +497,8 @@ class TestStatusTransitions:
         supabase = _mock_supabase([_exec_result(data=[conflict_row])])
 
         result = await ContentDraftsService.mark_conflict(
-            supabase, draft_id=draft_id,
+            supabase,
+            draft_id=draft_id,
         )
         assert result.status == ContentDraftStatus.CONFLICT
         update_payload = supabase.table.return_value.update.call_args.args[0]
@@ -498,9 +514,7 @@ class TestStatusTransitions:
 
     async def test_mark_merged_on_missing_row_raises_404(self):
         """Idempotent path: update returns 0 rows → fallback get() → 404."""
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=[])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=[])])
         with pytest.raises(HTTPException) as exc_info:
             await ContentDraftsService.mark_merged(supabase, draft_id=uuid4())
         assert exc_info.value.status_code == status.HTTP_404_NOT_FOUND
@@ -531,9 +545,7 @@ class TestBulkTransitions:
             _row(draft_id=d2, status=ContentDraftStatus.PUBLISHED, pr_number=7),
         ]
         # 1) UPDATE (no .data needed); 2) SELECT re-fetch.
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=published_rows)]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=published_rows)])
 
         result = await ContentDraftsService.mark_published_bulk(
             supabase,
@@ -552,20 +564,19 @@ class TestBulkTransitions:
         assert update_payload["pr_number"] == 7
         assert "published_at" in update_payload
         # Idempotency gate.
-        assert any(
-            c.args == ("published_at", "null") for c in chain.is_.call_args_list
-        )
+        assert any(c.args == ("published_at", "null") for c in chain.is_.call_args_list)
         # Bulk filter.
-        assert any(
-            c.args == ("id", [str(d1), str(d2)]) for c in chain.in_.call_args_list
-        )
+        assert any(c.args == ("id", [str(d1), str(d2)]) for c in chain.in_.call_args_list)
 
     async def test_mark_published_bulk_empty_input_no_calls(self):
         supabase = _mock_supabase([])
         result = await ContentDraftsService.mark_published_bulk(
             supabase,
             draft_ids=[],
-            expected_head_oid="x", commit_sha="y", pr_number=1, pr_url="z",
+            expected_head_oid="x",
+            commit_sha="y",
+            pr_number=1,
+            pr_url="z",
         )
         assert result == []
         supabase.table.return_value.execute.assert_not_called()
@@ -576,12 +587,11 @@ class TestBulkTransitions:
             _row(draft_id=d1, status=ContentDraftStatus.MERGED),
             _row(draft_id=d2, status=ContentDraftStatus.MERGED),
         ]
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=merged_rows)]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=merged_rows)])
 
         result = await ContentDraftsService.mark_merged_bulk(
-            supabase, draft_ids=[d1, d2],
+            supabase,
+            draft_ids=[d1, d2],
         )
         assert len(result) == 2
 
@@ -590,14 +600,13 @@ class TestBulkTransitions:
         assert update_payload["status"] == "merged"
         assert "merged_at" in update_payload
         # Idempotency gate.
-        assert any(
-            c.args == ("merged_at", "null") for c in chain.is_.call_args_list
-        )
+        assert any(c.args == ("merged_at", "null") for c in chain.is_.call_args_list)
 
     async def test_mark_merged_bulk_empty_input_no_calls(self):
         supabase = _mock_supabase([])
         result = await ContentDraftsService.mark_merged_bulk(
-            supabase, draft_ids=[],
+            supabase,
+            draft_ids=[],
         )
         assert result == []
         supabase.table.return_value.execute.assert_not_called()
@@ -608,12 +617,11 @@ class TestBulkTransitions:
             _row(draft_id=d1, status=ContentDraftStatus.CONFLICT),
             _row(draft_id=d2, status=ContentDraftStatus.CONFLICT),
         ]
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=conflict_rows)]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=conflict_rows)])
 
         result = await ContentDraftsService.mark_conflict_bulk(
-            supabase, draft_ids=[d1, d2],
+            supabase,
+            draft_ids=[d1, d2],
         )
         assert len(result) == 2
         update_payload = supabase.table.return_value.update.call_args.args[0]
@@ -626,12 +634,11 @@ class TestBulkTransitions:
             status=ContentDraftStatus.DRAFT,
             pr_number=None,
         )
-        supabase = _mock_supabase(
-            [_exec_result(data=[]), _exec_result(data=[reverted_row])]
-        )
+        supabase = _mock_supabase([_exec_result(data=[]), _exec_result(data=[reverted_row])])
 
         result = await ContentDraftsService.revert_to_draft_bulk(
-            supabase, draft_ids=[d1],
+            supabase,
+            draft_ids=[d1],
         )
         assert len(result) == 1
         chain = supabase.table.return_value
@@ -644,14 +651,13 @@ class TestBulkTransitions:
         assert update_payload["pr_number"] is None
         assert update_payload["pr_url"] is None
         # Gated to status='published' (only published drafts revert).
-        assert any(
-            c.args == ("status", "published") for c in chain.eq.call_args_list
-        )
+        assert any(c.args == ("status", "published") for c in chain.eq.call_args_list)
 
     async def test_revert_to_draft_bulk_empty_input_no_calls(self):
         supabase = _mock_supabase([])
         result = await ContentDraftsService.revert_to_draft_bulk(
-            supabase, draft_ids=[],
+            supabase,
+            draft_ids=[],
         )
         assert result == []
         supabase.table.return_value.execute.assert_not_called()
@@ -669,18 +675,18 @@ class TestListByPrNumber:
         supabase = _mock_supabase([_exec_result(data=rows)])
 
         result = await ContentDraftsService.list_by_pr_number(
-            supabase, pr_number=42,
+            supabase,
+            pr_number=42,
         )
         assert len(result) == 2
         chain = supabase.table.return_value
-        assert any(
-            c.args == ("pr_number", 42) for c in chain.eq.call_args_list
-        )
+        assert any(c.args == ("pr_number", 42) for c in chain.eq.call_args_list)
 
     async def test_empty_when_pr_unknown(self):
         supabase = _mock_supabase([_exec_result(data=[])])
         result = await ContentDraftsService.list_by_pr_number(
-            supabase, pr_number=99999,
+            supabase,
+            pr_number=99999,
         )
         assert result == []
 

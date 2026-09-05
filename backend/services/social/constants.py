@@ -95,13 +95,13 @@ DEFAULT_CONTENT_MIX: dict[str, int] = {
 # Tags worth keeping on Bluesky (community discoverable, non-zero search volume).
 # Derived from broad + all niche pools. Brand/simulation-specific tags are excluded.
 BLUESKY_WORTHY_TAGS: frozenset[str] = frozenset(
-    tag.lower()
-    for pool in (BROAD_TAG_POOL, *NICHE_TAG_POOLS.values())
-    for tag in pool
+    tag.lower() for pool in (BROAD_TAG_POOL, *NICHE_TAG_POOLS.values()) for tag in pool
 )
 
 # Brand/simulation-specific tag patterns — zero search volume on Bluesky.
-BLUESKY_SKIP_TAG_PATTERNS: frozenset[str] = frozenset({
-    "bureauofimpossiblegeography",
-    "substratedispatch",
-})
+BLUESKY_SKIP_TAG_PATTERNS: frozenset[str] = frozenset(
+    {
+        "bureauofimpossiblegeography",
+        "substratedispatch",
+    }
+)

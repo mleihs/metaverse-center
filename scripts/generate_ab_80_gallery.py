@@ -238,7 +238,9 @@ BUILDING_FULL_UUIDS: dict[str, dict[str, tuple[str, str]]] = {}
 async def _resolve_uuids(client: httpx.AsyncClient) -> None:
     """List storage directories to resolve abbreviated UUIDs to full paths."""
     sb_url = "http://127.0.0.1:54321/storage/v1"
-    auth = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"}
+    auth = {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+    }
 
     async def _resolve_one(
         bucket: str,
@@ -280,7 +282,10 @@ async def _resolve_uuids(client: httpx.AsyncClient) -> None:
         for agent_name, agent_prefix, file_prefix in AGENTS.get(sim_key, []):
             try:
                 result = await _resolve_one(
-                    "agent.portraits", sim_cfg.sim_id, agent_prefix, file_prefix,
+                    "agent.portraits",
+                    sim_cfg.sim_id,
+                    agent_prefix,
+                    file_prefix,
                 )
                 if result:
                     AGENT_FULL_UUIDS[sim_key][agent_name] = result
@@ -291,7 +296,10 @@ async def _resolve_uuids(client: httpx.AsyncClient) -> None:
         for bld_name, bld_prefix, file_prefix in BUILDINGS.get(sim_key, []):
             try:
                 result = await _resolve_one(
-                    "building.images", sim_cfg.sim_id, bld_prefix, file_prefix,
+                    "building.images",
+                    sim_cfg.sim_id,
+                    bld_prefix,
+                    file_prefix,
                 )
                 if result:
                     BUILDING_FULL_UUIDS[sim_key][bld_name] = result
@@ -399,13 +407,15 @@ def _compose_feed_images(
                     crop_gravity="smart",
                 )
                 slug = agent_name.lower().replace(" ", "_").replace("'", "")
-                results.append(ImageResult(
-                    filename=f"feed_{sim_key}_agent_{slug}.jpg",
-                    jpeg=jpeg,
-                    title=f"Personnel File: {agent_name}",
-                    category="Feed",
-                    sim_name=sim_cfg.name,
-                ))
+                results.append(
+                    ImageResult(
+                        filename=f"feed_{sim_key}_agent_{slug}.jpg",
+                        jpeg=jpeg,
+                        title=f"Personnel File: {agent_name}",
+                        category="Feed",
+                        sim_name=sim_cfg.name,
+                    )
+                )
             except Exception as exc:
                 print(f"  FAIL agent {agent_name}: {exc}")
 
@@ -433,13 +443,15 @@ def _compose_feed_images(
                     crop_gravity="smart_building",
                 )
                 slug = bld_name.lower().replace(" ", "_").replace("'", "").replace("-", "_")
-                results.append(ImageResult(
-                    filename=f"feed_{sim_key}_building_{slug}.jpg",
-                    jpeg=jpeg,
-                    title=f"Surveillance: {bld_name}",
-                    category="Feed",
-                    sim_name=sim_cfg.name,
-                ))
+                results.append(
+                    ImageResult(
+                        filename=f"feed_{sim_key}_building_{slug}.jpg",
+                        jpeg=jpeg,
+                        title=f"Surveillance: {bld_name}",
+                        category="Feed",
+                        sim_name=sim_cfg.name,
+                    )
+                )
             except Exception as exc:
                 print(f"  FAIL building {bld_name}: {exc}")
 
@@ -460,13 +472,15 @@ def _compose_story_images() -> list[ImageResult]:
                 magnitude=0.82,
                 accent_hex=accent_hex,
             )
-            results.append(ImageResult(
-                filename=f"story_detection_{archetype.lower()}.jpg",
-                jpeg=jpeg,
-                title=f"Detection: {archetype}",
-                category="Story",
-                sim_name=archetype,
-            ))
+            results.append(
+                ImageResult(
+                    filename=f"story_detection_{archetype.lower()}.jpg",
+                    jpeg=jpeg,
+                    title=f"Detection: {archetype}",
+                    category="Story",
+                    sim_name=archetype,
+                )
+            )
         except Exception as exc:
             print(f"  FAIL story detection {archetype}: {exc}")
 
@@ -481,13 +495,15 @@ def _compose_story_images() -> list[ImageResult]:
                 bureau_dispatch=f"DISPATCH {archetype.upper()}-0042: Monitor substrate integrity.",
                 accent_hex=accent_hex,
             )
-            results.append(ImageResult(
-                filename=f"story_classification_{archetype.lower()}.jpg",
-                jpeg=jpeg,
-                title=f"Classification: {archetype}",
-                category="Story",
-                sim_name=archetype,
-            ))
+            results.append(
+                ImageResult(
+                    filename=f"story_classification_{archetype.lower()}.jpg",
+                    jpeg=jpeg,
+                    title=f"Classification: {archetype}",
+                    category="Story",
+                    sim_name=archetype,
+                )
+            )
         except Exception as exc:
             print(f"  FAIL story classification {archetype}: {exc}")
 
@@ -500,13 +516,15 @@ def _compose_story_images() -> list[ImageResult]:
                 zone_name="Sector 7-G",
                 accent_hex=accent_hex,
             )
-            results.append(ImageResult(
-                filename=f"story_advisory_{archetype.lower()}.jpg",
-                jpeg=jpeg,
-                title=f"Advisory: {archetype}",
-                category="Story",
-                sim_name=archetype,
-            ))
+            results.append(
+                ImageResult(
+                    filename=f"story_advisory_{archetype.lower()}.jpg",
+                    jpeg=jpeg,
+                    title=f"Advisory: {archetype}",
+                    category="Story",
+                    sim_name=archetype,
+                )
+            )
         except Exception as exc:
             print(f"  FAIL story advisory {archetype}: {exc}")
 
@@ -518,13 +536,15 @@ def _compose_story_images() -> list[ImageResult]:
                 shards_affected=3,
                 accent_hex=accent_hex,
             )
-            results.append(ImageResult(
-                filename=f"story_subsiding_{archetype.lower()}.jpg",
-                jpeg=jpeg,
-                title=f"Subsiding: {archetype}",
-                category="Story",
-                sim_name=archetype,
-            ))
+            results.append(
+                ImageResult(
+                    filename=f"story_subsiding_{archetype.lower()}.jpg",
+                    jpeg=jpeg,
+                    title=f"Subsiding: {archetype}",
+                    category="Story",
+                    sim_name=archetype,
+                )
+            )
         except Exception as exc:
             print(f"  FAIL story subsiding {archetype}: {exc}")
 
@@ -623,10 +643,7 @@ def _generate_html(
     n_story = len(story_pairs)
     n_total = n_feed + n_story
 
-    sim_buttons = "\n    ".join(
-        f'<button onclick="filterSim(\'{s}\')">{s}</button>'
-        for s in sim_names
-    )
+    sim_buttons = "\n    ".join(f"<button onclick=\"filterSim('{s}')\">{s}</button>" for s in sim_names)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -711,8 +728,8 @@ h2 {{ font-size: 15px; color: #f39c12; margin: 40px 0 16px; letter-spacing: 2px;
 
 <div class="stats">
     {n_total} A/B pairs | {n_feed} feed posts | {n_story} story templates |
-    Without: {sum(len(r.jpeg) for r in without_results)/1024:.0f} KB |
-    With: {sum(len(r.jpeg) for r in with_results)/1024:.0f} KB
+    Without: {sum(len(r.jpeg) for r in without_results) / 1024:.0f} KB |
+    With: {sum(len(r.jpeg) for r in with_results) / 1024:.0f} KB
 </div>
 
 <!-- Lightbox -->
@@ -825,7 +842,7 @@ async def main() -> None:
     print("  A/B Gallery Complete")
     print(f"  {n_total} total images ({len(without_results)} without + {len(with_results)} with)")
     print(f"  Feed: {len(without_feed)} pairs | Story: {len(without_stories)} pairs")
-    print(f"  Total size: {total_kb:.0f} KB ({total_kb/1024:.1f} MB)")
+    print(f"  Total size: {total_kb:.0f} KB ({total_kb / 1024:.1f} MB)")
     print(f"  Time: {elapsed:.1f}s")
     print(f"  Without: {OUTPUT_WITHOUT}/")
     print(f"  With:    {OUTPUT_WITH}/")

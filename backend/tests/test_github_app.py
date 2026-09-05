@@ -202,7 +202,9 @@ class TestPrivateKeyLoading:
 
 class TestInstallationTokenCache:
     async def test_first_call_hits_github_and_caches(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
@@ -216,9 +218,7 @@ class TestInstallationTokenCache:
         assert token == "ghs_abc"
         # URL is correct.
         call_args = mock_instance.post.call_args
-        assert call_args.args[0] == (
-            "https://api.github.com/app/installations/42/access_tokens"
-        )
+        assert call_args.args[0] == ("https://api.github.com/app/installations/42/access_tokens")
         # Headers carry the Bearer app-JWT + API version + accept.
         headers = call_args.kwargs["headers"]
         assert headers["Authorization"].startswith("Bearer ")
@@ -226,7 +226,9 @@ class TestInstallationTokenCache:
         assert headers["Accept"] == "application/vnd.github+json"
 
     async def test_second_call_returns_cached_token(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
@@ -242,7 +244,9 @@ class TestInstallationTokenCache:
         assert mock_instance.post.call_count == 1
 
     async def test_force_refresh_bypasses_cache(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.side_effect = [
@@ -259,7 +263,9 @@ class TestInstallationTokenCache:
         assert mock_instance.post.call_count == 2
 
     async def test_stale_cache_triggers_refresh(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.side_effect = [
@@ -277,11 +283,15 @@ class TestInstallationTokenCache:
         assert second == "ghs_new"
 
     async def test_exchange_failure_raises_api_error(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=401, json_data={}, text="Bad credentials",
+            status=401,
+            json_data={},
+            text="Bad credentials",
         )
         client = make_client()
 
@@ -296,13 +306,16 @@ class TestInstallationTokenCache:
 
 class TestGraphQL:
     async def test_200_returns_data_envelope(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         # First call: installation token exchange (POST via `client.post` inside
         # get_installation_token). Second: the GraphQL POST via `client.request`.
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
             status=200,
@@ -320,11 +333,14 @@ class TestGraphQL:
         assert call_args.kwargs["headers"]["Authorization"] == "Bearer ghs_x"
 
     async def test_200_with_errors_array_raises(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
             status=200,
@@ -340,10 +356,13 @@ class TestGraphQL:
     async def test_non_200_raises(self, make_client, mock_httpx_client):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
-            status=500, json_data={}, text="Internal server error",
+            status=500,
+            json_data={},
+            text="Internal server error",
         )
         client = make_client()
 
@@ -352,7 +371,9 @@ class TestGraphQL:
         assert exc_info.value.status == 500
 
     async def test_401_triggers_single_retry(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         # Two installation-token exchanges (initial + forced refresh on 401).
@@ -381,10 +402,12 @@ class TestREST:
     async def test_get_200_returns_json(self, make_client, mock_httpx_client):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
-            status=200, json_data={"full_name": "mleihs/metaverse-center"},
+            status=200,
+            json_data={"full_name": "mleihs/metaverse-center"},
         )
         client = make_client()
 
@@ -395,7 +418,8 @@ class TestREST:
     async def test_204_returns_empty_dict(self, make_client, mock_httpx_client):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(status=204, json_data=None)
         client = make_client()
@@ -407,10 +431,13 @@ class TestREST:
     async def test_404_raises(self, make_client, mock_httpx_client):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
-            status=404, json_data={}, text="Not Found",
+            status=404,
+            json_data={},
+            text="Not Found",
         )
         client = make_client()
 
@@ -451,14 +478,18 @@ class TestPersistentHttpClient:
     """
 
     async def test_http_client_reused_across_calls(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         mock_cls, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.request.return_value = _mock_response(
-            status=200, json_data={"full_name": "mleihs/metaverse-center"},
+            status=200,
+            json_data={"full_name": "mleihs/metaverse-center"},
         )
         client = make_client()
 
@@ -468,16 +499,17 @@ class TestPersistentHttpClient:
         # REST path — still the same http client.
         await client.rest("GET", "/repos/mleihs/metaverse-center")
 
-        assert mock_cls.call_count == 1, (
-            f"httpx.AsyncClient() should be called exactly once, got {mock_cls.call_count}"
-        )
+        assert mock_cls.call_count == 1, f"httpx.AsyncClient() should be called exactly once, got {mock_cls.call_count}"
 
     async def test_aclose_releases_client(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.post.return_value = _mock_response(
-            status=201, json_data={"token": "ghs_x", "expires_at": "..."},
+            status=201,
+            json_data={"token": "ghs_x", "expires_at": "..."},
         )
         mock_instance.aclose = AsyncMock()
         client = make_client()
@@ -491,7 +523,9 @@ class TestPersistentHttpClient:
         mock_instance.aclose.assert_awaited_once()
 
     async def test_aclose_is_idempotent(
-        self, make_client, mock_httpx_client,
+        self,
+        make_client,
+        mock_httpx_client,
     ):
         _, mock_instance = mock_httpx_client
         mock_instance.aclose = AsyncMock()

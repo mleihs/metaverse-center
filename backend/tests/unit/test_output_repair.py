@@ -31,7 +31,10 @@ class TestRepairJsonOutput:
         """Valid JSON should be returned without calling LLM."""
         valid = '{"title": "Test", "description": "Desc", "score": 5}'
         result = await repair_json_output(
-            mock_openrouter, "test-model", valid, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            valid,
+            SampleOutput,
         )
 
         assert result is not None
@@ -51,7 +54,10 @@ class TestRepairJsonOutput:
         )
 
         result = await repair_json_output(
-            mock_openrouter, "test-model", malformed, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            malformed,
+            SampleOutput,
         )
 
         assert result is not None
@@ -69,7 +75,10 @@ class TestRepairJsonOutput:
         )
 
         result = await repair_json_output(
-            mock_openrouter, "test-model", malformed, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            malformed,
+            SampleOutput,
         )
 
         assert result is not None
@@ -83,7 +92,10 @@ class TestRepairJsonOutput:
         mock_openrouter.generate = AsyncMock(return_value="still broken")
 
         result = await repair_json_output(
-            mock_openrouter, "test-model", malformed, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            malformed,
+            SampleOutput,
         )
 
         assert result is None
@@ -96,7 +108,10 @@ class TestRepairJsonOutput:
         mock_openrouter.generate = AsyncMock(side_effect=Exception("API Error"))
 
         result = await repair_json_output(
-            mock_openrouter, "test-model", malformed, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            malformed,
+            SampleOutput,
         )
 
         assert result is None
@@ -109,7 +124,10 @@ class TestRepairJsonOutput:
         mock_openrouter.generate = AsyncMock(return_value="{}")
 
         await repair_json_output(
-            mock_openrouter, "test-model", malformed, SampleOutput,
+            mock_openrouter,
+            "test-model",
+            malformed,
+            SampleOutput,
         )
 
         # Check the prompt sent to the LLM

@@ -58,9 +58,7 @@ def build_mask(src: Path, dst: Path) -> int:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument(
         "--check",
         action="store_true",

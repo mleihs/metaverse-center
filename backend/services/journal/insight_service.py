@@ -111,9 +111,7 @@ def _format_fragments_for_prompt(fragments: list[FragmentResponse]) -> str:
     for i, frag in enumerate(trimmed, start=1):
         tags_str = ", ".join(frag.thematic_tags[:6]) if frag.thematic_tags else "(untagged)"
         lines.append(
-            f"Fragment {i} [{frag.fragment_type}, tags: {tags_str}]:"
-            f"\n  EN: {frag.content_en}"
-            f"\n  DE: {frag.content_de}"
+            f"Fragment {i} [{frag.fragment_type}, tags: {tags_str}]:\n  EN: {frag.content_en}\n  DE: {frag.content_de}"
         )
     return "\n\n".join(lines)
 
@@ -210,7 +208,9 @@ class InsightService:
         # Preflight: load constellation + its fragments, run detector.
         # Raises conflict before we spend the LLM call if preconditions fail.
         _constellation, fragments, match = await ConstellationService.prepare_crystallization(
-            supabase, user_id, constellation_id,
+            supabase,
+            user_id,
+            constellation_id,
         )
 
         # Evaluate attunement candidate BEFORE the LLM call — the
@@ -219,9 +219,7 @@ class InsightService:
         # If the resonance type has no matching starter attunement
         # (e.g. contradiction) this returns None and the crystallize
         # proceeds without unlock.
-        candidate = await AttunementService.evaluate(
-            supabase, str(match.resonance_type)
-        )
+        candidate = await AttunementService.evaluate(supabase, str(match.resonance_type))
 
         model_id = get_platform_model(_MODEL_PURPOSE_RESEARCH)
         user_prompt = build_insight_user_prompt(fragments, match)

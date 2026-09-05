@@ -48,13 +48,15 @@ def _client(sim_name: str = "Velgarien") -> MagicMock:
 class TestInvitationIsDelivered:
     @pytest.mark.asyncio
     async def test_an_email_goes_out(self):
-        with patch(
-            "backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)
-        ) as send:
+        with patch("backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)) as send:
             result = await InvitationService.create_invitation(
-                _client(), SIM_ID, USER_ID,
-                invited_email="invitee@test.com", invited_role="editor",
-                inviter_label="owner@test.com", email_locale="de",
+                _client(),
+                SIM_ID,
+                USER_ID,
+                invited_email="invitee@test.com",
+                invited_role="editor",
+                inviter_label="owner@test.com",
+                email_locale="de",
             )
 
         assert result["email_sent"] is True
@@ -73,16 +75,21 @@ class TestInvitationIsDelivered:
             setattr(chain, method, MagicMock(return_value=chain))
         chain.execute = AsyncMock(
             return_value=MagicMock(
-                data=[{"id": "inv-1", "simulation_id": str(SIM_ID), "invited_email": None,
-                       "invite_token": "tok", "invited_role": "viewer"}]
+                data=[
+                    {
+                        "id": "inv-1",
+                        "simulation_id": str(SIM_ID),
+                        "invited_email": None,
+                        "invite_token": "tok",
+                        "invited_role": "viewer",
+                    }
+                ]
             )
         )
         sb = MagicMock()
         sb.table = MagicMock(return_value=chain)
 
-        with patch(
-            "backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)
-        ) as send:
+        with patch("backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)) as send:
             result = await InvitationService.create_invitation(sb, SIM_ID, USER_ID)
 
         assert result["email_sent"] is False
@@ -108,12 +115,8 @@ class TestInvitationIsDelivered:
     @pytest.mark.asyncio
     async def test_it_carries_no_unsubscribe_link(self):
         """Someone entered this person's name by hand - there is no list to leave."""
-        with patch(
-            "backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)
-        ) as send:
-            await InvitationService.create_invitation(
-                _client(), SIM_ID, USER_ID, invited_email="invitee@test.com"
-            )
+        with patch("backend.services.invitation_service.EmailService.send", new=AsyncMock(return_value=True)) as send:
+            await InvitationService.create_invitation(_client(), SIM_ID, USER_ID, invited_email="invitee@test.com")
 
         # Gemeint war immer der LINK, nicht das Wort. Seit P3.28 trägt die
         # Einladungsfußzeile den Satz „Es gibt nichts abzubestellen: Wenn du
@@ -124,7 +127,6 @@ class TestInvitationIsDelivered:
         html = send.await_args.args[2]
         assert "/unsubscribe?token=" not in html, "die Einladung trägt einen Abmeldelink"
         assert "/settings/notifications" not in html, (
-            "die Einladung verweist auf Kontoeinstellungen; der Eingeladene hat "
-            "vielleicht gar kein Konto"
+            "die Einladung verweist auf Kontoeinstellungen; der Eingeladene hat vielleicht gar kein Konto"
         )
         assert send.await_args.kwargs.get("unsubscribe_url") is None

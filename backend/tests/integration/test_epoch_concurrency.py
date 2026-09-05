@@ -40,12 +40,7 @@ def _get_participant_rp(client, epoch_id, simulation_id) -> int:
 
 def _count_participants(client, epoch_id) -> int:
     """Count participants in an epoch."""
-    resp = (
-        client.table("epoch_participants")
-        .select("id", count="exact")
-        .eq("epoch_id", str(epoch_id))
-        .execute()
-    )
+    resp = client.table("epoch_participants").select("id", count="exact").eq("epoch_id", str(epoch_id)).execute()
     return resp.count or 0
 
 
@@ -86,12 +81,8 @@ class TestConcurrentSpendRp:
         successes = [r for r in results if not isinstance(r, BaseException)]
         failures = [r for r in results if isinstance(r, HTTPException)]
 
-        assert len(successes) == 1, (
-            f"Expected exactly 1 success but got {len(successes)}. Results: {results}"
-        )
-        assert len(failures) == 1, (
-            f"Expected exactly 1 HTTPException but got {len(failures)}. Results: {results}"
-        )
+        assert len(successes) == 1, f"Expected exactly 1 success but got {len(successes)}. Results: {results}"
+        assert len(failures) == 1, f"Expected exactly 1 HTTPException but got {len(failures)}. Results: {results}"
 
         # Verify DB state: remaining RP should be 7 - 5 = 2
         final_rp = _get_participant_rp(admin_client, epoch.epoch_id, sim_id)
@@ -116,8 +107,7 @@ class TestConcurrentSpendRp:
         successes = [r for r in results if not isinstance(r, BaseException)]
 
         assert len(successes) == 2, (
-            f"Expected both spends to succeed (5+5<=20) but got {len(successes)} successes. "
-            f"Results: {results}"
+            f"Expected both spends to succeed (5+5<=20) but got {len(successes)} successes. Results: {results}"
         )
 
         # Both returned ints (remaining RP)
@@ -147,9 +137,11 @@ class TestConcurrentJoinEpoch:
 
         # Remove participant so we can re-join
         admin_client.table("epoch_participants").delete().eq(
-            "epoch_id", str(epoch.epoch_id),
+            "epoch_id",
+            str(epoch.epoch_id),
         ).eq(
-            "simulation_id", str(target.simulation_id),
+            "simulation_id",
+            str(target.simulation_id),
         ).execute()
 
         # Verify removal
@@ -158,10 +150,16 @@ class TestConcurrentJoinEpoch:
 
         results = await asyncio.gather(
             EpochParticipationService.join_epoch(
-                async_admin_client, epoch.epoch_id, target.simulation_id, target.user_id,
+                async_admin_client,
+                epoch.epoch_id,
+                target.simulation_id,
+                target.user_id,
             ),
             EpochParticipationService.join_epoch(
-                async_admin_client, epoch.epoch_id, target.simulation_id, target.user_id,
+                async_admin_client,
+                epoch.epoch_id,
+                target.simulation_id,
+                target.user_id,
             ),
             return_exceptions=True,
         )
@@ -169,12 +167,8 @@ class TestConcurrentJoinEpoch:
         successes = [r for r in results if not isinstance(r, BaseException)]
         failures = [r for r in results if isinstance(r, HTTPException)]
 
-        assert len(successes) == 1, (
-            f"Expected exactly 1 successful join but got {len(successes)}. Results: {results}"
-        )
-        assert len(failures) == 1, (
-            f"Expected exactly 1 conflict error but got {len(failures)}. Results: {results}"
-        )
+        assert len(successes) == 1, f"Expected exactly 1 successful join but got {len(successes)}. Results: {results}"
+        assert len(failures) == 1, f"Expected exactly 1 conflict error but got {len(failures)}. Results: {results}"
 
         # Verify DB state: back to 4 participants
         post_count = _count_participants(admin_client, epoch.epoch_id)
@@ -195,26 +189,33 @@ class TestConcurrentJoinTeam:
         (SELECT ... FOR UPDATE) so the third joiner sees count >= max.
         """
         epoch: EpochFixture = epoch_factory(
-            status="foundation", cycle=1, rp=20, rp_cap=40,
+            status="foundation",
+            cycle=1,
+            rp=20,
+            rp_cap=40,
         )
         team_id = uuid4()
 
         # Create a team row for this epoch
-        admin_client.table("epoch_teams").insert({
-            "id": str(team_id),
-            "epoch_id": str(epoch.epoch_id),
-            "name": f"Test Alliance {team_id.hex[:8]}",
-            "created_by_simulation_id": str(epoch.participants[0].simulation_id),
-        }).execute()
+        admin_client.table("epoch_teams").insert(
+            {
+                "id": str(team_id),
+                "epoch_id": str(epoch.epoch_id),
+                "name": f"Test Alliance {team_id.hex[:8]}",
+                "created_by_simulation_id": str(epoch.participants[0].simulation_id),
+            }
+        ).execute()
 
         # Clear any existing team assignments so all 4 participants are teamless
         for p in epoch.participants:
             admin_client.table("epoch_participants").update(
                 {"team_id": None},
             ).eq(
-                "epoch_id", str(epoch.epoch_id),
+                "epoch_id",
+                str(epoch.epoch_id),
             ).eq(
-                "simulation_id", str(p.simulation_id),
+                "simulation_id",
+                str(p.simulation_id),
             ).execute()
 
         # Config max_team_size defaults to 3, but we override to 2 for this test.
@@ -227,15 +228,21 @@ class TestConcurrentJoinTeam:
         # Three concurrent joins from participants [0], [1], [2]
         results = await asyncio.gather(
             EpochParticipationService.join_team(
-                async_admin_client, epoch.epoch_id, team_id,
+                async_admin_client,
+                epoch.epoch_id,
+                team_id,
                 epoch.participants[0].simulation_id,
             ),
             EpochParticipationService.join_team(
-                async_admin_client, epoch.epoch_id, team_id,
+                async_admin_client,
+                epoch.epoch_id,
+                team_id,
                 epoch.participants[1].simulation_id,
             ),
             EpochParticipationService.join_team(
-                async_admin_client, epoch.epoch_id, team_id,
+                async_admin_client,
+                epoch.epoch_id,
+                team_id,
                 epoch.participants[2].simulation_id,
             ),
             return_exceptions=True,
@@ -245,15 +252,10 @@ class TestConcurrentJoinTeam:
         failures = [r for r in results if isinstance(r, HTTPException)]
 
         assert len(successes) <= 2, (
-            f"Expected at most 2 successful joins (max_team_size=2) "
-            f"but got {len(successes)}. Results: {results}"
+            f"Expected at most 2 successful joins (max_team_size=2) but got {len(successes)}. Results: {results}"
         )
-        assert len(successes) >= 1, (
-            f"Expected at least 1 successful join but got 0. Results: {results}"
-        )
-        assert len(failures) >= 1, (
-            f"Expected at least 1 failure (team full) but got 0. Results: {results}"
-        )
+        assert len(successes) >= 1, f"Expected at least 1 successful join but got 0. Results: {results}"
+        assert len(failures) >= 1, f"Expected at least 1 failure (team full) but got 0. Results: {results}"
 
         # Verify DB state: team has at most 2 members
         member_count = _count_team_members(admin_client, epoch.epoch_id, team_id)
@@ -262,6 +264,5 @@ class TestConcurrentJoinTeam:
             "fn_join_team_checked should enforce max_team_size atomically."
         )
         assert member_count == len(successes), (
-            f"DB member count ({member_count}) doesn't match success count "
-            f"({len(successes)})."
+            f"DB member count ({member_count}) doesn't match success count ({len(successes)})."
         )

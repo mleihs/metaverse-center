@@ -14,6 +14,8 @@ STORY_TYPES = ("detection", "classification", "impact", "advisory", "subsiding")
 STORY_STATUSES = ("pending", "composing", "ready", "publishing", "published", "failed", "skipped")
 
 # Archetype visual language — color accents for Story templates
+# Die Kommentarspalte nennt den Farbnamen zum Hexwert und wird als Spalte gelesen.
+# fmt: off
 ARCHETYPE_COLORS: dict[str, str] = {
     "The Tower": "#FF3333",           # crimson
     "The Shadow": "#7744AA",          # violet
@@ -24,6 +26,7 @@ ARCHETYPE_COLORS: dict[str, str] = {
     "The Awakening": "#CC88FF",       # lavender
     "The Entropy": "#666666",         # ash
 }
+# fmt: on
 
 # Operative alignment map — which types benefit/suffer per archetype
 ARCHETYPE_OPERATIVE_ALIGNMENT: dict[str, dict[str, list[str]]] = {
