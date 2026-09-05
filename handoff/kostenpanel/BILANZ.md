@@ -313,3 +313,48 @@ wieder auftreten werden:
 
 Endprobe: dreimal HTTP 200, `velg-kontor-panel` zweimal im Bündel, 6 von 6
 Zellzustaenden vorhanden.
+
+---
+
+## 6 · Der Browsertest, und was er fand, das der Buendeltest nicht fand
+
+Nach dem Ausrollen im Browser gegen Prod angesehen. **„Im Buendel vorhanden"
+ist nicht „rendert richtig"** — fuenf Befunde, die kein Tor und kein Test
+gesehen hat, weil keiner davon eine Frage an den Quelltext ist:
+
+| # | Befund | Ursache |
+|---|---|---|
+| 1 | Die letzte Spalte stand halb ausserhalb, waagrechter Rollbalken | feste Spaltenbreiten (200 + 3×110 = 530 px) in einem Abschnitt von 470 |
+| 2 | Die zwei teuersten Zeilen waren identisch beschriftet | `black-forest-labs/flux-2-…` kappte genau `pro` gegen `max` |
+| 3 | Die Legendenprobe las sich als Balken | `.kontor-cell` erzwingt die Mindestbreite der Betragsspalte |
+| 4 | Die halbe Oberflaeche war englisch | die neuen `msg()`-Zeichenketten hatten keine Uebersetzung |
+| 5 | Eine Waehrung in einer Zaehlspalte | „ohne Betrag" zeigte bei null `$0.00` statt `0` |
+
+Alle fuenf behoben. **Die Lehre ist Nummer 4 und 5:** ein Tor prueft, was man
+ihm gesagt hat. Dass eine Spalte zwei Einheiten mischt und dass die Haelfte der
+Beschriftungen in der falschen Sprache steht, sieht nur ein Blick auf die
+gerenderte Seite.
+
+Zwei eigene Fehler beim Beheben, beide gefangen:
+
+- `lit-localize build` direkt aufgerufen statt `npm run i18n:build` — der
+  Entkodierungsschritt fehlte, das Entity-Tor hat es gemeldet.
+- Zuerst in ASCII-Umschrift uebersetzt (Zellzustaende, Ausgaenge). Die gilt im
+  Repo fuer Kommentare und Commit-Nachrichten, **nicht** fuer die Oberflaeche —
+  die schreibt Umlaute.
+
+### Was der Browsertest bestaetigt hat
+
+Vier der sechs Zellzustaende an echten Daten, in einem Bild:
+
+    anchors             Kosten $0.00 · je Aufruf ░ · n = 0 von 2 · ohne Betrag 2
+    banner_description  Kosten $0.0015 · je Aufruf · · n = 24 von 24
+    deepseek-chat       n = 353 von 556 · ohne Betrag 203
+    flux-2-pro          n = 254 von 254 · ohne Betrag 0
+
+`anchors` ist der Fall, den `MESSUNG-EIGENE-DATEN.md` benennt (2 von 2 ohne
+Betrag): der Mittelwert steht dort als **nicht erfasst**, nicht als null.
+`banner_description` zeigt `·` statt `$0.0000` — 0,0015 / 24 = 0,0000625.
+
+Sortierung, Zeitraumwaehler und die Zaehlbasis in jeder Zeile arbeiten; keine
+Konsolenfehler.
