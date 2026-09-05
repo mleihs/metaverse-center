@@ -356,3 +356,60 @@ class SceneImageService:
             },
         )
         return gespeichert[0] if gespeichert else eintrag
+
+    async def delete(self, *, conversation_id: UUID, message_id: UUID) -> dict:
+        """Ein Szenenbild entfernen — die Zeile UND beide Dateien.
+
+        JEDES Bild liegt ZWEIMAL im Speicher. `generate_scene_image` legt eine
+        native Fassung (`{uuid}.full.avif`) und einen Daumennagel
+        (`{uuid}.avif`) ab und gibt nur den Daumennagel zurueck; in
+        `metadata.scene_image.url` steht deshalb nur einer von beiden. Wer nur
+        die verlinkte Datei loescht, laesst die groessere liegen — die, die als
+        Bildvorlage wieder eingelesen wird.
+
+        Reihenfolge wie bei `delete_conversation`: erst der Speicher, dann die
+        Zeile. Das Aufraeumen ist bestmoeglich und wirft nicht; bricht der
+        Aufruf dazwischen ab, ist eine Datei zu viel da statt eine Zeile ohne
+        Bild. Die Zeile ist die Spur, ueber die man die Datei ueberhaupt noch
+        findet — sie geht zuletzt.
+
+        Geprueft wird, dass die Nachricht wirklich ein Szenenbild DIESES
+        Fadens ist. Der Besitz des Fadens haengt am Aufrufer (`verify_ownership`
+        im Router); hier haengt daran, dass ueber diesen Weg keine gewoehnliche
+        Gespraechszeile geloescht werden kann.
+        """
+        from backend.utils.storage import object_path_from_url, remove_objects
+
+        zeile = await maybe_single_data(
+            self._supabase.table("chat_messages")
+            .select("id, conversation_id, sender_role, metadata")
+            .eq("id", str(message_id))
+            .eq("conversation_id", str(conversation_id))
+            .eq("sender_role", SCENE_IMAGE_ROLE)
+            .maybe_single()
+        )
+        if not zeile:
+            raise SceneImageRefusedError("Dieses Bild gibt es in diesem Gespraech nicht.")
+
+        url = str(((zeile.get("metadata") or {}).get("scene_image") or {}).get("url") or "")
+        entfernt = 0
+        if url and (pfad := object_path_from_url(url, "simulation.assets")):
+            # Beide Fassungen. Der Daumennagel steht in der Zeile, die grosse
+            # Fassung leitet sich aus seinem Namen ab — dieselbe Ableitung wie
+            # in `_lade_beste_aufloesung`, nur andersherum.
+            pfade = [pfad]
+            if pfad.endswith(".avif") and not pfad.endswith(".full.avif"):
+                pfade.append(pfad[: -len(".avif")] + ".full.avif")
+            entfernt = await remove_objects(self._supabase, "simulation.assets", pfade)
+
+        await self._supabase.table("chat_messages").delete().eq("id", str(message_id)).execute()
+
+        logger.info(
+            "Szenenbild geloescht",
+            extra={
+                "conversation_id": str(conversation_id),
+                "message_id": str(message_id),
+                "storage_objects_removed": entfernt,
+            },
+        )
+        return {"deleted": True, "message_id": str(message_id), "storage_objects_removed": entfernt}

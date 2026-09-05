@@ -7,6 +7,7 @@ from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, conflict, not_found, server_error
 from backend.utils.responses import extract_list
 from backend.utils.slug import slugify
+from backend.utils.storage import purge_folder
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -272,34 +273,14 @@ class SimulationService:
 
     @staticmethod
     async def _purge_storage_folder(supabase: Client, bucket: str, prefix: str) -> None:
-        """Recursively delete all files under a storage prefix (best-effort)."""
-        try:
-            files = await supabase.storage.from_(bucket).list(prefix)
-            if not files:
-                return
+        """Recursively delete all files under a storage prefix (best-effort).
 
-            # Separate actual files from nested folders
-            file_paths: list[str] = []
-            for item in files:
-                name = item.get("name", "") if isinstance(item, dict) else getattr(item, "name", "")
-                if not name or name == ".emptyFolderPlaceholder":
-                    continue
-                item_id = item.get("id") if isinstance(item, dict) else getattr(item, "id", None)
-                if item_id:
-                    # Regular file
-                    file_paths.append(f"{prefix}/{name}")
-                else:
-                    # Subfolder — recurse
-                    await SimulationService._purge_storage_folder(supabase, bucket, f"{prefix}/{name}")
-
-            if file_paths:
-                await supabase.storage.from_(bucket).remove(file_paths)
-                logger.info(
-                    "Purged storage files",
-                    extra={"bucket": bucket, "prefix": prefix, "count": len(file_paths)},
-                )
-        except Exception:  # noqa: BLE001 — storage cleanup is best-effort
-            logger.warning("Storage cleanup failed for %s/%s", bucket, prefix, exc_info=True)
+        Die Mechanik steht in `backend/utils/storage.purge_folder` — sie wurde
+        von hier dorthin gehoben, als ein dritter Aufrufer sie brauchte (die
+        Bildspur im Gespraech). Diese Huelle bleibt, weil die Aufrufe oben
+        lesbar sind und der Name hier den Zweck nennt.
+        """
+        await purge_folder(supabase, bucket, prefix)
 
     @staticmethod
     async def list_all_simulations(

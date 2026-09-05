@@ -6,12 +6,10 @@ import asyncio
 import logging
 from uuid import UUID, uuid4
 
-import httpx
-from postgrest.exceptions import APIError as PostgrestAPIError
-
 from backend.utils.image import convert_to_avif
 from backend.utils.responses import extract_list
 from backend.utils.safe_fetch import safe_download
+from backend.utils.storage import remove_object_by_url
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -370,18 +368,13 @@ async def _upsert_setting(
 
 
 async def _try_delete_storage_file(supabase: Client, url: str) -> None:
-    """Best-effort delete of a storage file by its public URL."""
-    try:
-        # Extract path from public URL: .../<bucket>/object/public/<path>
-        parts = url.split(f"/{STORAGE_BUCKET}/")
-        if len(parts) == 2:
-            # Remove the "object/public/" prefix if present
-            path = parts[1]
-            if path.startswith("object/public/"):
-                path = path[len("object/public/") :]
-            await supabase.storage.from_(STORAGE_BUCKET).remove([path])
-    except (PostgrestAPIError, httpx.HTTPError, OSError):
-        logger.warning("Failed to delete storage file: %s", url, exc_info=True)
+    """Best-effort delete of a storage file by its public URL.
+
+    Die URL-Zerlegung steht seit der Bildspur in
+    `backend/utils/storage.object_path_from_url` — sie war hier privat, und
+    der naechste Aufrufer haette sie ein drittes Mal geschrieben.
+    """
+    await remove_object_by_url(supabase, STORAGE_BUCKET, url)
 
 
 def _convert_to_avif(image_bytes: bytes, quality: int = 85) -> bytes:

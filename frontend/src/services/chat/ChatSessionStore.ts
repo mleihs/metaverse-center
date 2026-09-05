@@ -167,10 +167,22 @@ export class ChatSessionStore {
     return tempId;
   }
 
+  /**
+   * Eine Nachricht aus dem Faden nehmen.
+   *
+   * Zwei Aufrufer mit demselben Handgriff: das Zuruecknehmen einer
+   * optimistischen Zeile (unten) und das Loeschen eines Szenenbildes. Der
+   * zweite kam am 05.09.2026 dazu und haette sonst dieselbe Zeile ein zweites
+   * Mal geschrieben.
+   */
+  removeMessage(sessionId: string, messageId: string): void {
+    const session = this.getOrCreate(sessionId);
+    session.messages.value = session.messages.value.filter((m) => m.id !== messageId);
+  }
+
   /** Remove an optimistic message (e.g. on send error — rollback). */
   removeOptimistic(sessionId: string, tempId: string): void {
-    const session = this.getOrCreate(sessionId);
-    session.messages.value = session.messages.value.filter((m) => m.id !== tempId);
+    this.removeMessage(sessionId, tempId);
   }
 
   /**

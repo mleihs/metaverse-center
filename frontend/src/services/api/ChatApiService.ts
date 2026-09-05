@@ -62,6 +62,23 @@ export class ChatApiService extends BaseApiService {
   }
 
   /**
+   * Ein Szenenbild wieder entfernen — Zeile UND beide Dateien.
+   *
+   * Jedes Bild liegt zweimal im Speicher (native Fassung und Daumennagel);
+   * das raeumt der Server ab, nicht der Klient. Bis zum 05.09.2026 gab es
+   * diese Route nicht: ein erzeugtes Bild blieb, wo es war.
+   */
+  deleteSceneImage(
+    simulationId: string,
+    conversationId: string,
+    messageId: string,
+  ): Promise<ApiResponse<{ deleted: boolean; storage_objects_removed: number }>> {
+    return this.delete(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/scene-image/${messageId}`,
+    );
+  }
+
+  /**
    * Den Verschluss eines Gespraechs umlegen.
    *
    * Das Passwort geht im SELBEN Aufruf mit: so liegt kein Fenster zwischen

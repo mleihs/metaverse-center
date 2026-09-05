@@ -11,6 +11,7 @@ from backend.services.i18n_utils import get_localized_field
 from backend.utils.db import maybe_single_data
 from backend.utils.errors import bad_request, not_found, server_error
 from backend.utils.responses import extract_list
+from backend.utils.storage import purge_folder
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -755,6 +756,21 @@ class ChatService:
 
         conversation = fetch.data[0]
 
+        # Die Bilder des Fadens ZUERST, und zwar vor dem Zeilenloeschen.
+        #
+        # CASCADE raeumt `chat_messages` ab, aber es kennt den Objektspeicher
+        # nicht: jedes Szenenbild liegt als `chat/{conversation_id}/{uuid}.avif`
+        # UND `…full.avif` in `simulation.assets`, und beide blieben bisher
+        # nach dem Loeschen des Fadens fuer immer liegen — ohne Zeile, die auf
+        # sie zeigt, also ohne jede Moeglichkeit, sie spaeter noch zu finden.
+        #
+        # Reihenfolge mit Absicht: das Aufraeumen ist bestmoeglich und wirft
+        # nicht (siehe `backend/utils/storage`). Liefe es NACH dem Loeschen und
+        # der Aufruf braeche dazwischen ab, waere die Zeile weg und der Ordner
+        # unauffindbar. Andersherum ist der schlimmste Fall ein leerer Ordner
+        # neben einem noch vorhandenen Faden — sichtbar und wiederholbar.
+        entfernt = await purge_folder(supabase, "simulation.assets", f"chat/{conversation_id}")
+
         # Delete (messages cascade automatically)
         await (
             supabase.table("chat_conversations")
@@ -766,6 +782,10 @@ class ChatService:
             .execute()
         )
 
+        logger.info(
+            "Conversation deleted",
+            extra={"conversation_id": str(conversation_id), "storage_objects_removed": entfernt},
+        )
         return conversation
 
     # ── Public query methods ─────────────────────────────

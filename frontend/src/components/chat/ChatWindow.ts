@@ -26,6 +26,7 @@ import type {
 } from '../../types/index.js';
 import { agentAccentColor, MOOD_BANDS } from '../../utils/agent-colors.js';
 import { icons } from '../../utils/icons.js';
+import { VelgConfirmDialog } from '../shared/ConfirmDialog.js';
 import { VelgToast } from '../shared/Toast.js';
 import {
   CONTINUE_DEFAULT_INDEX,
@@ -1112,6 +1113,43 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     }
   }
 
+  /**
+   * Ein Szenenbild wieder entfernen.
+   *
+   * Mit Rueckfrage, wie beim Loeschen eines Fadens: die Erzeugung kostet
+   * einen Modellaufruf und ein paar Sekunden, und rueckgaengig gibt es nicht
+   * — die Dateien sind danach aus dem Speicher.
+   *
+   * Erst der Server, dann der Faden. Andersherum verschwaende das Bild vor
+   * den Augen und kaeme beim naechsten Laden zurueck, falls der Aufruf
+   * scheitert.
+   */
+  private async _handleSceneImageDelete(e: CustomEvent<{ messageId: string }>): Promise<void> {
+    const conversationId = this.conversation?.id;
+    const messageId = e.detail?.messageId;
+    if (!conversationId || !this.simulationId || !messageId) return;
+
+    const confirmed = await VelgConfirmDialog.show({
+      title: msg('Remove this picture'),
+      message: msg('The picture and its stored files are removed for good. The conversation stays as it is.'),
+      confirmLabel: msg('Remove'),
+      variant: 'danger',
+    });
+    if (!confirmed) return;
+
+    try {
+      const response = await chatApi.deleteSceneImage(this.simulationId, conversationId, messageId);
+      if (!response.success) {
+        VelgToast.error(response.error?.message || msg('The picture could not be removed.'));
+        return;
+      }
+      chatStore.removeMessage(conversationId, messageId);
+    } catch (err) {
+      captureError(err, { source: 'ChatWindow._handleSceneImageDelete' });
+      VelgToast.error(msg('The picture could not be removed.'));
+    }
+  }
+
   /** Say so when a message went out and nothing came back.
 
    * Am 03.09.2026 blieb eine Nachricht unbeantwortet, weil ein Deploy den
@@ -1961,6 +1999,7 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
                 @send-starter=${this._handleSendMessage}
               >
                 <velg-chat-feed
+                  @scene-image-delete=${this._handleSceneImageDelete}
                   .messages=${session.messages.value}
                   .participants=${participants}
                   .eventReferences=${this.conversation.event_references ?? []}

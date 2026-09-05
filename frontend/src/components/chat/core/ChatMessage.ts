@@ -25,6 +25,7 @@ import type { Participant } from '../../../services/chat/chat-types.js';
 import type { ChatMessage as ChatMessageData, SceneImageMeta } from '../../../types/index.js';
 import { moodBand, moodRingColor } from '../../../utils/agent-colors.js';
 import { formatRelativeTimeVerbose } from '../../../utils/date-format.js';
+import { icons } from '../../../utils/icons.js';
 import { agentAltText } from '../../../utils/text.js';
 
 import '../../shared/VelgAvatar.js';
@@ -65,6 +66,59 @@ export class ChatMessage extends LitElement {
       letter-spacing: var(--label-tracking);
       color: var(--color-text-muted);
       max-width: 640px;
+    }
+
+    /* Die Stufe steht am Ende der Zeile und der Knopf ganz rechts: die
+       Bildunterschrift liest sich von der Herkunft zur Handlung. */
+    .scene__rating {
+      color: var(--color-text-secondary);
+    }
+
+    .scene__delete {
+      /* margin-inline-start:auto schiebt ihn an das rechte Ende der
+         umbrechenden Zeile, ohne eine zweite Zeile zu erzwingen. */
+      margin-inline-start: auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      /* 24px sichtbar, aber die Trefferflaeche geht ueber den Rand hinaus —
+         auf einem Zeigegeraet ist ein 14px-Sinnbild sonst nicht zu treffen. */
+      inline-size: var(--space-6);
+      block-size: var(--space-6);
+      padding: 0;
+      border: var(--border-width-thin) solid transparent;
+      background: none;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition:
+        color var(--transition-fast),
+        border-color var(--transition-fast),
+        background var(--transition-fast);
+    }
+
+    .scene__delete:hover,
+    .scene__delete:focus-visible {
+      color: var(--color-danger);
+      border-color: var(--color-danger-border);
+      background: var(--color-danger-bg);
+    }
+
+    .scene__delete:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-danger);
+    }
+
+    @media (pointer: coarse) {
+      /* 44px Trefferflaeche, ohne die Zeile aufzublasen. */
+      .scene__delete::after {
+        content: '';
+        position: absolute;
+        inset: calc(var(--space-2-5) * -1);
+      }
+
+      .scene__delete {
+        position: relative;
+      }
     }
 
     .scene__note {
@@ -401,6 +455,10 @@ export class ChatMessage extends LitElement {
       agent: msg('a character\u2019s view'),
       wide: msg('wide shot'),
     }[scene.vantage];
+    const ratingLabel = {
+      general: msg('as the world intends'),
+      mature: msg('adult content'),
+    }[scene.rating];
 
     return html`
       <figure class="scene">
@@ -421,6 +479,25 @@ export class ChatMessage extends LitElement {
                   <span>${msg(str`${scene.references} characters as reference`)}</span>`
               : nothing
           }
+          <!--
+            Die WIRKSAME Stufe, nicht die gewuenschte.
+
+            Ohne sie sieht ein Bild, das der Anbieter gefiltert hat, genauso
+            aus wie ein gelungenes: gleiche Bildunterschrift, kein Fehler,
+            keine Meldung. Genannt wird nur, was ohnehin schon in der Zeile
+            steht — eine Auskunft, keine Pruefung der Ausgabe.
+          -->
+          <span aria-hidden="true">&middot;</span>
+          <span class="scene__rating">${ratingLabel}</span>
+          <button
+            class="scene__delete"
+            type="button"
+            title=${msg('Remove this picture')}
+            aria-label=${msg('Remove this picture')}
+            @click=${this._handleSceneDelete}
+          >
+            ${icons.trash(14)}
+          </button>
         </figcaption>
         ${scene.downgraded ? html`<p class="scene__note" role="note">${scene.downgraded}</p>` : nothing}
       </figure>
@@ -570,6 +647,24 @@ export class ChatMessage extends LitElement {
         ${this._senderName}${isBot ? html`<span class="sender__badge">BOT</span>` : nothing}
       </span>
     `;
+  }
+
+  /**
+   * Das Loeschen gehoert nicht hierher, nur der Knopf.
+   *
+   * Diese Komponente stellt eine Nachricht dar; sie kennt weder die Welt noch
+   * den Faden, in dem sie haengt, und ein API-Aufruf von hier aus muesste
+   * beides raten. Sie meldet also nur, dass geloescht werden soll — dieselbe
+   * Aufteilung wie bei `avatar-click` darunter.
+   */
+  private _handleSceneDelete(): void {
+    this.dispatchEvent(
+      new CustomEvent('scene-image-delete', {
+        detail: { messageId: this.message.id },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   private _handleAvatarClick(e: CustomEvent): void {

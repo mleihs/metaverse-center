@@ -656,6 +656,47 @@ async def create_scene_image(
     return SuccessResponse(data=nachricht)
 
 
+@router.delete("/conversations/{conversation_id}/scene-image/{message_id}")
+async def delete_scene_image(
+    simulation_id: UUID,
+    conversation_id: UUID,
+    message_id: UUID,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[dict]:
+    """Ein einzelnes Szenenbild aus dem Faden entfernen.
+
+    `require_role("viewer")` und nicht `editor`, wie beim Erzeugen nebenan:
+    wer ein Bild in seinem eigenen Gespraech anlegen darf, darf es auch wieder
+    loeschen. Den Besitz prueft `verify_ownership` — die Weltrolle allein
+    deckt ihn nicht ab.
+
+    Es gab diese Route bis zum 05.09.2026 nicht. Ein erzeugtes Bild blieb, wo
+    es war, und die einzige Moeglichkeit, es loszuwerden, war den ganzen Faden
+    zu loeschen — was seinerseits die Dateien im Speicher liegen liess.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    dienst = SceneImageService(supabase, simulation_id)
+    try:
+        ergebnis = await dienst.delete(conversation_id=conversation_id, message_id=message_id)
+    except SceneImageRefusedError as fehlt:
+        # 404 und nicht 422: hier ist nicht der INHALT das Problem, sondern
+        # dass es die Zeile in diesem Faden nicht gibt.
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(fehlt)) from fehlt
+
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_messages",
+        message_id,
+        "delete",
+        details={"conversation_id": str(conversation_id), "kind": "scene_image"},
+    )
+    return SuccessResponse(data=ergebnis)
+
+
 @router.patch("/conversations/{conversation_id}/continuation")
 @limiter.limit(RATE_LIMIT_EXTERNAL_API)
 async def set_conversation_continuation(
