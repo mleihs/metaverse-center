@@ -842,6 +842,7 @@ class ThemeService {
     tokensApplied.push('color-scheme');
 
     this.publishPlatformAccent(hostElement, polarity === '1', tokensApplied);
+    this.publishKontorPalette(hostElement, polarity === '1', tokensApplied);
   }
 
   /**
@@ -911,6 +912,47 @@ class ThemeService {
         ];
 
     for (const [token, value] of pairs) {
+      hostElement.style.setProperty(token, value);
+      tokensApplied.push(token);
+    }
+  }
+
+  /**
+   * Die zehn Kontor-Rollen an der Polaritaet kippen.
+   *
+   * WARUM HIER UND NICHT IN THEME_TOKEN_MAP
+   *   Der Entwurf des Kostenpanels schlug zehn Einstellungsschluessel vor,
+   *   damit der Atlas-Skin die Rollen umfaerben kann. Das haette den Atlas
+   *   bedient und die SECHS hellen Welt-Themes still auf den dunklen Werten
+   *   stehen lassen — ein nicht geschriebenes Token ist kein Vorgabewert,
+   *   sondern ein geerbter. Gemessen, bevor eine Zeile davon gebaut war:
+   *   drei der zehn Rollen fallen so durch (Serientext #94a3b8 auf hellem
+   *   Papier misst 1,9).
+   *
+   *   Diese zehn beschreiben, wie eine ZAHL AUF EINEM GRUND liegt, nicht
+   *   welche Farbe eine Welt hat. Das ist dieselbe Art Rolle wie der
+   *   Plattform-Akzent eine Etage darueber, und bekommt dieselbe Behandlung:
+   *   einmal in JS gekippt statt zwoelfmal in Daten gepflegt.
+   *
+   * WARUM BEIDE SEITEN GESCHRIEBEN WERDEN
+   *   Nicht „auf hell setzen, sonst nichts tun". Ein dunkler Wirt innerhalb
+   *   eines hellen (DriftView, DungeonView) muss den dunklen Satz aktiv
+   *   zurueckholen, sonst erbt er das Papier — genau die Fehlerklasse, gegen
+   *   die tests/theme-token-redeclaration.test.ts angelegt wurde.
+   *
+   * WAS DAS TOR DAZU PRUEFT
+   *   `scripts/lint-series-palette-grounds.mjs` misst jede dieser Rollen gegen
+   *   die drei Gruende jedes Themes der passenden Polaritaet, mit der Schwelle
+   *   ihrer Rolle — und die zwei Rollen, die SCHWACH bleiben muessen
+   *   (`--color-row-hover`, `--color-hatch-bg`), gegen eine OBERGRENZE. Ein Tor
+   *   mit nur einer Richtung haette die Schraffur hinter dem Text durchgelassen.
+   */
+  private publishKontorPalette(
+    hostElement: HTMLElement,
+    light: boolean,
+    tokensApplied: string[],
+  ): void {
+    for (const [token, value] of Object.entries(light ? KONTOR_PAPER : KONTOR_DARK)) {
       hostElement.style.setProperty(token, value);
       tokensApplied.push(token);
     }
@@ -1225,6 +1267,48 @@ const PLATFORM_AMBER_DIM = '#be5e09';
 const PLATFORM_AMBER_GLOW = 'rgba(245, 158, 11, 0.15)';
 const PLATFORM_ON_AMBER = '#0a0a0a';
 const PLATFORM_GREEN = '#4ade80';
+
+/*
+ * KONTOR — die zehn Panel-Rollen, je Polaritaet.
+ *
+ * Der dunkle Satz steht wortwoertlich in `_colors.css`; er steht hier ein
+ * zweites Mal aus demselben Grund wie PLATFORM_AMBER: ein dunkler Wirt
+ * INNERHALB eines hellen muss ihn aktiv zurueckschreiben, sonst erbt er das
+ * Papier. `tests/kontor-palette-polarity.test.ts` bindet die Doppelung an die
+ * CSS-Datei, damit sie nicht auseinanderlaeuft.
+ *
+ * Der helle Satz ist der Papiersatz des Entwurfs, nachgerechnet gegen die drei
+ * Gruende aller sechs hellen Themes (nicht nur gegen den Atlas). Ein Wert
+ * musste dafuer gehoben werden: --color-delta-adverse von #b3261e auf #b1261e,
+ * weil #b3261e auf der cremefarbenen `sunken`-Auflage von Illuminated
+ * (#E0D4BE) 4,46 misst. Vollstaendige Kreuztabelle:
+ * `scripts/lint-series-palette-grounds.mjs`.
+ */
+const KONTOR_DARK: Record<string, string> = {
+  '--color-chart-grid': 'rgba(229, 229, 229, 0.09)',
+  '--color-text-glyph': '#6b6b6b',
+  '--color-delta-adverse': '#f87171',
+  '--color-delta-benign': '#7dd3fc',
+  '--color-series-image': '#d97706',
+  '--color-series-text': '#94a3b8',
+  '--color-series-forecast': '#3f3f46',
+  '--color-hatch': '#6b6b6b',
+  '--color-hatch-bg': '#2e2e2e',
+  '--color-row-hover': 'rgba(229, 229, 229, 0.04)',
+};
+
+const KONTOR_PAPER: Record<string, string> = {
+  '--color-chart-grid': 'rgba(23, 32, 29, 0.14)',
+  '--color-text-glyph': '#6b7a72',
+  '--color-delta-adverse': '#b1261e',
+  '--color-delta-benign': '#2f3f7a',
+  '--color-series-image': '#a3311a',
+  '--color-series-text': '#4b5f57',
+  '--color-series-forecast': '#b9c2bb',
+  '--color-hatch': '#6b7a72',
+  '--color-hatch-bg': '#c2ccc4',
+  '--color-row-hover': 'rgba(23, 32, 29, 0.03)',
+};
 
 /** The weights every family is requested at. A theme may need one more. */
 const STANDARD_WEIGHTS = new Set(['400', '500', '700', '800']);

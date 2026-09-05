@@ -311,6 +311,103 @@
   --color-accent-green: #4ade80;
   --color-mint-brass: #b8860b;
 
+  /* === KONTOR — die Rollen des Kostenpanels =================================
+   *
+   * Zehn Rollen, die es vor dem Kostenpanel „Kontor" nicht gab. Die Werte hier
+   * sind der DUNKLE Satz; den hellen schreibt `ThemeService.publishKontorPalette`
+   * an der Polaritaet, nicht ueber `THEME_TOKEN_MAP` — Begruendung unten.
+   *
+   * WARUM POLARITAET UND NICHT THEME_TOKEN_MAP
+   *   Der Entwurf schlug zehn Einstellungsschluessel vor, damit der Atlas-Skin
+   *   sie umfaerben kann. Das faerbt sie auf dem Atlas — und laesst sie auf den
+   *   SECHS hellen Welt-Themes still auf diesen dunklen Werten stehen, weil ein
+   *   nicht geschriebenes Token kein Vorgabewert ist, sondern ein geerbter. Es
+   *   ist dieselbe Bauart wie `--color-surface-overlay` und die zwei
+   *   Zustandstoene der Huelle, beide am 05.09.2026 aus genau diesem Grund
+   *   abgeschafft bzw. nachgezogen.
+   *
+   *   Der Plattform-Akzent hat dafuer schon ein Muster (`publishPlatformAccent`,
+   *   03.09.2026): eine Rolle, die zur POLARITAET des Grundes gehoert und nicht
+   *   zur Palette der Welt, wird einmal in JS gekippt statt N-mal in Daten
+   *   gepflegt. Diese zehn sind derselbe Fall — sie beschreiben, wie eine Zahl
+   *   auf einem Grund liegt, nicht welche Farbe eine Welt hat.
+   *
+   * GEMESSEN, NICHT ABGESCHRIEBEN (05.09.2026)
+   *   Die Werte kommen aus dem Uebergabepaket, sind aber gegen unseren
+   *   tatsaechlichen `--color-surface-raised` (#111111, nicht die #171717 des
+   *   Entwurfs) und gegen die drei Gruende ALLER zwoelf Themes nachgerechnet:
+   *   216 Paarungen, alle bestehen. Zwei Werte mussten dafuer gehoben werden,
+   *   beide um den kleinsten Schritt, der traegt:
+   *
+   *     --color-hatch          #666666 -> #6b6b6b   (2,81 auf Deep-Oceans
+   *                                                  `raised` #0f2236 -> 3,03)
+   *     --color-delta-adverse  #b3261e -> #b1261e   (heller Satz: 4,46 auf
+   *                                                  `sunken` #E0D4BE -> 4,53)
+   *
+   *   Erzwungen von `scripts/lint-series-palette-grounds.mjs`, das seit dem
+   *   05.09.2026 nicht nur die Diagrammserien prueft, sondern diese Rollen mit.
+   */
+
+  /* Die Gitterlinie des Diagramms. Alpha statt Festwert, weil sie auf allen
+     drei Gruenden liegt und auf jedem gleich schwach bleiben soll: 1,19–1,22
+     im dunklen Satz. `--color-border-light` (1,24 auf `page`) ist als
+     Trennstrich gedacht und traegt zu weit; ein Raster soll man sehen, nicht
+     lesen. Keine Kontrastschwelle — eine Splitline ist weder Text noch
+     bedeutungstragende Grafik. */
+  --color-chart-grid: rgba(229, 229, 229, 0.09);
+
+  /* Der ZEICHENTON der Zellzustaende: · — ░ ▸ und sonst nichts.
+     Schwelle 3 : 1 nach SC 1.4.11 (bedeutungstragende Nicht-Text-Elemente),
+     gemessen 3,72 / 3,54 / 3,80 auf page / raised / sunken.
+     ⚠ KEIN SATZ DARAUF. Er liegt unter AA und ist deshalb ausdruecklich nicht
+     `--color-text-muted` (5,33 auf raised): stuenden die Zustaende auf dem
+     Muted-Ton, waeren sie von einer Anmerkung nicht zu unterscheiden — und
+     genau das ist die Aussage, die das Panel traegt (206 von 1 646 Zeilen
+     haben keinen Betrag, das ist nicht null und nicht klein). */
+  --color-text-glyph: #6b6b6b;
+
+  /* Das Gegenpaar der Kostenrichtung. Steigende Kosten sind SCHLECHT — die
+     uebliche Zuordnung ist hier invertiert, deshalb zwei eigene Rollen statt
+     `--color-danger` / `--color-success`.
+     Und ausdruecklich BLAU als das gute Zeichen, nicht Gruen: Rot gegen Gruen
+     faellt in Graustufen und bei Rotsehschwaeche zusammen, Rot gegen Blau
+     nicht. `--color-danger` (#ef4444) taugt hier nicht — es misst als Text auf
+     `raised` 4,26 und faellt durch. */
+  --color-delta-adverse: #f87171; /* teurer:   7,16 / 6,83 / 7,32 */
+  --color-delta-benign: #7dd3fc; /* billiger: 11,87 / 11,33 / 12,15 */
+
+  /* Die Diagrammserien des Panels, als benannte Rolle statt als Hexwert an der
+     Verwendungsstelle. Schwelle 4,5 und nicht 3 : 1, weil die Beschriftung IM
+     Balken steht — sobald Schrift auf einer Flaeche liegt, ist die Flaeche ein
+     Textwert und kein Fuellwert mehr. */
+  --color-series-image: #d97706; /* Bild (Replicate):    6,21 / 5,93 / 6,36 */
+  --color-series-text: #94a3b8; /* Text (OpenRouter):   7,72 / 7,36 / 7,90 */
+
+  /* Die Hochrechnung. Absichtlich schwach und ohne Farbton — sie ist keine
+     Messung, und das soll man sehen, bevor man die Zahl liest. Keine Schwelle:
+     der Balken traegt keine Beschriftung und behauptet nichts. */
+  --color-series-forecast: #3f3f46; /* 1,90 / 1,81 / 1,94 */
+
+  /* ZWEI Schraffur-Rollen, die nicht zusammengelegt werden duerfen.
+     Die eine ist eine Balkenfuellung, die gesehen werden muss (3 : 1); die
+     andere liegt HINTER Text und muss zurueckbleiben. Legt man sie zusammen,
+     wird entweder der Sammelbalken „ohne Angabe" unsichtbar oder der Satz auf
+     der Schraffur unlesbar.
+     ⚠ `--color-hatch-bg` ist ein VIERTER GRUND, nicht nur eine Fuellung —
+     gemessen am 05.09.2026 traegt sie `--color-text-primary` (10,78) und
+     `--color-text-secondary` (5,19), aber NICHT `--color-text-muted` (3,83).
+     Auf der Schraffur steht Sekundaertinte oder hoeher. */
+  --color-hatch: #6b6b6b; /* Fuellung: 3,45 / 3,29 / 3,53 */
+  --color-hatch-bg: #2e2e2e; /* hinter Text: 1,46 / 1,39 / 1,49 */
+
+  /* Zeilen-Hover. Alpha, weil er auf allen drei Gruenden gleich leise sein
+     muss: 1,066 / 1,074 / 1,057 — unter 1,15, sonst liest sich die
+     ueberfahrene Zeile als ausgewaehlt.
+     Die vorhandenen `*-bg`-Tokens (8 % auf `--color-surface`) sind dafuer zu
+     stark. Und ausdruecklich NUR Farbe, kein Versatz: eine Tabellenzeile, die
+     sich hebt, verschiebt die Zahlenspalten unter dem Zeiger. */
+  --color-row-hover: rgba(229, 229, 229, 0.04);
+
   /* === DRIFT BLEED-VECTOR PALETTE ===
      The 7 frequency colors of the DRIFT travel chart, one per bleed vector
      (concept §6.1 order). The Three.js renderer reads these via getComputedStyle
