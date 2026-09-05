@@ -32309,6 +32309,14 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Back in the file</source>
         <target>Zurück in die Akte</target>
 </trans-unit>
+<trans-unit id="sbf4314770d4bbc61">
+  <source>Filed away</source>
+        <target>Abgelegt</target>
+</trans-unit>
+<trans-unit id="s575d424664b0a4ae">
+  <source>Put out of sight again</source>
+        <target>Wieder wegräumen</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

@@ -1151,6 +1151,22 @@ export const icons = {
     </svg>
   `,
 
+  /**
+   * Archiv — der Kasten mit dem Deckel.
+   *
+   * Fuer die Ablage-Kachel am Fuss der Gespraechsliste. Bewusst ein KASTEN
+   * und kein Ordner: ein Ordner sagt „sortiert", ein Kasten sagt
+   * „weggeraeumt, aber da" — und genau das ist die Aussage der Kachel.
+   */
+  archive: (size = 14) => svg`
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"
+      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
+      <rect x="3" y="4" width="18" height="4" />
+      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1 -1v-11" />
+      <path d="M10 13h4" />
+    </svg>
+  `,
+
   /** Link — Platform Chrome Tier 1. */
   link: (size = 14) => svg`
     <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" aria-hidden="true"

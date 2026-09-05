@@ -620,6 +620,8 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
   @property({ type: Object }) unreadCounts: Record<string, number> = {};
 
   @state() private _searchTerm = '';
+  /** Ob die Ablage gerade aufgeklappt ist. Siehe `_renderArchiveTile`. */
+  @state() private _showArchived = false;
   @state() private _pinnedIds = new Set<string>();
   @state() private _renamingId: string | null = null;
   @state() private _renameValue = '';
@@ -734,6 +736,11 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
     return this.conversations.filter((c) => c.locked).length;
   }
 
+  /** Wie viele abgelegt sind. */
+  private get _archivedCount(): number {
+    return this.conversations.filter((c) => c.status === 'archived').length;
+  }
+
   private get _groupedConversations(): GroupedConversations {
     const term = this._searchTerm.toLowerCase().trim();
 
@@ -748,15 +755,34 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       ? this.conversations
       : this.conversations.filter((c) => !c.locked);
 
+    /*
+     * Abgelegte Gespraeche fallen aus der Vorgabeansicht heraus — aber NICHT
+     * aus der Suche, und darin unterscheiden sie sich vom Verschluss.
+     *
+     * Beim Verschluss ist das Verbergen der ZWECK: ein Titel ist oft schon
+     * die Auskunft, die nicht sichtbar sein soll, deshalb faellt er vor der
+     * Suche heraus. Eine Ablage verbirgt nichts, sie raeumt auf. Wer den
+     * Titel eines abgelegten Gespraechs sucht, sucht genau das, was er
+     * weggeraeumt hat — es dann NICHT zu finden waere die schlechtere
+     * Hygiene, nicht die bessere.
+     *
+     * Ohne Suchbegriff entscheidet die Kachel am Fuss (`_renderArchiveTile`),
+     * ob sie mitlaufen.
+     */
+    const ohneAblage =
+      this._showArchived || term
+        ? sichtbar
+        : sichtbar.filter((c) => c.status !== 'archived');
+
     // Filter by search term
     const filtered = term
-      ? sichtbar.filter((conv) => {
+      ? ohneAblage.filter((conv) => {
           const agents = this._getAgents(conv);
           const agentNames = agents.map((a) => a.name.toLowerCase()).join(' ');
           const title = (conv.title ?? '').toLowerCase();
           return agentNames.includes(term) || title.includes(term);
         })
-      : sichtbar;
+      : ohneAblage;
 
     const groups: GroupedConversations = {
       pinned: [],
@@ -898,6 +924,46 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
         <span class="seal-tile__text">
           <span class="seal-tile__count">${msg('Under seal')} · ${anzahl}</span>
           <span class="seal-tile__hint">${msg('Enter password')}</span>
+        </span>
+      </button>
+    `;
+  }
+
+  /**
+   * Die Ablage-Kachel am Fuss der Liste, neben der des Verschlusses.
+   *
+   * WARUM EINE KACHEL UND KEIN REITER
+   *
+   * Die Liste ist bereits nach Zeit gegliedert (angeheftet, heute, gestern,
+   * diese Woche, aelter). Ein Reiter legte eine ZWEITE Ordnung quer darueber
+   * — man muesste erst waehlen, in welcher der beiden man sich befindet, um
+   * eine Zeile zu finden. Die Kachel fuegt der bestehenden Ordnung nichts
+   * hinzu; sie sagt nur, wieviel ausserhalb liegt.
+   *
+   * Und sie verschwindet bei null. Ein Reiter „Ablage" waere immer da, auch
+   * wenn nie etwas abgelegt wurde — die Auskunft ueber nichts, gegen die der
+   * Kommentar an der Verschluss-Kachel schon argumentiert. Dieselbe Form
+   * zweimal zu benutzen ist ausserdem billiger zu lernen als zwei Formen fuer
+   * dieselbe Aussage („weggeraeumt, aber wiederzufinden").
+   */
+  private _renderArchiveTile(): TemplateResult | typeof nothing {
+    const anzahl = this._archivedCount;
+    if (anzahl === 0) return nothing;
+
+    return html`
+      <button
+        class="seal-tile ${this._showArchived ? 'seal-tile--open' : ''}"
+        aria-expanded=${this._showArchived ? 'true' : 'false'}
+        @click=${() => {
+          this._showArchived = !this._showArchived;
+        }}
+      >
+        <span class="seal-tile__icon">${icons.archive(14)}</span>
+        <span class="seal-tile__text">
+          <span class="seal-tile__count">${msg('Filed away')} · ${anzahl}</span>
+          <span class="seal-tile__hint">
+            ${this._showArchived ? msg('Put out of sight again') : msg('Show')}
+          </span>
         </span>
       </button>
     `;
@@ -1246,7 +1312,9 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       return html`
         ${this._renderSearch()}
         <velg-empty-state message=${msg('No conversations yet')}></velg-empty-state>
-        ${this._renderSealTile()}
+        ${this._renderArchiveTile()}
+        ${this._renderArchiveTile()}
+      ${this._renderSealTile()}
       `;
     }
 
