@@ -39,6 +39,15 @@
 -- die Vorlage fuer den Nachzug.
 -- =============================================================================
 
+-- EINE Transaktion, und das ist keine Formsache. `psql -f` schreibt jede
+-- Anweisung einzeln fest; ohne die Klammer faellt `_strich_vorher` durch
+-- `ON COMMIT DROP` sofort nach seinem eigenen CREATE wieder weg, und der
+-- DO-Block darunter findet es nicht mehr. Genau daran ist die erste Fassung
+-- dieser Datei in CI gescheitert (`relation "_strich_vorher" does not exist`).
+-- 351, dem sie nachgebaut ist, hat die Klammer — ich hatte den Rumpf
+-- uebernommen und den Rahmen nicht.
+BEGIN;
+
 -- Der Stand VOR den Anweisungen. Ohne ihn koennte die Schlussmeldung nur
 -- behaupten, sie habe etwas getan — Muster wie in 305 und 351.
 CREATE TEMP TABLE _strich_vorher ON COMMIT DROP AS
@@ -96,3 +105,5 @@ BEGIN
     RAISE NOTICE '382: % von % Plattform-Vorlage(n) bereinigt.', v_vorher, v_gesamt;
   END IF;
 END $$;
+
+COMMIT;
