@@ -55,10 +55,31 @@ class GenerationService:
         simulation_id: UUID,
         openrouter_api_key: str | None = None,
         world_context: str = "",
+        key_source: str = "platform",
     ):
+        """``key_source`` muss GESAGT werden, nicht aus dem Schluessel geraten.
+
+        Zwei Ketten erreichen diesen Konstruktor mit einem nicht-leeren
+        ``openrouter_api_key``, und sie bedeuten fuer das Kostenbuch das
+        Gegenteil voneinander: die Router reichen durch, was der
+        ``ExternalServiceResolver`` geliefert hat — eine Simulations-
+        Ueberschreibung, eine Plattformeinstellung oder der ``.env``-Wert, in
+        allen drei Faellen das Geld der Plattform. ``AgentMemoryService`` und
+        ``MemorySupersedeService`` dagegen reichen den EIGENEN Schluessel der
+        Besitzerin durch — die Verzweigung steht dort, nicht hier.
+
+        ``key_source_for()`` kann die beiden nicht unterscheiden, denn beide
+        sind einfach nicht None. Also sagt es, wer es weiss, und der Vorgabewert
+        bleibt das vorsichtige ``"platform"``: eine Buchung als ``byok``
+        bedeutet „die Plattform hat nichts bezahlt" und nimmt den Betrag aus
+        ``get_budget_states`` heraus — falsch gesetzt hebelt sie die
+        Obergrenzen aus. Dasselbe Muster und derselbe Grund wie in
+        ``ForgeImageService``.
+        """
         self._supabase = supabase
         self._simulation_id = simulation_id
         self._world_context = world_context
+        self._key_source = key_source
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
@@ -1386,6 +1407,7 @@ class GenerationService:
                     model=model.model_id,
                     purpose=purpose,
                     usage=self._openrouter.last_usage,
+                    key_source=self._key_source,
                 )
                 return result
             except RateLimitError:
@@ -1427,6 +1449,7 @@ class GenerationService:
                 model=fallback.model_id,
                 purpose=purpose,
                 usage=self._openrouter.last_usage,
+                key_source=self._key_source,
             )
             return result
         except OpenRouterError:
@@ -1451,6 +1474,7 @@ class GenerationService:
             model=default_model,
             purpose=purpose,
             usage=self._openrouter.last_usage,
+            key_source=self._key_source,
         )
         return result
 

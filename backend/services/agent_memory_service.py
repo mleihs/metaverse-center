@@ -7,6 +7,7 @@ from datetime import datetime
 from uuid import UUID
 
 from backend.config import settings
+from backend.services.ai_utils import key_source_for
 from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
@@ -154,7 +155,12 @@ class AgentMemoryService:
         agent_resp = await admin.table("agents").select("name").eq("id", str(agent_id)).limit(1).execute()
         agent_name = agent_resp.data[0]["name"] if agent_resp.data else "Agent"
 
-        gen = GenerationService(admin, simulation_id, api_key or settings.openrouter_api_key)
+        gen = GenerationService(
+            admin,
+            simulation_id,
+            api_key or settings.openrouter_api_key,
+            key_source=key_source_for(api_key),
+        )
         batch = await gen.extract_memory_observations(
             agent_name=agent_name,
             simulation_name=sim_name,
@@ -567,7 +573,12 @@ class AgentMemoryService:
         # Format observations text
         obs_text = "\n".join(f"- [{o['importance']}/10] {o['content']}" for o in observations)
 
-        gen = GenerationService(supabase, simulation_id, api_key or settings.openrouter_api_key)
+        gen = GenerationService(
+            supabase,
+            simulation_id,
+            api_key or settings.openrouter_api_key,
+            key_source=key_source_for(api_key),
+        )
         batch = await gen.reflect_on_memories(
             agent_name=agent_name,
             simulation_name=sim_name,

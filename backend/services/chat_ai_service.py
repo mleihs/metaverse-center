@@ -1140,6 +1140,18 @@ class ChatAIService:
             model=model.model_id,
             purpose="chat",
             usage=usage,
+            # AUSGESAGT, nicht geraten. Der Schluessel kommt aus dem
+            # `ExternalServiceResolver` (Simulations-Ueberschreibung →
+            # Plattformeinstellung → `.env`); alle drei Sprossen sind das Geld
+            # der Plattform. `key_source_for()` saehe nur „nicht None" und
+            # buchte `byok` — der Betrag fiele aus den Obergrenzen heraus.
+            key_source="platform",
+            # Ohne diese Zeile kennt das Kostenbuch nur die WELT. Die
+            # Verdichtung schreibt ihre `conversation_id` seit jeher mit, der
+            # Zug selbst nicht — dabei steht sie hier ohnehin da. Erst damit
+            # laesst sich fragen, was ein einzelner Faden gekostet hat und
+            # welche Figur wie viel davon.
+            metadata={"conversation_id": str(conversation_id), "agent_id": str(agent["id"])},
         )
 
         metadata: dict[str, Any] = {

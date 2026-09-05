@@ -1131,7 +1131,9 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
     const confirmed = await VelgConfirmDialog.show({
       title: msg('Remove this picture'),
-      message: msg('The picture and its stored files are removed for good. The conversation stays as it is.'),
+      message: msg(
+        'The picture and its stored files are removed for good. The conversation stays as it is.',
+      ),
       confirmLabel: msg('Remove'),
       variant: 'danger',
     });

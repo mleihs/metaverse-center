@@ -69,6 +69,7 @@ from typing import Any
 from uuid import UUID
 
 from backend.services.agent_memory_service import AgentMemoryService
+from backend.services.ai_utils import key_source_for
 from backend.services.generation_service import GenerationService
 from backend.utils.responses import extract_list
 from backend.utils.settings import parse_setting_bool
@@ -128,7 +129,7 @@ class MemorySupersedeService:
         if not paare:
             return []
 
-        gen = GenerationService(admin, simulation_id, api_key)
+        gen = GenerationService(admin, simulation_id, api_key, key_source=key_source_for(api_key))
         namen = await cls._agent_names(admin, [p["kandidat_agent_id"] for p in paare])
 
         erledigt: list[dict[str, Any]] = []

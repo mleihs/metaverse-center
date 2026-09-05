@@ -463,6 +463,9 @@ class ConversationDigestService:
             model=model.model_id,
             purpose=PURPOSE,
             usage=self._openrouter.last_usage or {},
+            # Derselbe Schluessel wie der Chatzug — aus dem Resolver, also
+            # immer das Geld der Plattform. Ausgesagt statt geerbt.
+            key_source="platform",
             metadata={"conversation_id": str(conversation_id), "segment_index": segment_index},
         )
 

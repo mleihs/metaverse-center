@@ -21,6 +21,7 @@ import sentry_sdk
 
 from backend.dependencies import get_admin_supabase
 from backend.services.ai_usage_service import AIUsageService
+from backend.services.ai_utils import key_source_for
 from backend.services.bond.whisper_template_service import WhisperTemplateService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.external.openrouter import BudgetContext, OpenRouterError, OpenRouterService
@@ -573,6 +574,12 @@ class WhisperService:
                     model=resolved.model_id,
                     purpose="bond_whisper",
                     usage=openrouter.last_usage or {},
+                    # Der Herzschlag reicht hier den EIGENEN Schluessel der
+                    # Besitzerin durch (`bw_key if bw_has_key else None`).
+                    # Ohne diese Zeile buchte jeder Fluesteraufruf als
+                    # `platform` — Geld, das die Plattform nie ausgegeben hat,
+                    # haette gegen ihre eigenen Obergrenzen gezaehlt.
+                    key_source=key_source_for(openrouter_api_key),
                     metadata={"whisper_type": whisper_type, "attempt": attempt + 1},
                 )
 

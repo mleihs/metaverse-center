@@ -56,6 +56,7 @@ from uuid import UUID
 
 from backend.services.agent_memory_service import AgentMemoryService
 from backend.services.ai_usage_service import AIUsageService
+from backend.services.ai_utils import key_source_for
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.chat.conversation_digest_service import ConversationDigestService
 from backend.services.external.openrouter import (
@@ -140,6 +141,11 @@ class ContinuationService:
                 prompts=prompts,
                 openrouter=openrouter,
                 budget_ctx=budget_ctx,
+                # Wie beim Fluestern: der Herzschlag reicht den eigenen
+                # Schluessel der Besitzerin durch. `platform` waere hier eine
+                # Fehlbuchung. Die Quelle wird da bestimmt, wo der Schluessel
+                # gewaehlt wird, und durchgereicht — nicht unten geraten.
+                key_source=key_source_for(openrouter_api_key),
             )
             if wortwechsel:
                 ergebnisse.append(wortwechsel)
@@ -237,6 +243,7 @@ class ContinuationService:
         prompts: PromptResolver,
         openrouter: OpenRouterService,
         budget_ctx: BudgetContext,
+        key_source: str,
     ) -> dict[str, Any] | None:
         conversation_id = UUID(str(faden["id"]))
         locale = str(faden.get("locale") or "de")
@@ -296,6 +303,7 @@ class ContinuationService:
             model=model.model_id,
             purpose=PURPOSE,
             usage=openrouter.last_usage or {},
+            key_source=key_source,
             metadata={"conversation_id": str(conversation_id)},
         )
 

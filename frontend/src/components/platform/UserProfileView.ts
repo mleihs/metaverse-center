@@ -1214,9 +1214,11 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
             </span>
           </div>
 
-          ${prefs
-            ? nothing
-            : html`<span class="field__hint">${msg('The image desk could not be reached.')}</span>`}
+          ${
+            prefs
+              ? nothing
+              : html`<span class="field__hint">${msg('The image desk could not be reached.')}</span>`
+          }
         </div>
       </div>
     `;
