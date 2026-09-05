@@ -105,7 +105,12 @@
   --color-surface-raised-critical: #0d0808;
   --color-surface-raised-ascendant: #0d0b08;
   --color-surface-sunken: #060606;
-  --color-surface-overlay: #111111;
+  /* --color-surface-overlay ABGESCHAFFT am 05.09.2026. Es trug denselben
+     Wert wie --color-surface-raised, wurde von KEINEM Plattform-Satz
+     geschrieben und blieb deshalb auf dem Atlas dunkel: Papiertinte auf
+     dunkler Auflage sind 1,13 : 1. Zwei Tokens mit gleichem Vorgabewert machen
+     genau diesen Unterschied unsichtbar, solange es nur einen Satz gibt.
+     Wer eine Auflage braucht, nimmt --color-surface-raised. */
   --color-surface-header: #0a0a0a;
   --color-surface-inverse: #ffffff;
 

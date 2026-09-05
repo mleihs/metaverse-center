@@ -317,30 +317,53 @@ export class VelgForecastSlider extends LitElement {
       background: var(--color-primary);
     }
 
-    /* Die Kerbenbeschriftung sitzt UNTER der Bahn und damit ausserhalb des
-       Umschlags — deshalb ein eigenes Raster statt absoluter Positionen:
-       fuenf gleich breite Spalten, deren Text sich jeweils an seiner Kerbe
-       ausrichtet. Absolut positionierte Beschriftungen liefen an den Enden
-       ueber den Rand und mussten dort einzeln zurechtgerueckt werden. */
+    /* Die Kerbenbeschriftung steht unter DERSELBEN Formel wie die Kerbe.
+     *
+     * ⚠ GEMESSEN am 05.09.2026 an der Fassung davor. Sie war ein Raster aus
+     * n gleich breiten Spalten mit derselben Einziehung wie die Bahn -- und
+     * die Spaltenmitten liegen nicht auf den Kerben. Bei fuenf Marken sitzen
+     * die Kerben bei 0/25/50/75/100 % der eingezogenen Bahn, die Spalten-
+     * mitten bei 10/30/50/70/90 %. Auf 294 px Bahn:
+     *
+     *     Marke   Kerbe   Glyphen   Versatz
+     *     48        9      15,1      +6,1
+     *     24       78      91,8     +13,8
+     *     12      147     147,0       0
+     *      6      216     202,2     -13,8
+     *      4      285     281,9      -3,1
+     *
+     * Nur die mittlere stimmte. Die Viertel lagen um fast eine ganze
+     * Zahlenbreite daneben, und weil text-align an den Enden links bzw.
+     * rechts ausrichtet und "48" breiter ist als "4", war der Versatz nicht
+     * einmal symmetrisch -- deshalb sah es schief aus und nicht bloss
+     * verschoben.
+     *
+     * 🔑 Zwei Dinge, die uebereinander stehen muessen, brauchen EINE Formel.
+     * Zwei Systeme, die zufaellig in der Mitte uebereinstimmen, sehen genau
+     * so lange richtig aus, wie man nur in die Mitte schaut.
+     *
+     * Der alte Kommentar begruendete das Raster damit, dass absolute
+     * Beschriftungen an den Enden ueberliefen. Das stimmt nur ohne die
+     * Einziehung: die erste Zahl steht bei einem halben Daumen (9 px) und
+     * ragt um ihre halbe Breite (rund 6 px) nach links -- also innerhalb der
+     * Einziehung, die genau dafuer da ist. Fuer lange Kerbentexte gilt das
+     * nicht; die Kerbenbeschriftung ist laut Docstring eine Stundenangabe,
+     * keine Prosa. */
     .slider__ticks {
-      display: grid;
+      position: relative;
+      height: calc(var(--text-xs) * var(--leading-normal));
       font-family: var(--font-mono);
       font-size: var(--text-xs);
       font-variant-numeric: tabular-nums;
       color: var(--color-text-muted);
-      /* Die Bahn ist an beiden Enden um einen halben Daumen eingezogen (der
-         Daumen steht bei min/max mittig). Dieselbe Einziehung hier, sonst
-         staende die erste Zahl neben ihrer Kerbe statt darunter. */
-      padding-inline: calc(var(--_thumb-size) / 2);
       margin-top: calc(var(--space-1) * -1);
     }
 
     .slider__tick {
-      text-align: center;
+      position: absolute;
+      transform: translateX(-50%);
+      white-space: nowrap;
     }
-
-    .slider__tick:first-child { text-align: left; }
-    .slider__tick:last-child { text-align: right; }
 
     .slider__tick--active {
       color: var(--color-primary);
@@ -509,17 +532,21 @@ export class VelgForecastSlider extends LitElement {
         </div>
         ${
           this.marks.length
-            ? html`<div
-                class="slider__ticks"
-                style="grid-template-columns: repeat(${this.marks.length}, 1fr)"
-                aria-hidden="true"
-              >
-                ${this.marks.map(
-                  (mark) => html`<span
+            ? html`<div class="slider__ticks" aria-hidden="true">
+                ${this.marks.map((mark) => {
+                  // DIESELBE Formel wie die Kerbe oben. Wer eine aendert,
+                  // muss die andere mitaendern -- deshalb stehen sie
+                  // absichtlich Zeichen fuer Zeichen gleich da.
+                  const pct =
+                    this.max === this.min
+                      ? 0
+                      : ((mark.value - this.min) / (this.max - this.min)) * 100;
+                  return html`<span
                     class="slider__tick ${mark.value === this.value ? 'slider__tick--active' : ''}"
+                    style="left: calc(${pct}% + ${0.5 - pct / 100} * var(--_thumb-size))"
                     >${mark.tick ?? ''}</span
-                  >`,
-                )}
+                  >`;
+                })}
               </div>`
             : nothing
         }

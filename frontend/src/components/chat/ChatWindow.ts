@@ -278,7 +278,31 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
       display: grid;
       gap: var(--space-3);
       padding: var(--space-3);
-      background: var(--color-surface-overlay);
+      /* --color-surface-raised und NICHT --color-surface-overlay.
+       *
+       * ⚠ GEMESSEN am 05.09.2026 auf dem Atlas-Skin: --color-surface-overlay
+       * wird von KEINEM der beiden Plattform-Saetze geschrieben. Es steht nur
+       * in _colors.css auf dem dunklen Vorgabewert und blieb deshalb auf
+       * Papier auf dem dunklen Wert stehen, waehrend die Tinte darauf zur
+       * Papiertinte wurde:
+       *
+       *     Atlas   Tinte auf Auflage    1,13 : 1     (AA verlangt 4,5)
+       *     dunkel  Tinte auf Auflage   14,99 : 1
+       *     Atlas   Tinte auf -raised   13,03 : 1
+       *
+       * Das Menue war auf dem Atlas praktisch unlesbar.
+       *
+       * 🔑 Warum es niemandem auffiel: --color-surface-overlay und
+       * --color-surface-raised tragen in _colors.css DENSELBEN Wert
+       * DENSELBEN Wert. Solange es nur einen Satz gab, waren sie
+       * ununterscheidbar,
+       * und dass nur einer von beiden geskinnt wird, konnte nicht auffallen.
+       * Der zweite Satz hat den Unterschied sichtbar gemacht.
+       *
+       * -raised ist ohnehin das richtige Wort: der Atlas beschreibt es selbst
+       * als "raised: active rows, cells, sticky heads" -- ein Blatt, das
+       * ueber der Flaeche liegt. Genau das ist dieses Menue. */
+      background: var(--color-surface-raised);
       border: var(--border-width-thin) solid var(--color-border);
       box-shadow: var(--shadow-lg);
       z-index: var(--z-dropdown);

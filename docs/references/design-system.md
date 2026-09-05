@@ -149,7 +149,6 @@ Simulation-Views uberschreiben die Tokens via ThemeService auf dem `<velg-simula
   --color-surface: #0a0a0a;
   --color-surface-raised: #111111;
   --color-surface-sunken: #060606;
-  --color-surface-overlay: #111111;
   --color-surface-header: #0a0a0a;
   --color-surface-inverse: #ffffff;
 

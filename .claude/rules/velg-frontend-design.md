@@ -106,7 +106,7 @@ export class VelgMyComponent extends LitElement {
 
 **Status**: `--color-primary` (#f59e0b), `--color-danger` (#ef4444), `--color-success` (#22c55e), `--color-warning` (#f59e0b), `--color-info` (#3b82f6), `--color-epoch-influence` (#a78bfa)
 
-**Surfaces**: `--color-surface` (#0a0a0a), `--color-surface-raised` (#111), `--color-surface-sunken` (#060606), `--color-surface-overlay` (#111), `--color-surface-header` (#0a0a0a), `--color-surface-inverse` (#fff)
+**Surfaces**: `--color-surface` (#0a0a0a), `--color-surface-raised` (#111), `--color-surface-sunken` (#060606), `--color-surface-header` (#0a0a0a), `--color-surface-inverse` (#fff)
 
 **Text**: `--color-text-primary` (#e5e5e5), `--color-text-secondary` (#a0a0a0), `--color-text-muted` (#888), `--color-text-inverse` (#0a0a0a), `--color-text-link` (= info), `--color-text-danger` (= danger)
 
