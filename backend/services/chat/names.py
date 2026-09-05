@@ -145,7 +145,14 @@ ANREDE_SPERRLISTE = frozenset(
 )
 
 #: Zeichen, die einem Namensteil anhaengen koennen, ohne zu ihm zu gehoeren.
-_RANDZEICHEN = ".,;:!?()[]{}\"'„“”«»-–—"
+#:
+#: Der Geviertstrich steht hier als Escape und nicht als Zeichen, und das ist
+#: kein Ausweichen vor `lint-no-em-dash-in-content.sh`, sondern die Antwort auf
+#: seine Frage. Das Tor sucht Text, den ein Leser oder ein Modell bekommt; dies
+#: ist eine ZEICHENKLASSE, aus der nur abgeschnitten wird. Der Codepunkt muss
+#: drinbleiben, sonst behaelt „Marie—" seinen Strich. Als `\u2014` geschrieben
+#: steht im Quelltext, dass ein Zeichen gemeint ist und kein Gedankenstrich.
+_RANDZEICHEN = ".,;:!?()[]{}\"'„“”«»-–\u2014"
 
 
 def _kern(teil: str) -> str:

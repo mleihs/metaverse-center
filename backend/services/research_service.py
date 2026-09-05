@@ -283,7 +283,7 @@ def _compose_context(answers: list[tuple[str, str]], rows: list[SourceRow]) -> s
     blocks: list[str] = []
     for axis, answer in answers:
         if answer:
-            blocks.append(f"[{axis} — SUMMARY]\n{answer}")
+            blocks.append(f"[{axis} – SUMMARY]\n{answer}")
     for axis, axis_rows in by_axis.items():
         blocks.append(ScholarlySearchService.format_rows(axis, axis_rows))
     return "\n\n".join(b for b in blocks if b)

@@ -131,7 +131,7 @@ class BaseSchedulerMixin:
         if runden % cls._AUS_MELDEN_ALLE:
             return
         logger.warning(
-            "%s scheduler is switched OFF (feature gate) — no ticks for %d loop iteration(s)",
+            "%s scheduler is switched OFF (feature gate) – no ticks for %d loop iteration(s)",
             cls._scheduler_name.capitalize(),
             runden,
             extra={"scheduler": cls._scheduler_name, "off_for_iterations": runden},

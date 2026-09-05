@@ -1562,7 +1562,7 @@ class ChatAIService:
                 .execute()
             )
         except Exception:
-            logger.exception("Merkmalstor %s nicht gelesen — bleibt zu", key)
+            logger.exception("Merkmalstor %s nicht gelesen – bleibt zu", key)
             return False
         rows = extract_list(response)
         return bool(rows) and parse_setting_bool(rows[0].get("setting_value"))
@@ -2044,10 +2044,10 @@ class ChatAIService:
             wen = ", ".join(andere_genannt)
             teile.append(
                 f"Der Mensch spricht in seiner letzten Zeile {wen} an, nicht dich. "
-                f"Was er {wen} tut oder sagt, geschieht nicht dir — du bist die, die es mitbekommt."
+                f"Was er {wen} tut oder sagt, geschieht nicht dir – du bist die, die es mitbekommt."
                 if de
                 else f"In their last line the human is addressing {wen}, not you. "
-                f"What they do or say to {wen} does not happen to you — you are the one who notices it."
+                f"What they do or say to {wen} does not happen to you – you are the one who notices it."
             )
         elif ich_genannt and andere_genannt:
             # GENANNT ist nicht ANGESPROCHEN, und das ist derselbe Fehler in

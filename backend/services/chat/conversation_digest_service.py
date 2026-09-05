@@ -175,10 +175,10 @@ class ConversationDigestService:
             bloecke.append(
                 cls._block(
                     geteilt,
-                    "Record of this conversation so far — external events only, "
+                    "Record of this conversation so far – external events only, "
                     "as anyone in the room could have observed them:"
                     if en
-                    else "Protokoll dieses Gespraechs bisher — nur was im Raum "
+                    else "Protokoll dieses Gespraechs bisher – nur was im Raum "
                     "beobachtbar war, so wie es jeder haette sehen koennen:",
                 )
             )

@@ -203,7 +203,7 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         reasoning="off",
         why=(
             "Die Uebersetzung des Seeds in Suchbegriffe fuer Fachdatenbanken. "
-            "Neun kurze Zeichenketten als JSON — 400 Token sind rund das "
+            "Neun kurze Zeichenketten als JSON – 400 Token sind rund das "
             "Vierfache dessen, was eine vollstaendige Antwort misst, und tragen "
             "damit auch einen Lauf, der die Begriffe laenger fasst als "
             "verlangt. Ein groesseres Budget kaufte nichts: die Ausgabe ist "
@@ -212,7 +212,7 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
             "hier auf die Wartezeit des Astrolabiums durchschlaegt; die "
             "Suchen selbst haben zusammen 10-20 s. "
             "reasoning=off: aus einer Praemisse Fachvokabular zu benennen ist "
-            "Abruf, kein Schluss — und ein durchgesickerter `<think>`-Block "
+            "Abruf, kein Schluss – und ein durchgesickerter `<think>`-Block "
             "machte das JSON unparsbar, wie bei `agent_continuation`."
         ),
     ),

@@ -257,7 +257,7 @@ class SceneImageService:
         )
         beschreibung = await generation.generate_chat_scene_image(
             scene_text=selection.text,
-            participants=", ".join(n for n in (self._name_of(m) for m in selection.messages) if n) or "—",
+            participants=", ".join(n for n in (self._name_of(m) for m in selection.messages) if n) or "–",
             vantage_instruction=_VANTAGE_INSTRUCTION[vantage],
             world_context=str(world.get("description") or ""),
             simulation_name=str(world.get("name") or ""),
