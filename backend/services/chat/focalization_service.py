@@ -68,6 +68,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 from uuid import UUID
 
+from backend.services.chat.names import anrede_teile, nennt
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -178,12 +179,56 @@ class FocalizationService:
     """Misst, ob ein Agentenzug im Horizont seiner Figur bleibt."""
 
     # ── Die kostenlose Stufe ──────────────────────────────────────────────
-    #: Woertliche Rede. Drei Paare kommen in diesen Faeden vor: deutsche
-    #: Anfuehrungszeichen, typografische und gerade.
+    #: Woertliche Rede — als KLASSEN, nicht als Paare.
+    #:
+    #: Die erste Fassung hat drei saubere Konventionen gepaart: „…“, “…” und
+    #: "…". Nachgemessen am 05.09.2026 (Gegenlesen durch einen zweiten
+    #: Agenten, hier selbst nachgerechnet) fallen davon **5 von 9**
+    #: Kombinationen durch:
+    #:
+    #:                      schliessend
+    #:       oeffnend     “        ”        "
+    #:       --------------------------------------
+    #:       „ deutsch    ja       ja       NEIN
+    #:       “ typo      NEIN      ja       NEIN
+    #:       " gerade    NEIN     NEIN      ja
+    #:
+    #: Was hielt, waren genau die drei Konventionen plus „…”. Alles Gemischte
+    #: fiel durch — und Gemischtes ist kein Stil, sondern ein Ausrutscher: ein
+    #: Modell rutscht oefter aus, als es sich entscheidet. Dazu fielen durch:
+    #: Guillemets in beiden Richtungen (»…« und «…»), Rede ueber einen
+    #: Zeilenumbruch (die alte Klasse [^"\n] schloss den Umbruch aus), und das
+    #: Zitat im Zitat („Er sagte "ja" dazu“ — das " war aus der Innenklasse
+    #: ausgeschlossen, der deutsche Zweig fand sein Ende nicht mehr).
+    #:
+    #: Die Reparatur ist deshalb nicht, fuenf Muster nachzutragen, sondern die
+    #: Zeichen zu KLASSIFIZIEREN: ein Oeffner, ein Schliesser, dazwischen
+    #: alles. Damit fallen die gemischten Paare, die Guillemets und das Zitat
+    #: im Zitat in einem Griff, und die Regel wird kuerzer statt laenger.
+    #:
+    #: Die Richtung jeder dieser Luecken war dieselbe wie beim behobenen
+    #: Fehler: nicht geschnittene Rede wird als Erzaehlung gelesen, also
+    #: FALSCH-POSITIVE Allwissenheit. Belegt: »Marie, wo ist Suse?« — eine
+    #: reine Anrede — galt bis hierher als `zero`.
+    #:
+    #: NICHT dazu gehoeren Sternchen (*…*). Das ist Handlung, keine Rede, und
+    #: Handlung ist genau das, was gemessen werden soll.
+    _ANF_AUF = "\u201e\u201c\u201d\"\u00ab\u00bb"
+    _ANF_ZU = "\u201c\u201d\"\u00ab\u00bb"
+
+    #: Die Obergrenze, und sie ist der Preis der Klassifizierung.
+    #:
+    #: ⚠ Ein UNPAARIGES Anfuehrungszeichen frisst ohne sie den Rest des Zuges.
+    #: Der Zug bestuende dann rechnerisch nur aus Rede und galte als
+    #: `internal` — ein Fehler in der GEGENrichtung, und der ist schlimmer:
+    #: eine falsch-positive Allwissenheit faellt beim Nachlesen auf, eine
+    #: verschwundene faellt nicht auf. Lieber konservativ schneiden als gar
+    #: nicht begrenzen. 400 Zeichen sind reichlich fuer einen Redebeitrag in
+    #: diesen Faeden und knapp genug, dass ein Ausrutscher hoechstens einen
+    #: Absatz kostet.
+    _REDE_MAX = 400
     _REDE = re.compile(
-        "\u201e[^\u201c\u201d\"]*[\u201c\u201d]"
-        "|\u201c[^\u201d]*\u201d"
-        '|"[^"\n]{2,}"'
+        rf"[{_ANF_AUF}][\s\S]{{2,{_REDE_MAX}}}?[{_ANF_ZU}]"
     )
 
     @classmethod
@@ -208,6 +253,33 @@ class FocalizationService:
         Verhalten, das ein Gruppengespraech ausmacht. Alle frueheren Zahlen
         dieses Detektors (14,6 % · 13,4 % · 20,4 %) tragen diesen Fehler und
         sind nach oben verzerrt.
+
+        ── WELCHE Formen der Schnitt kennt ──────────────────────────────
+
+        Diese Liste gehoert in den Docstring und nicht in den Kopf des Moduls,
+        weil sie beim naechsten Lesen die eigentliche Frage ist. Wer hier nur
+        „Rede ausgeschlossen" liest, haelt den Schnitt fuer vollstaendig — und
+        traegt einen Rest des alten Fehlers weiter, kleiner, aber denselben.
+
+        Geschnitten wird jede Spanne von einem OEFFNER zu einem SCHLIESSER:
+
+            Oeffner      „   “   ”   "   «   »
+            Schliesser   “   ”   "   «   »
+            dazwischen   alles, auch Zeilenumbrueche, hoechstens `_REDE_MAX`
+
+        Damit sind alle neun Kombinationen der drei ueblichen Konventionen
+        abgedeckt, die gemischten eingeschlossen, dazu beide Guillemet-
+        Richtungen, Rede ueber einen Absatz hinweg und das Zitat im Zitat.
+
+        NICHT geschnitten wird, mit Absicht:
+
+        * Sternchen (*…*) — das ist Handlung, keine Rede, und Handlung ist
+          genau das, was gemessen werden soll.
+        * Gedankenstrich-Rede (— Wo ist sie?) — im Bestand nicht belegt, und
+          ein enges Muster dafuer gibt es nicht: jeder Gedankenstrich am
+          Satzanfang waere ein Treffer. Sie bleibt offen, bis sie auftaucht.
+        * Ein Anfuehrungszeichen ohne Partner ueber `_REDE_MAX` hinaus. Das
+          ist der Preis der Obergrenze und die gewollte Richtung, siehe dort.
 
         Bleibt nach dem Schnitt nichts uebrig, besteht der Zug GANZ aus Rede.
         Dann gibt es keine Erzaehlung, die einen Blickwinkel haben koennte —
@@ -306,10 +378,13 @@ class FocalizationService:
         """Ob der Text diese Person beim Namen nennt.
 
         Auch beim VORNAMEN — Rollenspieltexte schreiben „Elena", nicht „Elena
-        Voss". Wortgrenzen, damit „Mira" nicht in „Miracle" trifft.
+        Voss". Welche Wortformen dazu zaehlen und warum das erste Feld des
+        Namens keine davon ist, steht in ``backend/services/chat/names.py``:
+        dieselbe Frage stellt die Lage-Ansage im Prompt, und sie muss dieselbe
+        Antwort bekommen — sonst misst das Messgeraet eine andere Welt als
+        die, in der die Anweisung geschrieben wird.
         """
-        teile = [name, *name.split()]
-        return any(re.search(rf"\b{re.escape(t)}\b", text, re.IGNORECASE) for t in teile if len(t) > 2)
+        return nennt(text, name)
 
     @staticmethod
     def _find_collective(text: str, *, teilnehmer: int) -> str | None:
@@ -343,10 +418,11 @@ class FocalizationService:
         treffer: list[str] = []
         verben = "|".join(re.escape(v) for v in (*_INNER_VERBS_DE, *_INNER_VERBS_EN))
         for name in others:
-            for teil in [name, *name.split()]:
-                if len(teil) <= 2:
-                    continue
-                muster = rf"\b{re.escape(teil)}\b[^.!?\n]{{0,40}}?\b(?:{verben})\b"
+            # Dieselben Wortformen wie `_names_person` — sonst gaelte „Doktor
+            # Freundlich weiss" fuer JEDE Figur mit diesem Titel als fremdes
+            # Inneres, und der Titel allein waere ein Name.
+            for teil in anrede_teile(name):
+                muster = rf"\b{re.escape(teil)}(?:s|ns)?\b[^.!?\n]{{0,40}}?\b(?:{verben})\b"
                 gefunden = re.search(muster, text, re.IGNORECASE)
                 if gefunden:
                     treffer.append(gefunden.group(0).strip())

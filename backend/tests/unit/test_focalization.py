@@ -216,3 +216,295 @@ def test_die_drei_zuege_vom_vierten_september(text):
     UTC, an denen der Fehler zum ersten Mal benannt wurde — alle drei
     beginnen mit einem Erzählersatz über die ganze Runde."""
     assert _messen(text).verdict == "zero"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Die Fallen
+# ═══════════════════════════════════════════════════════════════════════════
+#
+# WOHER DIESER ABSCHNITT KOMMT. Ein zweiter Agent hat am 05.09.2026 die Frage
+# gestellt, an der die ganze Sitzung haengt:
+#
+#     Stellt der Detektor die Lage HER, in der Allwissenheit entstehen kann,
+#     oder wartet er darauf?
+#
+# Er wartete. Die Handmessungen vom 05.09. haben die Lage hergestellt und
+# 0 % gemessen — aber sie standen in keinem automatisierten Lauf. Eine
+# 0-%-Quote misst dann irgendwann wieder nur, dass niemand gefragt hat.
+#
+# Dieselbe Lehre kam an einem Tag in drei Kleidern: der Nebenlaeufigkeitstest
+# des Peers, dieser Detektor und die Sternchen-Gegenprobe — jedes Mal meldete
+# eine Pruefung Erfolg, die ihre eigene Bedingung nie hergestellt hatte.
+# Deshalb steht unten nicht nur der Korpus, sondern auch ein Test AUF den
+# Korpus: ein Fallenkorpus ohne Fallen besteht sonst muehelos.
+#
+# Drei Schichten, ehrlich getrennt (Plan vom 05.09.):
+#   (a) hier     — der Detektor gegen erfundene Ausgaben mit bekanntem Urteil
+#   (b) Prompt   — `test_prompt_unter_falle.py`: steht die Abwehr wirklich da?
+#   (c) Modell   — bleibt Handmessung, Protokoll im Handoff. Ein Modellaufruf
+#                  in der Suite waere teuer und wackelig.
+
+#: Eine Falle: Text, erwartetes Urteil, erwarteter Belegschluessel, Begruendung.
+#:
+#: Alle Texte sind ERFUNDEN. Die Besetzung ist die abgesprochene
+#: Testbesetzung — echter Gespraechswortlaut gehoert nicht in dieses Repo
+#: (`scripts/lint-no-chat-content.sh`).
+FALLENKORPUS: tuple[tuple[str, str, str | None, str], ...] = (
+    # ── Was anschlagen MUSS ──────────────────────────────────────────────
+    (
+        "*Die drei Frauen wechseln einen Blick, ohne dass ein Wort faellt.*",
+        "zero",
+        "kollektiv",
+        "Kollektiv der ganzen Runde",
+    ),
+    (
+        "*Alle drei senken zugleich den Blick.*",
+        "zero",
+        "kollektiv",
+        "Kollektiv als feste Wendung",
+    ),
+    (
+        "*Suse weiss laengst, was in der Akte steht.*",
+        "zero",
+        "fremdes_inneres",
+        "fremdes Wissen als Tatsache",
+    ),
+    (
+        "*Benno, den Hut noch in der Hand, fuerchtet die Frage.*",
+        "zero",
+        "fremdes_inneres",
+        "fremdes Inneres ueber einen Einschub hinweg",
+    ),
+    (
+        "*Suse und Benno treten an den Tisch.*",
+        "zero",
+        "mehrere_fremde_ohne_ich",
+        "zwei Fremde nebeneinander, kein Wahrnehmender im Satz",
+    ),
+    (
+        "*Zwischen Marie und Benno liegt die Akte unberuehrt.*",
+        "zero",
+        "mehrere_fremde_ohne_ich",
+        "der Sprecher zaehlt mit: Blick von aussen auf sich selbst",
+    ),
+    (
+        "*Ich warte an der Tuer. Suse und Benno mustern einander.*",
+        "zero",
+        "mehrere_fremde_ohne_ich",
+        "satzweise: ein Ich im Nachbarsatz rettet den Satz nicht",
+    ),
+    # ── Die Gegenprobe: was NICHT anschlagen darf ────────────────────────
+    (
+        "„Suse, wo ist Benno?“",
+        "internal",
+        "nur_rede",
+        "reine Anrede in woertlicher Rede — nennt zwei, erzaehlt nichts",
+    ),
+    (
+        "»Suse, wo ist Benno?«",
+        "internal",
+        "nur_rede",
+        "dieselbe Anrede in Guillemets",
+    ),
+    (
+        "„Ich frage Suse, sobald Benno geht.”",
+        "internal",
+        "nur_rede",
+        "gemischtes Paar, und der Satz ist ganz Rede",
+    ),
+    (
+        "*Marie legt die Akte auf den Tisch.*",
+        "internal",
+        "kein_fremder_handelnder",
+        "dritte Person ueber sich selbst ist Konvention, nicht Fehler",
+    ),
+    (
+        "*Ich sehe, wie Suse und Benno einander mustern.*",
+        "internal",
+        "erste_person",
+        "Wahrnehmung zweier anderer, mit Wahrnehmendem im Satz",
+    ),
+    (
+        "*Suse scheint zu zoegern.* „Bleib, wo du bist.“ *Ich atme aus.*",
+        "internal",
+        "erste_person",
+        "Anschein statt Inneres, dazu Rede und ein Ich",
+    ),
+    (
+        "*Suse zittert, kaum sichtbar.* „Dir ist kalt.“ *Ich reiche ihr den Mantel.*",
+        "internal",
+        "erste_person",
+        "koerperliche Beobachtung ist erlaubt",
+    ),
+    (
+        "*Ich mache drei Schritte auf die Tuer zu.*",
+        "internal",
+        "erste_person",
+        "eine Zahl ohne Artikel ist kein Kollektiv",
+    ),
+    (
+        "*Die zwei Wachen am Tor sehen weg.*",
+        "internal",
+        "kein_fremder_handelnder",
+        "falsche Zahl in einer Dreierrunde meint nicht die Runde",
+    ),
+    # ── Was der Detektor ehrlich nicht entscheidet ───────────────────────
+    (
+        "*Suse legt die Akte hin. Der Stempel fehlt.*",
+        "unclear",
+        None,
+        "eine andere handelt, kein Inneres, kein Ich — nicht entscheidbar",
+    ),
+)
+
+
+@pytest.mark.parametrize(
+    ("text", "urteil", "beleg", "warum"),
+    FALLENKORPUS,
+    ids=[w for *_, w in FALLENKORPUS],
+)
+def test_der_detektor_gegen_das_fallenkorpus(text, urteil, beleg, warum):
+    """Jede Falle mit BEKANNTEM Urteil. Das schuetzt das Messgeraet."""
+    r = _messen(text)
+    assert r.verdict == urteil, f"{warum}: {r.verdict} statt {urteil} — Beleg {r.evidence}"
+    if beleg:
+        assert beleg in r.evidence, f"{warum}: Beleg {beleg!r} fehlt, da steht {r.evidence}"
+
+
+class TestDerKorpusStelltSeineBedingungHer:
+    """Ein Fallenkorpus ohne Fallen besteht muehelos.
+
+    Genau dieser Fehler ist am 05.09.2026 dreimal aufgetreten — eine Pruefung
+    meldete Erfolg, die ihre eigene Bedingung nie hergestellt hatte. Diese
+    Klasse ist die Gegenmassnahme: sie prueft den KORPUS, nicht den Detektor.
+    Faellt eine Fallenart beim Umbauen heraus, wird hier rot, und nicht erst
+    in einem halben Jahr an einer Quote, die keiner mehr zuordnen kann.
+    """
+
+    def test_jedes_urteil_kommt_vor(self):
+        urteile = {u for _, u, _, _ in FALLENKORPUS}
+        assert urteile == {"zero", "internal", "unclear"}
+
+    def test_jeder_anhalt_fuer_allwissenheit_kommt_vor(self):
+        """Die drei Wege zu `zero` — faellt einer weg, misst der Korpus ihn nicht."""
+        belege = {b for _, u, b, _ in FALLENKORPUS if u == "zero"}
+        assert belege == {"kollektiv", "fremdes_inneres", "mehrere_fremde_ohne_ich"}
+
+    def test_die_gegenprobe_ist_nicht_kleiner_als_die_falle(self):
+        """Ein Messgeraet scheitert an der zweiten Haelfte, nicht an der ersten.
+
+        Bestraft es die dritte Person ueber sich selbst oder die Wahrnehmung
+        einer anderen Figur, treibt es die Prosa in Monologe und ist schlimmer
+        als keines. Deshalb muss die Gegenprobe mindestens so gross sein wie
+        die Falle.
+        """
+        fallen = sum(1 for _, u, _, _ in FALLENKORPUS if u == "zero")
+        gegen = sum(1 for _, u, _, _ in FALLENKORPUS if u == "internal")
+        assert gegen >= fallen, f"{gegen} Gegenproben gegen {fallen} Fallen"
+
+    def test_die_gegenprobe_nennt_wirklich_andere_figuren(self):
+        """Sonst besteht sie, weil nichts dasteht, worueber man irren koennte.
+
+        Eine Gegenprobe ohne fremden Namen kann gar nicht falsch-positiv
+        werden — sie prueft dann nur, dass ein Text ohne Namen keinen Namen
+        enthaelt.
+        """
+        mit_fremden = [
+            t
+            for t, u, _, _ in FALLENKORPUS
+            if u == "internal" and any(n.split()[0] in t for n in BESETZUNG[1:])
+        ]
+        assert len(mit_fremden) >= 5, f"nur {len(mit_fremden)} Gegenproben nennen eine andere Figur"
+
+    def test_woertliche_rede_kommt_im_korpus_vor(self):
+        """Der Fehler, der alle aelteren Zahlen verzerrt hat, war die Rede.
+
+        Ein Korpus ohne ein einziges Anfuehrungszeichen haette ihn nie
+        gefunden — und alle Zahlen dieses Detektors bis zum 05.09.2026 tragen
+        ihn.
+        """
+        mit_rede = [t for t, *_ in FALLENKORPUS if any(z in t for z in "„“”«»\"")]
+        assert len(mit_rede) >= 4
+
+
+class TestDieAnfuehrungszeichenSindEineKlasse:
+    """Die vollstaendige Kreuztabelle von `_ohne_rede`.
+
+    Gegengelesen und selbst nachgemessen am 05.09.2026: von den neun
+    Kombinationen der drei ueblichen Konventionen fielen **fuenf** durch.
+    Was hielt, waren genau die drei sauberen Paare plus „…”.
+
+    Gemischte Paare sind kein Stil, sondern ein Ausrutscher — und ein Modell
+    rutscht oefter aus, als es sich entscheidet. Deshalb steht hier die ganze
+    Tabelle und nicht die vier Faelle, die einmal aufgefallen sind.
+    """
+
+    OEFFNER = ("„", "“", '"')
+    SCHLIESSER = ("“", "”", '"')
+
+    @pytest.mark.parametrize("auf", OEFFNER)
+    @pytest.mark.parametrize("zu", SCHLIESSER)
+    def test_jede_kombination_wird_geschnitten(self, auf, zu):
+        assert F._ohne_rede(f"{auf}Bleib, wo du bist.{zu}").strip() == ""
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "«Bleib, wo du bist.»",
+            "»Bleib, wo du bist.«",
+        ],
+    )
+    def test_guillemets_in_beiden_richtungen(self, text):
+        """Im Projekt 202 Vorkommen — in den Kampfgespraechen, nicht im Chat.
+        Fuer den Chatpfad latent, nicht aktiv; zwei Zeichen im Muster."""
+        assert F._ohne_rede(text).strip() == ""
+
+    def test_rede_ueber_einen_zeilenumbruch(self):
+        """Gerade Anfuehrungszeichen sind mit ueber 95 000 Vorkommen der
+        beherrschende Stil im Projekt, und ein Absatz innerhalb der Rede ist
+        normal. Die alte Innenklasse [^"\\n] schloss den Umbruch aus."""
+        assert F._ohne_rede('"Bleib.\n\nUnd sieh mich an."').strip() == ""
+
+    def test_zitat_im_zitat(self):
+        """Das Zeichen \" war aus der deutschen Innenklasse ausgeschlossen —
+        der Zweig fand sein Ende nicht mehr und der ganze Satz blieb stehen.
+        In Rollenspielprosa nicht selten."""
+        rest = F._ohne_rede('„Er sagte "ja" dazu“, murmelte Suse.')
+        assert "murmelte" in rest
+        assert "Er sagte" not in rest
+
+    def test_sternchen_bleiben_stehen(self):
+        """RICHTIG SO: *…* ist Handlung, keine Rede — und Handlung ist genau
+        das, was gemessen werden soll.
+
+        ⚠ Die erste Gegenprobe hierzu war fehlerhaft: sie suchte in der
+        Sternchen-Zeile nach einem Wort, das dort nicht vorkam, und meldete
+        „geschnitten" fuer jede Zeile ohne dieses Wort. Beim Pruefen einer
+        Pruefung zuerst fragen, ob sie ueberhaupt etwas sehen KANN."""
+        text = "*Die drei Frauen verharren.*"
+        assert F._ohne_rede(text) == text
+
+    def test_eine_reine_anrede_ist_keine_allwissenheit(self):
+        """Der belegte Schaden der alten Fassung: »Marie, wo ist Suse?« —
+        eine reine Anrede — wurde als `zero` gewertet."""
+        r = _messen("»Marie, wo ist Suse?«", sprecher="Benno Blattgold")
+        assert r.verdict == "internal"
+
+    def test_die_obergrenze_schuetzt_die_erzaehlung(self):
+        """⚠ Der Preis der Klassifizierung, und er zeigt in die schlimmere
+        Richtung: ein unpaariges Zeichen frisst ohne Grenze den Rest des
+        Zuges, der Zug bestuende nur noch aus Rede und galte als `internal`.
+        Eine falsch-positive Allwissenheit faellt beim Nachlesen auf, eine
+        verschwundene nicht."""
+        erzaehlung = "Ein Satz ohne Rede. " * 30  # weit ueber _REDE_MAX
+        text = f'"{erzaehlung}" Die drei Frauen verharren.'
+        assert len(erzaehlung) > F._REDE_MAX
+        assert "Die drei Frauen" in F._ohne_rede(text)
+        assert _messen(text).verdict == "zero"
+
+    def test_unter_der_obergrenze_wird_geschnitten(self):
+        """Die Gegenprobe zur Grenze: was hineinpasst, faellt auch weg.
+        Ohne sie pruefte der Test oben nur, dass irgendetwas stehenbleibt."""
+        rede = "Bleib, wo du bist. " * 5
+        assert len(rede) < F._REDE_MAX
+        assert F._ohne_rede(f'"{rede}"').strip() == ""

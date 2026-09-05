@@ -18,6 +18,7 @@ from backend.services.ai_usage_service import AIUsageService
 from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.chat.conversation_digest_service import ConversationDigestService
 from backend.services.chat.focalization_service import FocalizationService
+from backend.services.chat.names import nennt
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
@@ -1799,12 +1800,14 @@ class ChatAIService:
         text = user_message or ""
 
         def genannt(name: str) -> bool:
-            # Der Vorname genuegt: so sprechen Menschen ihre Figuren an, und
-            # der volle Name kommt in Anreden praktisch nie vor.
-            vorname = name.split()[0] if name else ""
-            if not vorname:
-                return False
-            return re.search(rf"\b{re.escape(vorname)}\b", text, re.IGNORECASE) is not None
+            # Der Vorname genuegt — so sprechen Menschen ihre Figuren an, und
+            # der volle Name kommt in Anreden praktisch nie vor. Wie er
+            # gewonnen wird, steht in `backend/services/chat/names.py`: NICHT
+            # als erstes Feld (bei „Doktor Freundlich" waere das der Titel,
+            # und die Figur haelt sich dann fuer gemeint, wenn der Mensch eine
+            # ANDERE anspricht), sondern als jedes Feld ab drei Buchstaben
+            # ohne Titel, mit saechsischem Genitiv.
+            return nennt(text, name)
 
         andere_genannt = [n for i, n in enumerate(agent_names) if i != idx and genannt(n)]
         ich_genannt = genannt(ich)
@@ -1821,6 +1824,27 @@ class ChatAIService:
                 if de else
                 f"In their last line the human is addressing {wen}, not you. "
                 f"What they do or say to {wen} does not happen to you — you are the one who notices it."
+            )
+        elif ich_genannt and andere_genannt:
+            # GENANNT ist nicht ANGESPROCHEN, und das ist derselbe Fehler in
+            # dritter Gestalt. Gefunden am 05.09.2026 beim Bau der Falle
+            # „nach den Gedanken der anderen fragen": „Marie, was geht Benno
+            # durch den Kopf?" nennt beide, spricht aber nur eine an. Bis
+            # hierher gewann der eigene Name und Benno bekam „er spricht dich
+            # an" — eine FALSCHE Ansage, dieselbe Richtung wie beim Titel.
+            #
+            # Die Vokativstellung liesse sich raten (Name am Zeilenanfang,
+            # Komma dahinter), aber raten ist hier der teurere Fehler: eine
+            # falsche Grenzansage nimmt einer Figur ihren Zug. Deshalb wird
+            # nicht entschieden, sondern die LAGE benannt — beide Namen
+            # stehen da, und nur das Zugesprochene geschieht.
+            wen = ", ".join(andere_genannt)
+            teile.append(
+                f"Der Mensch nennt in seiner letzten Zeile dich, {ich}, und ausserdem {wen}. "
+                f"Beide Namen stehen darin; nur was er DIR sagt oder tut, geschieht dir."
+                if de else
+                f"In their last line the human names you, {ich}, and also {wen}. "
+                f"Both names are in it; only what they say or do to YOU happens to you."
             )
         elif ich_genannt:
             teile.append(
