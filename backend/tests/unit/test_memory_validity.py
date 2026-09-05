@@ -247,3 +247,146 @@ async def test_die_zwei_faelle_bleiben_getrennt(fall, neu, erwartet_neu):
     await M.supersede(klient, uuid4(), uuid4() if neu else None)
     _, params = klient.rpc.call_args[0]
     assert ("p_new_id" in params) is erwartet_neu, fall
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Der Engpass zwischen Ausloeser und Leser
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestAusloeserUndLeserSindSichEinig:
+    """Bis zum 05.09.2026 waren sie es nicht.
+
+    Faellig wurde ein Agent bei FUENFZIG offenen Beobachtungen
+    (`REFLECTION_TRIGGER`), gelesen wurden ZWANZIG (eine fest eingebaute
+    `.limit(20)` in `reflect`). Und weil die neue Reflexion den Zeitstempel
+    setzte, ab dem gezaehlt wird, fielen die uebrigen dreissig danach
+    dauerhaft aus dem Offen-Zaehler: **30 von 50 Beobachtungen erreichten nie
+    eine Reflexion und galten trotzdem als erledigt.**
+
+    Auf Produktion gemessen: 496 Beobachtungen, 5 Reflexionen, und die Figur
+    mit 195 Erinnerungen hatte NULL.
+    """
+
+    def test_der_leser_sieht_alles_was_den_ausloeser_gedrueckt_hat(self):
+        """Die eigentliche Zusage, und sie bindet zwei Zahlen aneinander.
+        Wer eine davon aendert, ohne die andere anzusehen, wird hier rot."""
+        assert M.REFLECTION_WINDOW >= M.REFLECTION_TRIGGER, (
+            f"Fenster {M.REFLECTION_WINDOW} < Ausloeser {M.REFLECTION_TRIGGER}: "
+            "es wuerden weniger Beobachtungen gelesen als noetig waren, um faellig "
+            "zu werden — und der Rest gaelte danach als erledigt."
+        )
+
+    def test_die_zahl_steht_nicht_mehr_im_abruf(self):
+        """Eine Zahl im Rumpf ist eine Zahl ohne Namen. Sie war der ganze
+        Fehler: niemand konnte sie neben den Ausloeser halten."""
+        import inspect
+
+        quelle = inspect.getsource(M.reflect)
+        assert ".limit(20)" not in quelle
+        assert "REFLECTION_WINDOW" in quelle
+
+    def test_gelesen_wird_von_vorn(self):
+        """AELTESTE zuerst. Laese man die juengsten, bliebe der Rueckstand
+        fuer immer unverdichtet, obwohl der Zaehler ihn abhakt."""
+        import inspect
+
+        quelle = inspect.getsource(M.reflect)
+        assert "desc=False" in quelle
+
+
+class TestDerWasserstandStattDerUhr:
+    """Die Grenze beschreibt, was GELESEN wurde — nicht, wann gearbeitet wurde.
+
+    Eine Zahl allein haette den Rueckstand von 195 Beobachtungen nur an einer
+    anderen Stelle abgeschnitten. Jede Reflexion traegt deshalb in `source_id`
+    die juengste Beobachtung, die sie wirklich gelesen hat.
+    """
+
+    def test_ohne_reflexion_gibt_es_keine_grenze(self):
+        assert M._boundary_of(None, {}) is None
+
+    def test_der_wasserstand_schlaegt_den_zeitstempel(self):
+        """Der Kern. Die Reflexion LIEF um 12:00, gelesen hat sie bis 10:00 —
+        gezaehlt wird ab 10:00, sonst waeren die zwei Stunden dazwischen
+        still erledigt."""
+        grenze = M._boundary_of(
+            {"created_at": "2026-09-01T12:00:00", "source_id": "beob-7"},
+            {"beob-7": "2026-09-01T10:00:00"},
+        )
+        assert grenze == "2026-09-01T10:00:00"
+
+    def test_ohne_wasserstand_gilt_der_zeitstempel(self):
+        """Die fuenf Reflexionen von vor dieser Aenderung haben keinen. Fuer
+        sie ist der alte Wert das Beste, was es gibt — und er darf nicht dazu
+        fuehren, dass eine Figur ihr ganzes Gedaechtnis noch einmal
+        verdichtet."""
+        grenze = M._boundary_of({"created_at": "2026-09-01T12:00:00", "source_id": None}, {})
+        assert grenze == "2026-09-01T12:00:00"
+
+    def test_ein_wasserstand_ins_leere_faellt_zurueck(self):
+        """Zeigt `source_id` auf eine geloeschte Beobachtung, ist der
+        Zeitstempel der Rueckfall — nicht `None`. `None` hiesse „noch nie
+        verdichtet" und loeste eine Vollverdichtung aus."""
+        grenze = M._boundary_of({"created_at": "2026-09-01T12:00:00", "source_id": "weg"}, {})
+        assert grenze == "2026-09-01T12:00:00"
+
+
+class TestEinRueckstandWirdAufgeholtStattVerloren:
+    """Der gemessene Fall: eine Figur mit 195 offenen Beobachtungen.
+
+    Mit der alten Bauart haette EINE Verdichtung 20 gelesen und alle 195 als
+    erledigt markiert. Mit dem Wasserstand bleibt sie faellig, bis der
+    Rueckstand abgearbeitet ist.
+    """
+
+    @staticmethod
+    def _klient(reflexionen, beobachtungen):
+        from types import SimpleNamespace
+
+        class _Q:
+            def __init__(self):
+                self._typ = ""
+
+            def select(self, *_a, **_k):
+                return self
+
+            def eq(self, feld, wert):
+                if feld == "memory_type":
+                    self._typ = wert
+                return self
+
+            def order(self, *_a, **_k):
+                return self
+
+            async def execute(self):
+                return SimpleNamespace(data=reflexionen if self._typ == "reflection" else beobachtungen)
+
+        return SimpleNamespace(table=lambda _n: _Q())
+
+    async def test_nach_einer_verdichtung_bleibt_der_rest_offen(self):
+        """195 Beobachtungen, eine Verdichtung, die bis Nummer 50 gelesen hat.
+        Offen bleiben 145 — nicht null."""
+        agent = str(uuid4())
+        beob = [
+            {"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"}
+            for i in range(195)
+        ]
+        reflexionen = [{"agent_id": agent, "created_at": "2026-09-02T00:00:00", "source_id": "b049"}]
+        faellig = await M._agents_due_for_reflection(self._klient(reflexionen, beob), uuid4(), 2)
+        assert faellig, "die Figur ist nach EINER Verdichtung nicht mehr faellig — der Rest ist verloren"
+        assert faellig[0][1] == 145
+
+    async def test_ohne_wasserstand_waere_alles_erledigt(self):
+        """Die Gegenprobe: dieselben Daten, aber die Reflexion nennt keine
+        gelesene Beobachtung. Dann zaehlt der Zeitstempel, und die 195 sind
+        weg. Genau das war der Zustand bis zum 05.09.2026 — dieser Test haelt
+        fest, WORIN der Unterschied besteht, nicht nur DASS es einen gibt."""
+        agent = str(uuid4())
+        beob = [
+            {"id": f"b{i:03d}", "agent_id": agent, "created_at": f"2026-09-01T00:{i:03d}"}
+            for i in range(195)
+        ]
+        reflexionen = [{"agent_id": agent, "created_at": "2026-09-02T00:00:00", "source_id": None}]
+        faellig = await M._agents_due_for_reflection(self._klient(reflexionen, beob), uuid4(), 2)
+        assert faellig == []

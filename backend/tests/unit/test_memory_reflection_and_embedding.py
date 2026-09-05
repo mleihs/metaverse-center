@@ -105,13 +105,13 @@ class TestWerIstFaelligFuerEineVerdichtung:
     @pytest.mark.asyncio
     async def test_unter_der_schwelle_passiert_nichts(self) -> None:
         a = str(uuid4())
-        client = self._client([], [{"agent_id": a, "created_at": "2026-09-01"}] * 49)
+        client = self._client([], [{"id": str(uuid4()), "agent_id": a, "created_at": "2026-09-01"} for _ in range(49)])
         assert await AgentMemoryService._agents_due_for_reflection(client, uuid4(), 2) == []
 
     @pytest.mark.asyncio
     async def test_ab_der_schwelle_wird_verdichtet(self) -> None:
         a = str(uuid4())
-        client = self._client([], [{"agent_id": a, "created_at": "2026-09-01"}] * 50)
+        client = self._client([], [{"id": str(uuid4()), "agent_id": a, "created_at": "2026-09-01"} for _ in range(50)])
         faellig = await AgentMemoryService._agents_due_for_reflection(client, uuid4(), 2)
         assert faellig == [(UUID(a), 50)]
 
@@ -121,7 +121,7 @@ class TestWerIstFaelligFuerEineVerdichtung:
         a = str(uuid4())
         client = self._client(
             [{"agent_id": a, "created_at": "2026-09-01T12:00:00"}],
-            [{"agent_id": a, "created_at": "2026-09-01T10:00:00"}] * 80,  # ALT
+            [{"id": str(uuid4()), "agent_id": a, "created_at": "2026-09-01T10:00:00"} for _ in range(80)],  # ALT
         )
         assert await AgentMemoryService._agents_due_for_reflection(client, uuid4(), 2) == []
 
@@ -130,9 +130,9 @@ class TestWerIstFaelligFuerEineVerdichtung:
         """Ein Tick darf nicht unbegrenzt kosten."""
         a, b, c = str(uuid4()), str(uuid4()), str(uuid4())
         beob = (
-            [{"agent_id": a, "created_at": "2026-09-01"}] * 90
-            + [{"agent_id": b, "created_at": "2026-09-01"}] * 70
-            + [{"agent_id": c, "created_at": "2026-09-01"}] * 60
+            [{"id": str(uuid4()), "agent_id": a, "created_at": "2026-09-01"} for _ in range(90)]
+            + [{"id": str(uuid4()), "agent_id": b, "created_at": "2026-09-01"} for _ in range(70)]
+            + [{"id": str(uuid4()), "agent_id": c, "created_at": "2026-09-01"} for _ in range(60)]
         )
         faellig = await AgentMemoryService._agents_due_for_reflection(self._client([], beob), uuid4(), 2)
         assert len(faellig) == 2

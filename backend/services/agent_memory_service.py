@@ -10,6 +10,7 @@ from backend.config import settings
 from backend.services.embedding_service import EmbeddingService
 from backend.services.generation_service import GenerationService
 from backend.services.translation_service import schedule_auto_translation
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from backend.utils.supabase_admin_cache import get_admin_supabase_client
 from supabase import AsyncClient as Client
@@ -258,6 +259,15 @@ class AgentMemoryService:
         params: dict = {
             "p_agent_id": str(agent_id),
             "p_top_k": top_k,
+            # ⚠ DAS HIER FEHLTE. Der Parameter stand seit jeher in der
+            # Signatur dieser Methode und ging nirgends hin — die Weltgrenze
+            # hielt nur, weil eine Figur zufaellig genau einer Welt gehoert
+            # (gemessen 05.09.2026: 0 Erinnerungen in einer fremden Welt,
+            # 0 Figuren in zwei Welten). Ein Parameter, der eine Zusicherung
+            # BEHAUPTET, die niemand einloest, ist schlimmer als gar keiner:
+            # an der Aufrufstelle sieht er wie eine Schranke aus.
+            # Seit Migration 381 ist er ein Filter.
+            "p_simulation_id": str(simulation_id),
         }
         if embedding:
             params["p_query_embedding"] = str(embedding)
@@ -283,6 +293,28 @@ class AgentMemoryService:
     #: sagt als beim letzten Mal, und selten genug, dass sie nicht in jedem
     #: Tick Modellkosten erzeugt.
     REFLECTION_TRIGGER = 50
+
+    #: Wie viele Beobachtungen EINE Verdichtung liest.
+    #:
+    #: ⚠ Diese Zahl war bis zum 05.09.2026 nicht da, und `reflect()` las eine
+    #: fest eingebaute `.limit(20)`. Auslöser und Leser waren sich damit
+    #: uneinig: fällig wurde ein Agent bei FÜNFZIG offenen Beobachtungen,
+    #: gelesen wurden ZWANZIG. Und weil die neue Reflexion den Zeitstempel
+    #: setzte, ab dem gezählt wird, fielen die übrigen dreissig danach
+    #: dauerhaft aus dem Offen-Zähler — **30 von 50 Beobachtungen erreichten
+    #: nie eine Reflexion und galten trotzdem als erledigt.**
+    #:
+    #: Sie muss deshalb MINDESTENS so gross sein wie `REFLECTION_TRIGGER`;
+    #: `test_der_leser_sieht_alles_was_den_ausloeser_gedrueckt_hat` bindet die
+    #: beiden aneinander. Grösser darf sie sein — der Rückstand einer Figur,
+    #: die lange nicht verdichtet hat, wird dann in einem Zug aufgeholt statt
+    #: in mehreren.
+    #:
+    #: Die eigentliche Absicherung ist aber nicht die Zahl, sondern der
+    #: WASSERSTAND (siehe `_reflection_boundary`): was gelesen wurde, steht in
+    #: der Reflexion selbst. Eine Zahl allein hätte den Rückstand von 195
+    #: Beobachtungen wieder abgeschnitten, nur an einer anderen Stelle.
+    REFLECTION_WINDOW = 50
 
     @classmethod
     async def reflect_due_agents(
@@ -353,6 +385,68 @@ class AgentMemoryService:
         rows = extract_list(resp)
         return str(rows[0].get("setting_value", "de")) if rows else "de"
 
+    @staticmethod
+    def _boundary_of(reflexion: dict | None, wann: dict[str, str]) -> str | None:
+        """Bis wohin die letzte Verdichtung dieser Figur GELESEN hat.
+
+        ⚠ Nicht „wann sie lief". Das war der Fehler bis zum 05.09.2026: die
+        Grenze war `created_at` der Reflexion, also der Zeitpunkt der ARBEIT.
+        Weil `reflect()` aber nur zwanzig Beobachtungen las und der Auslöser
+        bei fünfzig zuschlug, fielen dreissig hinter diese Grenze, ohne je
+        gelesen worden zu sein — sie galten als erledigt und waren es nicht.
+
+        Seither trägt jede Reflexion in `source_id` die JÜNGSTE Beobachtung,
+        die sie wirklich gelesen hat, und ab der wird weitergezählt. Damit
+        holt eine Figur mit Rückstand über mehrere Takte auf, statt ihn zu
+        verlieren.
+
+        Rückfall auf `created_at`, wenn `source_id` fehlt oder ins Leere
+        zeigt: die fünf Reflexionen, die vor dieser Änderung entstanden sind,
+        haben keinen Wasserstand, und für sie ist der alte Wert das Beste, was
+        es gibt. Eine Zeile ohne Wasserstand darf nicht dazu führen, dass eine
+        Figur ihr ganzes Gedächtnis noch einmal verdichtet.
+        """
+        if not reflexion:
+            return None
+        quelle = reflexion.get("source_id")
+        if quelle and str(quelle) in wann:
+            return wann[str(quelle)]
+        return str(reflexion.get("created_at")) if reflexion.get("created_at") else None
+
+    @classmethod
+    async def _reflection_boundary(
+        cls, supabase: Client, agent_id: UUID, simulation_id: UUID
+    ) -> str | None:
+        """Dieselbe Grenze für EINE Figur — die Lesestelle in `reflect()`.
+
+        Sie muss dieselbe Antwort geben wie `_boundary_of` in der Auswahl;
+        gäben sie verschiedene, läse `reflect()` einen anderen Ausschnitt als
+        den, für den der Agent fällig wurde. Deshalb geht sie durch denselben
+        Helfer.
+        """
+        resp = await (
+            supabase.table("agent_memories")
+            .select("created_at, source_id")
+            .eq("agent_id", str(agent_id))
+            .eq("simulation_id", str(simulation_id))
+            .eq("memory_type", "reflection")
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        zeilen = extract_list(resp)
+        if not zeilen:
+            return None
+        quelle = zeilen[0].get("source_id")
+        if not quelle:
+            return str(zeilen[0].get("created_at")) if zeilen[0].get("created_at") else None
+        beob = await maybe_single_data(
+            supabase.table("agent_memories").select("created_at").eq("id", str(quelle)).maybe_single()
+        )
+        if beob and beob.get("created_at"):
+            return str(beob["created_at"])
+        return str(zeilen[0].get("created_at")) if zeilen[0].get("created_at") else None
+
     @classmethod
     async def _agents_due_for_reflection(
         cls,
@@ -368,27 +462,35 @@ class AgentMemoryService:
         """
         letzte_resp = await (
             supabase.table("agent_memories")
-            .select("agent_id, created_at")
+            .select("agent_id, created_at, source_id")
             .eq("simulation_id", str(simulation_id))
             .eq("memory_type", "reflection")
             .order("created_at", desc=True)
             .execute()
         )
-        letzte: dict[str, str] = {}
+        letzte: dict[str, dict] = {}
         for zeile in extract_list(letzte_resp):
-            letzte.setdefault(str(zeile["agent_id"]), zeile["created_at"])
+            letzte.setdefault(str(zeile["agent_id"]), zeile)
 
         beob_resp = await (
             supabase.table("agent_memories")
-            .select("agent_id, created_at")
+            .select("id, agent_id, created_at")
             .eq("simulation_id", str(simulation_id))
             .eq("memory_type", "observation")
             .execute()
         )
+        beobachtungen = extract_list(beob_resp)
+        # Der Wasserstand steht IN der Reflexion (`source_id` → die jüngste
+        # Beobachtung, die sie gelesen hat). Er wird hier aufgelöst, ohne eine
+        # dritte Rundreise: die Beobachtungen liegen schon vor.
+        wann: dict[str, str] = {
+            str(z["id"]): str(z["created_at"]) for z in beobachtungen if z.get("id")
+        }
+
         offen: dict[str, int] = {}
-        for zeile in extract_list(beob_resp):
+        for zeile in beobachtungen:
             aid = str(zeile["agent_id"])
-            grenze = letzte.get(aid)
+            grenze = cls._boundary_of(letzte.get(aid), wann)
             if grenze is None or str(zeile["created_at"]) > grenze:
                 offen[aid] = offen.get(aid, 0) + 1
 
@@ -407,20 +509,35 @@ class AgentMemoryService:
     ) -> list[dict]:
         """Synthesize higher-level reflections from recent observations."""
         # Fetch recent observations
-        obs_resp = await (
+        # Ab WO gelesen wird: hinter dem Wasserstand der letzten Verdichtung.
+        # Nicht „die 20 juengsten ueberhaupt" — das war der Engpass, siehe
+        # `REFLECTION_WINDOW`.
+        grenze = await cls._reflection_boundary(supabase, agent_id, simulation_id)
+
+        # ÄLTESTE ZUERST. Der Rückstand wird von vorn abgearbeitet, damit der
+        # Wasserstand unten wirklich steigt: läse man die jüngsten, bliebe
+        # alles davor für immer unverdichtet, obwohl der Zähler es abhakt.
+        abfrage = (
             supabase.table("agent_memories")
-            .select("content, importance, created_at")
+            .select("id, content, importance, created_at")
             .eq("agent_id", str(agent_id))
             .eq("simulation_id", str(simulation_id))
             .eq("memory_type", "observation")
-            .order("created_at", desc=True)
-            .limit(20)
-            .execute()
         )
+        if grenze:
+            abfrage = abfrage.gt("created_at", grenze)
+        obs_resp = await abfrage.order("created_at", desc=False).limit(cls.REFLECTION_WINDOW).execute()
         observations = extract_list(obs_resp)
 
         if len(observations) < 5:
             return []
+
+        # Der Wasserstand: die JÜNGSTE Beobachtung, die wirklich gelesen wurde.
+        # Sie wird als `source_id` der Reflexion mitgeschrieben, und
+        # `_agents_due_for_reflection` zählt ab ihr weiter. Ohne das zählte
+        # der Auslöser ab dem Zeitpunkt, an dem die Verdichtung LIEF — und
+        # alles, was sie nicht gelesen hat, wäre still erledigt.
+        wasserstand = observations[-1].get("id")
 
         if settings.forge_mock_mode:
             logger.info("MOCK_MODE: returning template reflections")
@@ -433,6 +550,7 @@ class AgentMemoryService:
                     ref["content"],
                     ref["importance"],
                     source_type="reflection",
+                    source_id=UUID(str(wasserstand)) if wasserstand else None,
                     memory_type="reflection",
                     api_key=api_key,
                 )
@@ -466,6 +584,7 @@ class AgentMemoryService:
                 ref.content,
                 ref.importance,
                 source_type="reflection",
+                source_id=UUID(str(wasserstand)) if wasserstand else None,
                 memory_type="reflection",
                 api_key=api_key,
             )

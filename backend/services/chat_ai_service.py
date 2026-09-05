@@ -1349,6 +1349,23 @@ class ChatAIService:
                         conversation_id,
                         participant_names=participant_names,
                         locale=locale,
+                        # ⚠ DAS HIER FEHLTE. `participants` wurde seit
+                        # Migration 373 von BEIDEN Gruppenpfaden mitgegeben,
+                        # hier entgegengenommen — und nie weitergereicht.
+                        # Ohne Besetzung ist `fehlende_episoden` leer, die
+                        # Vorlage `chat_character_episode` wird nie
+                        # aufgeloest, und die Ich-Schicht schreibt keine
+                        # Zeile. Gemessen am 05.09.2026 am groessten Faden:
+                        # geteiltes Protokoll 14 von 14, Ich-Erinnerung
+                        # 0 von 42.
+                        #
+                        # Die Kosten stehen im Dienst selbst: die Ablation
+                        # misst 60,9 statt 73,3 ohne diese Schicht, und die
+                        # Verweigerungsgenauigkeit faellt von 81 auf 47.
+                        # Ein Parameter, der angenommen und fallengelassen
+                        # wird, ist teurer als einer, der fehlt — er sieht
+                        # an der Aufrufstelle richtig aus.
+                        participants=participants,
                     ),
                     timeout=120.0,
                 )

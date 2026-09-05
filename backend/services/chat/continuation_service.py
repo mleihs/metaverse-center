@@ -311,7 +311,7 @@ class ContinuationService:
             )
             return None
 
-        geschrieben = await cls._persist(admin, simulation_id, conversation_id, zuege, agents, model.model_id)
+        geschrieben = await cls._persist(admin, conversation_id, zuege, agents, model.model_id)
         if not geschrieben:
             return None
 
@@ -559,7 +559,6 @@ class ContinuationService:
     @staticmethod
     async def _persist(
         admin: Client,
-        simulation_id: UUID,
         conversation_id: UUID,
         zuege: list[dict[str, str]],
         agents: list[dict[str, Any]],

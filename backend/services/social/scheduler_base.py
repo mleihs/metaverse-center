@@ -83,12 +83,59 @@ class BaseSchedulerMixin:
     _content_service: ClassVar[Any] = None
     _force_publish_statuses: ClassVar[tuple[str, ...]] = ()
 
+    #: Seit welcher Schleifenrunde dieser Zeitgeber abgeschaltet ist.
+    #:
+    #: ``None`` heisst „laeuft". Siehe `_melde_abgeschaltet`.
+    _aus_seit_iteration: ClassVar[int | None] = None
+
+    #: Wie oft ein abgeschalteter Zeitgeber sich meldet, in Schleifenrunden.
+    #:
+    #: 60 Runden sind bei der ueblichen 60-Sekunden-Kadenz etwa eine Stunde.
+    #: Oefter waere Laerm — dreizehn Zeitgeber teilen sich diesen Rumpf, und
+    #: mehrere sind mit Absicht aus. Seltener hiesse, dass ein versehentlich
+    #: geschlossenes Tor einen Arbeitstag lang unbemerkt bleibt.
+    _AUS_MELDEN_ALLE: ClassVar[int] = 60
+
     @classmethod
     async def start(cls) -> asyncio.Task:
         """Launch the scheduler loop. Called from app lifespan."""
         cls._task = asyncio.create_task(cls._run_loop())
         logger.info("%s scheduler started", cls._scheduler_name.capitalize())
         return cls._task
+
+    @classmethod
+    def _melde_abgeschaltet(cls) -> None:
+        """Sagen, dass dieser Zeitgeber aus ist — und seit wann.
+
+        ⚠ WOHER DAS KOMMT. Am 05.09.2026 gemessen: der Herzschlag stand seit
+        dem 02.09. 13:32 UTC, weil `heartbeat_enabled` auf `false` gesetzt
+        worden war. Drei Tage lang lief keine Autonomie, kein Flüstern, keine
+        Gedächtnisverdichtung — und nichts sagte es. `/api/v1/health` meldete
+        durchgehend „healthy", die Anwendung beantwortete jede Anfrage, und
+        21 von 41 Welten waren fällig.
+
+        Der Aufseher in `app.py` fängt den anderen Fall: eine Aufgabe, die
+        ABSTIRBT. Für den hier gab es nichts, weil er kein Fehler ist — ein
+        geschlossenes Tor ist eine Entscheidung. Aber eine Entscheidung, die
+        niemand mehr sieht, ist von einem Ausfall nicht zu unterscheiden.
+
+        Deshalb keine Sentry-Meldung und kein Fehler: eine Zeile im Protokoll,
+        stündlich, mit der Dauer. Wer sucht, findet sie; wer nicht sucht, wird
+        nicht gestört. Ein Tor, das laut wäre, würde abgeschaltet.
+        """
+        if cls._aus_seit_iteration is None:
+            cls._aus_seit_iteration = cls._iteration_count
+            runden = 0
+        else:
+            runden = cls._iteration_count - cls._aus_seit_iteration
+        if runden % cls._AUS_MELDEN_ALLE:
+            return
+        logger.warning(
+            "%s scheduler is switched OFF (feature gate) — no ticks for %d loop iteration(s)",
+            cls._scheduler_name.capitalize(),
+            runden,
+            extra={"scheduler": cls._scheduler_name, "off_for_iterations": runden},
+        )
 
     @classmethod
     async def _run_loop(cls) -> None:
@@ -106,7 +153,10 @@ class BaseSchedulerMixin:
                 interval = config.get("interval", DEFAULT_CHECK_INTERVAL)
 
                 if config.get("enabled", False):
+                    cls._aus_seit_iteration = None
                     await cls._process_tick(admin, config)
+                else:
+                    cls._melde_abgeschaltet()
             except asyncio.CancelledError:
                 logger.info("%s scheduler shutting down", cls._scheduler_name.capitalize())
                 raise

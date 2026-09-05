@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -299,3 +300,50 @@ class TestChatPersonaIsUsed:
             )
         system = messages[0]["content"]
         assert system.startswith("Speak as"), "no persona means no leading blank lines either"
+
+
+class TestDieBesetzungErreichtDieVerdichtung:
+    """Die Ich-Schicht des zweischichtigen Gedaechtnisses (Migration 373)
+    entsteht nur, wenn `ensure_digests` weiss, WER im Faden steht.
+
+    ⚠ Am 05.09.2026 gemessen: `_fire_and_forget_digest` nahm `participants`
+    entgegen — beide Gruppenpfade gaben es mit — und reichte es nicht weiter.
+    Ohne Besetzung ist `fehlende_episoden` leer, die Vorlage
+    `chat_character_episode` wird nie aufgeloest, und die Schicht schreibt
+    keine Zeile. Am groessten Faden auf Produktion: geteiltes Protokoll
+    14 von 14, Ich-Erinnerung **0 von 42**.
+
+    `test_kein_toter_parameter.py` faengt die KLASSE; dieser Test haelt das
+    VERHALTEN fest. Beides, weil ein Formtor eine richtige Weitergabe an die
+    falsche Stelle nicht sieht.
+    """
+
+    @staticmethod
+    async def _lauf(participants):
+        from unittest.mock import ANY
+
+        dienst = MagicMock()
+        dienst.ensure_digests = AsyncMock(return_value=0)
+        svc = ChatAIService(MagicMock(), uuid4(), openrouter_api_key="x")
+        with (
+            patch("backend.services.chat_ai_service.ConversationDigestService", return_value=dienst),
+            patch("backend.services.chat_ai_service.get_admin_supabase", AsyncMock(return_value=MagicMock())),
+        ):
+            svc._fire_and_forget_digest(uuid4(), ["Marie Morgenrot"], "de", participants=participants)
+            # Die Aufgabe laeuft im Hintergrund; einmal die Schleife abgeben.
+            await asyncio.sleep(0)
+            await asyncio.sleep(0)
+        assert dienst.ensure_digests.await_count == 1, ANY
+        return dienst.ensure_digests.await_args.kwargs
+
+    async def test_die_besetzung_wird_weitergereicht(self):
+        agenten = [{"id": str(uuid4()), "name": "Marie Morgenrot"}]
+        kwargs = await self._lauf(agenten)
+        assert kwargs["participants"] == agenten
+
+    async def test_ohne_besetzung_bleibt_es_leer(self):
+        """Die Gegenprobe: der Einzelchat gibt keine mit, und das ist richtig —
+        eine Figur allein braucht keine Abgrenzung gegen andere. Ohne diesen
+        Test pruefte der obige nur, dass irgendein Wert ankommt."""
+        kwargs = await self._lauf(None)
+        assert kwargs["participants"] is None

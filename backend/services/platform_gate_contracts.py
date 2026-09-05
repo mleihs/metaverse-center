@@ -106,8 +106,16 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         key="heartbeat_enabled",
         group="world",
         label="Herzschlag",
-        turns_on="Der Welt-Tick: Ereignisse, Stimmungen, Beziehungen, Wetter, Autonomie.",
-        absence_costs="Keine Welt tickt mehr. Der Bestand friert ein, ohne Fehlermeldung.",
+        turns_on="Der Welt-Tick: Ereignisse, Stimmungen, Beziehungen, Wetter, Autonomie – "
+        "und seit dem 02.09.2026 auch Phase 9.7, die Gedächtnisverdichtung (Beobachtungen "
+        "werden zu Einsichten) sowie Phase 9.8, die Gespräche ohne Zuhörer.",
+        absence_costs="Keine Welt tickt mehr. Der Bestand friert ein, ohne Fehlermeldung – "
+        "und das ist wörtlich gemessen: vom 02.09. 13:32 UTC bis zum 05.09. stand der Tick, "
+        "21 von 41 Welten waren fällig, /api/v1/health meldete durchgehend healthy. In dieser "
+        "Zeit entstand KEINE einzige Gedächtnisverdichtung; eine Figur sammelte 195 "
+        "unverdichtete Beobachtungen an, und der Abruf holt acht. Seit dem 05.09. schreibt "
+        "jeder abgeschaltete Zeitgeber stündlich eine Zeile ins Protokoll, damit sich eine "
+        "Entscheidung nicht mehr wie ein Ausfall anfühlt.",
         default_when_missing=True,
         reader="backend/services/heartbeat_service.py",
     ),

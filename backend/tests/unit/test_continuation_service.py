@@ -306,7 +306,7 @@ class TestDieMarkeAmWortwechsel:
             {"speaker": "Mira Steinfeld", "content": "a"},
             {"speaker": "Elena Voss", "content": "b"},
         ]
-        ok = await ContinuationService._persist(admin, uuid4(), uuid4(), zuege, agents, "deepseek/deepseek-v4-flash")
+        ok = await ContinuationService._persist(admin, uuid4(), zuege, agents, "deepseek/deepseek-v4-flash")
         assert ok
         zeilen = admin.table.return_value.insert.call_args.args[0]
         assert len(zeilen) == 2
@@ -316,7 +316,7 @@ class TestDieMarkeAmWortwechsel:
     async def test_ohne_zuordenbare_zeile_wird_nichts_geschrieben(self):
         admin = MagicMock()
         ok = await ContinuationService._persist(
-            admin, uuid4(), uuid4(), [{"speaker": "Fremd", "content": "x"}], [], "m"
+            admin, uuid4(), [{"speaker": "Fremd", "content": "x"}], [], "m"
         )
         assert ok is False
         admin.table.return_value.insert.assert_not_called()
