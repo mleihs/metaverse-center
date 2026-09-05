@@ -28,6 +28,7 @@ from backend.models.chat import (
     ConversationContinuationRequest,
     ConversationCreate,
     ConversationResponse,
+    ConversationStatusRequest,
     ConversationUpdate,
     EventReferenceCreate,
     EventReferenceResponse,
@@ -749,23 +750,37 @@ async def set_conversation_continuation(
 
 
 @router.patch("/conversations/{conversation_id}")
-async def archive_conversation(
+async def set_conversation_status(
     simulation_id: UUID,
     conversation_id: UUID,
+    body: ConversationStatusRequest,
     user: Annotated[CurrentUser, Depends(get_current_user)],
     _role_check: Annotated[str, Depends(require_role("editor"))],
     supabase: Annotated[Client, Depends(get_effective_supabase)],
 ) -> SuccessResponse[ConversationResponse]:
-    """Archive a conversation (soft-delete)."""
+    """Ein Gespraech beiseitelegen (`archived`) oder hervorholen (`active`).
+
+    Die Route nahm bis zum 05.09.2026 KEINEN Rumpf und archivierte immer. Der
+    Klient schickte `{"status": "archived"}`, der Server verwarf es — was nie
+    auffiel, weil beide dasselbe wollten. Der Weg zurueck fehlte damit auf der
+    ganzen Strecke, und die Oberflaeche bot an einem archivierten Gespraech
+    nur noch das Loeschen an.
+
+    Der Rumpf ist jetzt echt und auf zwei Werte typisiert. Das ist die
+    kleinste Aenderung, die aus einer Einbahnstrasse eine Tuer macht — und die
+    einzige, die dem Wort „archivieren" sein Versprechen zurueckgibt.
+    """
     await _service.verify_ownership(supabase, conversation_id, user.id)
-    conversation = await _service.archive_conversation(supabase, conversation_id)
+    conversation = await _service.set_conversation_status(supabase, conversation_id, body.status)
     await AuditService.safe_log(
         supabase,
         simulation_id,
         user.id,
         "chat_conversations",
         conversation_id,
-        "archive",
+        # Die Handlung heisst, was sie tut. Ein Pruefpfad, in dem beide
+        # Richtungen „archive" heissen, waere beim Nachsehen wertlos.
+        "archive" if body.status == "archived" else "unarchive",
     )
     return SuccessResponse(data=conversation)
 

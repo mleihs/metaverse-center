@@ -225,30 +225,58 @@ export class VelgChatView extends LitElement {
     this._selectedConversation = e.detail;
   }
 
-  private async _handleConversationArchive(e: CustomEvent<ChatConversation>): Promise<void> {
-    const conversation = e.detail;
+  private _handleConversationArchive(e: CustomEvent<ChatConversation>): Promise<void> {
+    return this._setConversationStatus(e.detail, 'archived');
+  }
 
+  private _handleConversationUnarchive(e: CustomEvent<ChatConversation>): Promise<void> {
+    return this._setConversationStatus(e.detail, 'active');
+  }
+
+  /**
+   * Beiseitelegen und Hervorholen sind dieselbe Handlung in zwei Richtungen.
+   *
+   * Sie stand vorher nur in einer, und zwar auf der ganzen Strecke: kein
+   * Dienst, keine Route, kein Knopf. Wer versehentlich archivierte, dem bot
+   * die Liste an dem Gespraech nur noch das Loeschen an — auf „das wollte ich
+   * nicht" antwortete die Anwendung mit „dann zerstoere es".
+   *
+   * KEINE Rueckfrage, mit Absicht: eine Handlung, die sich mit einem Klick
+   * zuruecknehmen laesst, braucht keine. Bewacht gehoert, was NICHT
+   * umkehrbar ist — und das ist hier das Loeschen, das seine Rueckfrage schon
+   * hat. Die Umkehrbarkeit ist der bessere Schutz als die Nachfrage.
+   */
+  private async _setConversationStatus(
+    conversation: ChatConversation,
+    status: 'active' | 'archived',
+  ): Promise<void> {
     try {
-      const response = await chatApi.archiveConversation(this.simulationId, conversation.id);
+      const response = await chatApi.setConversationStatus(
+        this.simulationId,
+        conversation.id,
+        status,
+      );
       if (response.success) {
-        VelgToast.success(msg('Conversation archived.'));
-        // Update the conversation in the list
-        this._conversations = this._conversations.map((c) =>
-          c.id === conversation.id ? { ...c, status: 'archived' as const } : c,
+        VelgToast.success(
+          status === 'archived' ? msg('Conversation archived.') : msg('Conversation back in the file.'),
         );
-        // If the archived conversation was selected, deselect it
+        this._conversations = this._conversations.map((c) =>
+          c.id === conversation.id ? { ...c, status } : c,
+        );
         if (this._selectedConversation?.id === conversation.id) {
-          this._selectedConversation = {
-            ...this._selectedConversation,
-            status: 'archived',
-          };
+          this._selectedConversation = { ...this._selectedConversation, status };
         }
       } else {
-        VelgToast.error(response.error?.message ?? msg('Failed to archive conversation.'));
+        VelgToast.error(
+          response.error?.message ??
+            (status === 'archived'
+              ? msg('Failed to archive conversation.')
+              : msg('The conversation could not be brought back.')),
+        );
       }
     } catch (err) {
-      captureError(err, { source: 'ChatView._handleConversationArchive' });
-      VelgToast.error(msg('An unexpected error occurred while archiving the conversation.'));
+      captureError(err, { source: 'ChatView._setConversationStatus' });
+      VelgToast.error(msg('An unexpected error occurred while filing the conversation.'));
     }
   }
 
@@ -620,6 +648,7 @@ export class VelgChatView extends LitElement {
               ?readonly=${!appState.isAuthenticated.value}
               @conversation-select=${this._handleConversationSelect}
               @conversation-archive=${this._handleConversationArchive}
+              @conversation-unarchive=${this._handleConversationUnarchive}
               @conversation-delete=${this._handleConversationDelete}
               @conversation-rename=${this._handleConversationRename}
               @conversation-new=${this._handleNewConversation}

@@ -63,6 +63,35 @@ class MessageCreate(BaseModel):
     generate_response: bool = False
 
 
+class ConversationStatusRequest(BaseModel):
+    """Ein Gespraech beiseitelegen — oder wieder hervorholen.
+
+    WARUM DAS EIN RUMPF IST UND VORHER KEINER WAR
+
+    Die Route `PATCH /conversations/{id}` nahm bis zum 05.09.2026 GAR KEINEN
+    Rumpf entgegen und setzte immer `status='archived'`. Der Klient schickte
+    `{"status": "archived"}` und der Server verwarf es — was nicht auffiel,
+    weil beide dasselbe wollten.
+
+    Aufgefallen ist es, als jemand versehentlich archivierte und zurueck
+    wollte: es gab keinen Weg. Die Zeile blieb sichtbar, das Schreibfeld
+    verschwand, und die einzige Handlung, die die Oberflaeche einem
+    archivierten Gespraech noch anbot, war LOESCHEN. Auf „das wollte ich
+    nicht" antwortete die Anwendung mit „dann zerstoere es".
+
+    Ein Wort wie „archivieren" verspricht, dass etwas wiederzufinden ist. Eine
+    Einbahnstrasse unter diesem Namen ist eine zerstoererische Handlung mit
+    einem sanften Etikett — und sie trug als einzige der drei (archivieren,
+    verschliessen, loeschen) KEINE Rueckfrage.
+
+    Zwei Werte und nicht ein freies Feld: `status` traegt in der Datenbank
+    genau diese beiden, und ein `Literal` sagt das an der Stelle, an der ein
+    Klient es liest.
+    """
+
+    status: Literal["active", "archived"]
+
+
 class ConversationContinuationRequest(BaseModel):
     """Der Griff am einzelnen Gespraech: reden die Agenten ohne mich weiter.
 

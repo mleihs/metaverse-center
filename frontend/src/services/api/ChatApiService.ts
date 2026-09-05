@@ -241,12 +241,21 @@ export class ChatApiService extends BaseApiService {
     });
   }
 
-  archiveConversation(
+  /**
+   * Ein Gespraech beiseitelegen oder wieder hervorholen.
+   *
+   * Der Rumpf wurde bis zum 05.09.2026 vom Server VERWORFEN — die Route nahm
+   * keinen entgegen und archivierte immer. Dass es niemandem auffiel, lag
+   * daran, dass es nur einen Aufrufer gab und der dasselbe wollte. Erst als
+   * jemand zurueck wollte, zeigte sich, dass es keinen Rueckweg gab.
+   */
+  setConversationStatus(
     simulationId: string,
     conversationId: string,
+    status: 'active' | 'archived',
   ): Promise<ApiResponse<ChatConversation>> {
     return this.patch(`/simulations/${simulationId}/chat/conversations/${conversationId}`, {
-      status: 'archived',
+      status,
     });
   }
 

@@ -558,10 +558,6 @@
   <source>Failed to archive conversation.</source>
   <target>Fehler beim Archivieren der Konversation.</target>
 </trans-unit>
-<trans-unit id="s745bf1f1c57d2892">
-  <source>An unexpected error occurred while archiving the conversation.</source>
-  <target>Ein unerwarteter Fehler beim Archivieren der Konversation.</target>
-</trans-unit>
 <trans-unit id="s8d746648f3712457">
   <source>Conversation started with <x id="0" equiv-text="${names[0]}"/>.</source>
   <target>Konversation gestartet mit <x id="0" equiv-text="${agent.name}"/>.</target>
@@ -32296,6 +32292,22 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
 <trans-unit id="s34d189e4efb1335d">
   <source>The image desk could not be reached.</source>
         <target>Die Bildstelle war nicht erreichbar.</target>
+</trans-unit>
+<trans-unit id="se0a87ffe9429f13b">
+  <source>Conversation back in the file.</source>
+        <target>Gespräch ist zurück in der Akte.</target>
+</trans-unit>
+<trans-unit id="s418956f6fcfaf45e">
+  <source>The conversation could not be brought back.</source>
+        <target>Das Gespräch konnte nicht zurückgeholt werden.</target>
+</trans-unit>
+<trans-unit id="sf660c1c7c8139a94">
+  <source>An unexpected error occurred while filing the conversation.</source>
+        <target>Beim Ablegen des Gesprächs ist ein unerwarteter Fehler aufgetreten.</target>
+</trans-unit>
+<trans-unit id="sb67ff5514174d54c">
+  <source>Back in the file</source>
+        <target>Zurück in die Akte</target>
 </trans-unit>
 </body>
 </file>

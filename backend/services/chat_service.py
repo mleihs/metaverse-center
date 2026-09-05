@@ -706,14 +706,28 @@ class ChatService:
         return grouped
 
     @staticmethod
-    async def archive_conversation(
+    async def set_conversation_status(
         supabase: Client,
         conversation_id: UUID,
+        status: str,
     ) -> dict:
-        """Archive a conversation."""
+        """Ein Gespraech beiseitelegen oder wieder hervorholen.
+
+        Hiess `archive_conversation` und konnte nur in EINE Richtung. Der Weg
+        zurueck fehlte auf der ganzen Strecke: kein Dienst, keine Route, kein
+        Knopf. Wer versehentlich archivierte, dem bot die Oberflaeche an dem
+        Gespraech nur noch das Loeschen an.
+
+        `updated_at` wird weiterhin mitgeschrieben, damit ein Vorgang
+        auffindbar bleibt — an dieser Spalte liess sich das Versehen vom
+        05.09.2026 auf die Minute genau wiederfinden.
+        """
+        if status not in ("active", "archived"):
+            raise bad_request(detail=f"Unknown conversation status: {status!r}")
+
         response = await (
             supabase.table("chat_conversations")
-            .update({"status": "archived", "updated_at": datetime.now(UTC).isoformat()})
+            .update({"status": status, "updated_at": datetime.now(UTC).isoformat()})
             .eq("id", str(conversation_id))
             .execute()
         )

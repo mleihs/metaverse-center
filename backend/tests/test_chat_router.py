@@ -246,6 +246,7 @@ class TestChatAuthGate:
         """Viewer role cannot PATCH archive (requires editor)."""
         resp = viewer_client.patch(
             f"{BASE_URL}/conversations/{CONV_ID}",
+            json={"status": "archived"},
         )
         assert resp.status_code == 403
 
@@ -764,20 +765,57 @@ class TestChatConversationLifecycle:
         )
         assert resp.status_code == 422
 
-    @patch.object(chat_module._service, "archive_conversation", new_callable=AsyncMock)
+    @patch.object(chat_module._service, "set_conversation_status", new_callable=AsyncMock)
     @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
-    def test_archive_conversation(self, mock_verify, mock_archive, editor_client):
-        """PATCH /conversations/{id} with editor role archives the conversation."""
+    def test_archive_conversation(self, mock_verify, mock_status, editor_client):
+        """PATCH /conversations/{id} mit `archived` legt das Gespraech beiseite."""
         mock_verify.return_value = None
-        archived = {**MOCK_CONVERSATION, "status": "archived"}
-        mock_archive.return_value = archived
+        mock_status.return_value = {**MOCK_CONVERSATION, "status": "archived"}
 
-        resp = editor_client.patch(f"{BASE_URL}/conversations/{CONV_ID}")
+        resp = editor_client.patch(f"{BASE_URL}/conversations/{CONV_ID}", json={"status": "archived"})
         assert resp.status_code == 200
         body = resp.json()
         assert body["success"] is True
         assert body["data"]["status"] == "archived"
-        mock_archive.assert_called_once()
+        assert mock_status.call_args[0][2] == "archived"
+
+    @patch.object(chat_module._service, "set_conversation_status", new_callable=AsyncMock)
+    @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
+    def test_unarchive_conversation(self, mock_verify, mock_status, editor_client):
+        """DER WEG ZURUECK — und es gab ihn bis zum 05.09.2026 nicht.
+
+        Die Route nahm keinen Rumpf entgegen und setzte immer `archived`. Wer
+        versehentlich archivierte, bekam von der Oberflaeche nur noch das
+        Loeschen angeboten. Dieser Test ist die Zusicherung, dass die Tuer in
+        beide Richtungen aufgeht.
+        """
+        mock_verify.return_value = None
+        mock_status.return_value = {**MOCK_CONVERSATION, "status": "active"}
+
+        resp = editor_client.patch(f"{BASE_URL}/conversations/{CONV_ID}", json={"status": "active"})
+        assert resp.status_code == 200
+        assert resp.json()["data"]["status"] == "active"
+        assert mock_status.call_args[0][2] == "active"
+
+    @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
+    def test_ein_unbekannter_status_wird_abgelehnt(self, mock_verify, editor_client):
+        """Zwei Werte, und nur zwei. Der Rumpf ist typisiert, nicht frei."""
+        mock_verify.return_value = None
+        resp = editor_client.patch(f"{BASE_URL}/conversations/{CONV_ID}", json={"status": "geloescht"})
+        assert resp.status_code == 422
+
+    @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)
+    def test_ohne_rumpf_wird_nicht_mehr_stillschweigend_archiviert(self, mock_verify, editor_client):
+        """Der eigentliche Befund, als Test.
+
+        Vorher archivierte ein Aufruf OHNE Rumpf. Das war die Einbahnstrasse:
+        der Klient schickte zwar `{"status": "archived"}`, aber der Server las
+        es nie — er haette auf jeden Rumpf gleich reagiert, auch auf
+        `{"status": "active"}`.
+        """
+        mock_verify.return_value = None
+        resp = editor_client.patch(f"{BASE_URL}/conversations/{CONV_ID}")
+        assert resp.status_code == 422
 
     @patch.object(chat_module._service, "delete_conversation", new_callable=AsyncMock)
     @patch.object(chat_module._service, "verify_ownership", new_callable=AsyncMock)

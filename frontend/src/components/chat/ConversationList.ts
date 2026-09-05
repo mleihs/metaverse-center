@@ -935,6 +935,17 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
     );
   }
 
+  private _handleUnarchive(e: Event, conversation: ChatConversation): void {
+    e.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent('conversation-unarchive', {
+        detail: conversation,
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
   private _handleDelete(e: Event, conversation: ChatConversation): void {
     e.stopPropagation();
     this.dispatchEvent(
@@ -1079,6 +1090,21 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
                   !this.readonly
                     ? html`
                   <div class="conversation__actions">
+                    <!--
+                      Das Hervorholen steht VOR dem Loeschen und nicht dahinter.
+
+                      Hier stand bis zum 05.09.2026 nur das Loeschen. Damit war
+                      die einzige Antwort, die die Liste auf ein versehentlich
+                      abgelegtes Gespraech anbot, seine Zerstoerung. Die erste
+                      Handlung an einer Zeile ist die, die man am ehesten
+                      meint — und das ist hier das Zurueckholen.
+                    -->
+                    <button
+                      class="conversation__action-btn"
+                      @click=${(e: Event) => this._handleUnarchive(e, conversation)}
+                    >
+                      ${msg('Back in the file')}
+                    </button>
                     <button
                       class="conversation__action-btn"
                       @click=${(e: Event) => this._handleDelete(e, conversation)}
