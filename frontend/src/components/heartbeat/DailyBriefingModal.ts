@@ -321,11 +321,40 @@ export class VelgDailyBriefing extends LitElement {
       font-family: var(--font-brutalist);
       font-size: var(--text-lg);
       font-weight: var(--font-black);
-      color: var(--color-text-primary);
-      /* Der Schein traegt die GRUNDfarbe, nicht Schwarz: so bekommt helle
-         Schrift einen dunklen Hof und dunkle Schrift einen hellen. Ein fester
-         schwarzer Hof unter der dunklen Tinte des Papiers waere Matsch. */
-      text-shadow: 0 1px 4px color-mix(in srgb, var(--color-surface) 80%, transparent);
+      /*
+       * Die Zahl steht AUF dem gefuellten Balken, nicht auf dem Blatt.
+       *
+       * ⚠ GEMESSEN am 05.09.2026 auf Produktion. Sie stand hier auf
+       * --color-text-primary, also auf der Farbe fuer Text auf dem GRUND --
+       * und landete damit auf dem gesaettigten Ende einer Statusfarbe:
+       *
+       *     dunkel  Text auf success   1,81 : 1     seit jeher
+       *     dunkel  Text auf warning   1,70 : 1     seit jeher
+       *     Atlas   Tinte auf success  2,64 : 1
+       *
+       * Der dunkle Satz war dabei SCHLECHTER als das Papier. Das ist kein
+       * Skin-Fehler, sondern ein alter: eine Zahl auf einer Flaeche mit der
+       * Textfarbe des Grundes einzufaerben stimmt nur, solange die Flaeche
+       * der Grund ist.
+       *
+       * --color-text-inverse ist per Definition das Gegenteil des Grundes und
+       * damit das, was auf einer gesaettigten Flaeche traegt:
+       *
+       *     dunkel  inverse auf success   8,69 : 1
+       *     dunkel  inverse auf warning   9,22 : 1
+       *     dunkel  inverse auf danger    5,26 : 1
+       *     Atlas   inverse auf success   5,34 : 1
+       *     Atlas   inverse auf danger    5,53 : 1
+       *
+       * ⚠ WAS DAMIT NICHT GELOEST IST: bei sehr niedriger Gesundheit ist der
+       * Balken schmaler als die Zahl, und sie ragt auf den ungefuellten Grund
+       * (--color-surface-sunken). Dort ist inverse per Definition schwach.
+       * Deshalb der Hof in der GEGENfarbe: er traegt genau diesen Fall. Eine
+       * saubere Loesung waere, die Zahl bei schmalem Balken nach aussen zu
+       * setzen -- das ist Umbau, nicht Farbe, und steht aus.
+       */
+      color: var(--color-text-inverse);
+      text-shadow: 0 1px 4px color-mix(in srgb, var(--color-text-primary) 55%, transparent);
     }
 
     .health__badge {
