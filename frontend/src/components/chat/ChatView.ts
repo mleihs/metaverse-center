@@ -258,7 +258,9 @@ export class VelgChatView extends LitElement {
       );
       if (response.success) {
         VelgToast.success(
-          status === 'archived' ? msg('Conversation archived.') : msg('Conversation back in the file.'),
+          status === 'archived'
+            ? msg('Conversation archived.')
+            : msg('Conversation back in the file.'),
         );
         this._conversations = this._conversations.map((c) =>
           c.id === conversation.id ? { ...c, status } : c,

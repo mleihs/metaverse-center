@@ -289,8 +289,8 @@ andere Periode.** Halte dich daran.
 - Zeitraum ist **ein globales Bedienelement**, einmal gesetzt fürs ganze Panel.
 - **Granularität wird abgeleitet, nicht angeboten.** 7 Tage → Stunde · 30 Tage →
   Tag · 90 Tage → Woche · 1 Jahr → Monat. Kein Nutzer stellt Auflösung ein.
-- **Semi-relative Zeiträume** („seit Monatsbeginn bis jetzt") — Grafana hat es,
-  fast niemand kopiert es.
+- **Semi-relative Zeiträume** — fester Anfang, `now` als Ende, also `seit
+  Monatsbeginn bis jetzt`. Grafana hat es, fast niemand kopiert es.
 - Top-N: **Top 9 + „Sonstige"**, und **zwei getrennte Sammel-Label**:
   „Sonstige" (abgeschnittener Rest) gegen „ohne Angabe" (Eigenschaft fehlt).
   Das ist nicht dasselbe.

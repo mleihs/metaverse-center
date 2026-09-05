@@ -51,13 +51,67 @@ const SERIES_DARK = [
   '#67e8f9', // Station Null cyan
 ];
 
-/** Dieselben fuenf Farbtoene, abgedunkelt bis 3 : 1 gegen Papier. */
+/**
+ * Dieselben fuenf Farbtoene, abgedunkelt bis 3 : 1 gegen den DUNKELSTEN der
+ * drei Papiergruende.
+ *
+ * ⚠ 05.09.2026: die erste Fassung war gegen EINEN Grund getunt.
+ *
+ *   Der Atlas-Skin hat drei Gruende, nicht einen: `page` #e9ede9,
+ *   `raised` #dfe5e0 und `sunken` #d5dcd6. Die Werte standen auf knapp ueber
+ *   3 : 1 gegen `page` — und fielen auf `sunken` samt und sonders durch:
+ *
+ *                    page   raised   sunken
+ *     Speranza       3,06     2,83     2,59  ✗
+ *     Gaslit         3,01     2,78     2,55  ✗
+ *     Velgarien      3,00     2,77     2,54  ✗
+ *     Nova           4,61     4,27     3,91  ✓
+ *     Station        3,06     2,83     2,59  ✗
+ *
+ *   Vier von fuenf. Ein Balken auf einer gesenkten Auflage — und genau dort
+ *   stehen Tabellen und Kacheln — war damit unter der Schwelle fuer
+ *   nicht-textliche Elemente (SC 1.4.11).
+ *
+ *   Das ist DERSELBE Fehler, den `theme-presets.ts` fuer die vier Tinten schon
+ *   gefunden und behoben hat („eine Tinte gegen einen Grund steht auf dreien").
+ *   Die Diagrammpalette hat die Korrektur nicht mitbekommen — eine Klasse, die
+ *   sich zweimal unabhaengig gezeigt hat.
+ *
+ * WAS SICH AENDERT
+ *   Nur die Helligkeit der vier durchgefallenen, und zwar auf den HELLSTEN
+ *   Wert, der gegen den DUNKELSTEN hellen Grund des ganzen Baums noch
+ *   3,05 : 1 haelt. Der Farbton bleibt exakt (38° · 128° · 6° · 187°) — er ist
+ *   die Identitaet der Welt.
+ *
+ * ⚠ UND HIER STAND ZUERST DIE FALSCHE ZAHL
+ *   Der erste Anlauf rechnete gegen Atlas' `sunken` (#d5dcd6) und war fertig.
+ *   Das neue Tor `lint-series-palette-grounds.mjs` fand beim ERSTEN Lauf
+ *   vier weitere Fundstellen: ein Pergament-Theme hat mit **#E0D4BE** einen
+ *   noch dunkleren Grund, dort standen die frisch gesetzten Werte bei
+ *   2,91–2,93. Derselbe Fehler eine Ebene hoeher — „gegen einen Grund
+ *   gerechnet", nur dass der eine Grund diesmal ein anderer war.
+ *
+ *   Massgeblich ist deshalb das Minimum ueber ALLE Gruende ALLER hellen
+ *   Themes, nicht das eines Skins.
+ *
+ *                  #E0D4BE  #d5dcd6  #EDE0C8  #ECE2D0
+ *     Speranza        3,05     3,20     3,43     3,48
+ *     Gaslit          3,08     3,23     3,46     3,51
+ *     Velgarien       3,06     3,21     3,43     3,49
+ *     Nova            3,72     3,91     4,18     4,25  (unveraendert)
+ *     Station         3,06     3,21     3,44     3,49
+ *
+ *   Nova bleibt, wie es war: der Ton hielt auf jedem Grund. Einen tragenden
+ *   Wert anzufassen waere Aenderung ohne Anlass.
+ *
+ *   Auf dunklem Grund aendert sich nichts — dort gilt SERIES_DARK.
+ */
 const SERIES_LIGHT = [
-  '#b07d27', // Speranza    38°  3,06
-  '#339b41', // Gaslit      128° 3,01
-  '#ec5444', // Velgarien     6° 3,00
-  '#7042fa', // Nova        255° 4,61
-  '#0494a7', // Station     187° 3,06
+  '#9b6f26', // Speranza    38°  3,05 auf #E0D4BE
+  '#30873b', // Gaslit      128° 3,08
+  '#e32f1d', // Velgarien     6° 3,06
+  '#7042fa', // Nova        255° 3,29  (hielt schon, unveraendert)
+  '#068394', // Station     187° 3,06
 ];
 
 /**
@@ -210,15 +264,34 @@ export class EchartsChart extends LitElement {
     if (!this._container) return;
 
     /*
-     * Hat sich die Palette geaendert, wird neu aufgesetzt — ECharts kann das
-     * Theme einer laufenden Instanz nicht wechseln. Der Vergleich steht VOR der
-     * Option-Pruefung, weil _init die Option ohnehin neu anwendet und beides
-     * sonst zweimal liefe.
+     * Hat sich die Palette geaendert, wechselt das Theme der LAUFENDEN Instanz.
+     *
+     * ⚠ Hier stand bis zum 05.09.2026 `dispose()` + `init()`, mit der
+     * Begruendung, ECharts koenne das Theme einer laufenden Instanz nicht
+     * wechseln. Das galt bis ECharts 5. Seit **6.0.0** ist
+     * `setTheme(theme, opts)` oeffentliche API (Changelog: „Support
+     * dynamically registering and switching themes", #20705); installiert ist
+     * 6.1.0, und die Methode steht real in
+     * `node_modules/echarts/lib/core/echarts.js:513`.
+     *
+     * Der Neuaufbau kostete bei jedem Skinwechsel den ganzen Canvas, den
+     * Zoomzustand und einen Frame Flackern — fuer nichts.
+     *
+     * `silent: true`, weil der Wechsel kein Nutzerereignis ist: sonst feuert
+     * ECharts ein `themechanged` in die Hoerer, die auf echte Interaktion
+     * warten.
+     *
+     * Der Vergleich steht VOR der Option-Pruefung, weil `setTheme` die Option
+     * neu anwendet und beides sonst zweimal liefe.
      */
     if (themeKey(this) !== this._themeKey) {
-      this._chart?.dispose();
-      this._chart = null;
-      this._init();
+      this._themeKey = themeKey(this);
+      if (this._chart) {
+        this._chart.setTheme(chartTheme(this), { silent: true });
+        this._applyOption();
+      } else {
+        this._init();
+      }
       return;
     }
 

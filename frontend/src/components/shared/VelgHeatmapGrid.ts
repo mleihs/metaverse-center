@@ -143,7 +143,13 @@ export class VelgHeatmapGrid extends LitElement {
         right: 30,
         top: 20,
         bottom: 80,
-        containLabel: true,
+        // `containLabel` ist seit ECharts 6.0.0 abgekuendigt. Die Doku nennt
+        // die Entsprechung woertlich: „grid.containLabel: true is equivalent
+        // to grid: {outerBoundsMode: 'same', outerBoundsContain: 'axisLabel'}"
+        // — und merkt an, der Effekt sei „slightly different, but usually
+        // indiscernible". Installiert ist 6.1.0.
+        outerBoundsMode: 'same',
+        outerBoundsContain: 'axisLabel',
       },
       xAxis: {
         type: 'category',

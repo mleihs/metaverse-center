@@ -135,12 +135,17 @@ export class VelgSimulationBroadsheet extends PaginatedLoaderMixin(LitElement) {
         background: var(--color-surface);
         color: var(--color-text-primary);
         /* These are type="date". The calendar glyph and the whole native
-           picker are drawn by the BROWSER, not by this stylesheet, and the
-           browser draws them for a LIGHT page unless told otherwise: a dark
-           icon on our dark field, and a white calendar popping out of a black
-           interface. color-scheme is the only thing that reaches that chrome
-           - no colour token can. */
-        color-scheme: dark;
+           picker are drawn by the BROWSER, not by this stylesheet, and
+           color-scheme is the only thing that reaches that chrome - no colour
+           token can.
+
+           It used to say "dark" here. That was right for the platform and
+           wrong for every light world and for the Atlas skin: a dark calendar
+           popping out of a paper-coloured field. Since 05.09.2026
+           ThemeService publishes color-scheme next to --theme-polarity on the
+           simulation host, and it INHERITS down to here - so this field now
+           follows whatever ground it actually stands on. Setting it again
+           would pin it back. */
       }
 
       .editorial__input:focus {

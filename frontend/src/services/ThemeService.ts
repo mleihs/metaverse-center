@@ -821,6 +821,26 @@ class ThemeService {
     hostElement.style.setProperty('--theme-polarity', polarity);
     tokensApplied.push('--theme-polarity');
 
+    // ── Das Browser-Chrome folgt der Polaritaet mit ──────────────────────────
+    //
+    // `color-scheme` stand bis zum 05.09.2026 fest auf `dark`, in `:root` und
+    // ein zweites Mal hart in `SimulationBroadsheet`. Fuer die Plattform ist
+    // das richtig — ihre Huelle IST dunkel. Fuer eine helle Welt und fuer den
+    // Atlas-Skin war es falsch, und zwar unsichtbar fuer jedes Token:
+    // Scrollbalken, Auswahlmenues, der Kalender eines `type="date"` und die
+    // Autofill-Einfaerbung werden vom BROWSER gezeichnet, nicht von unserem
+    // Stilblatt.
+    //
+    // `color-scheme` ist die EINZIGE Eigenschaft, die dieses Chrome erreicht.
+    // Kein weiteres Farbtoken kann das loesen — deshalb steht es hier und
+    // nicht in der Tokendatei.
+    //
+    // Es wird auf demselben Wirt gesetzt wie die Polaritaet und erbt von dort
+    // in jeden Nachfahren, auch ueber Shadow-Grenzen (es ist eine vererbte
+    // Eigenschaft). Ein unthemter Bereich behaelt `:root`s `dark`.
+    hostElement.style.setProperty('color-scheme', polarity === '1' ? 'light' : 'dark');
+    tokensApplied.push('color-scheme');
+
     this.publishPlatformAccent(hostElement, polarity === '1', tokensApplied);
   }
 

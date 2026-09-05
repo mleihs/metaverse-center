@@ -770,9 +770,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
      * ob sie mitlaufen.
      */
     const ohneAblage =
-      this._showArchived || term
-        ? sichtbar
-        : sichtbar.filter((c) => c.status !== 'archived');
+      this._showArchived || term ? sichtbar : sichtbar.filter((c) => c.status !== 'archived');
 
     // Filter by search term
     const filtered = term
