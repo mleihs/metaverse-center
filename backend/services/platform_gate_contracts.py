@@ -145,6 +145,23 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         wired=False,
     ),
     PlatformGate(
+        key="chat_speaker_selection_enabled",
+        group="narrative",
+        label="Sprecherauswahl im Gruppengespräch",
+        turns_on="Dass im Gruppenchat nicht mehr zwangsläufig jede Figur antwortet: wen der "
+        "Mensch beim Namen nennt, antwortet zuerst und immer; wer nicht genannt ist, "
+        "antwortet nur mit Grund (ausgeprägte Meinung über eine genannte Figur, oder er hat "
+        "zwei Runden geschwiegen). Nennt der Mensch niemanden, antworten alle.",
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AUS, und dann "
+        "antworten alle in der bisherigen Reihenfolge. Was fehlt, ist Schweigen: gemessen am "
+        "05.09.2026 haben 2 von 2 Figuren eine ausdrückliche Aufforderung zu schweigen "
+        "ignoriert – bei fester Reihenfolge ist Schweigen gar nicht erreichbar. "
+        "⚠ Das Tor ändert das Produktgefühl: in der Nutzerstudie zu Mehrfigurengesprächen "
+        "wurde der schweigsame Agent von 7 von 12 als schlechtester bewertet.",
+        default_when_missing=False,
+        reader="backend/services/chat_ai_service.py",
+    ),
+    PlatformGate(
         key="continuation_mail_enabled",
         group="narrative",
         label="Post über Gespräche ohne Zuhörer",

@@ -19,6 +19,11 @@ from backend.services.budget_enforcement_service import BudgetExceededError
 from backend.services.chat.conversation_digest_service import ConversationDigestService
 from backend.services.chat.focalization_service import FocalizationService
 from backend.services.chat.names import nennt
+from backend.services.chat.speaker_selection import (
+    Sprecherwahl,
+    schweigerunden,
+    waehle_sprecher,
+)
 from backend.services.external.openrouter import BudgetContext, OpenRouterService
 from backend.services.i18n_utils import (
     EMOTION_LABELS,
@@ -33,7 +38,7 @@ from backend.services.model_resolver import ModelResolver, ResolvedModel
 from backend.services.platform_model_config import get_platform_max_tokens, get_platform_reasoning
 from backend.services.prompt_service import LOCALE_NAMES, PromptResolver
 from backend.utils.responses import extract_list
-from backend.utils.settings import get_content_locale
+from backend.utils.settings import get_content_locale, parse_setting_bool
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -350,6 +355,41 @@ def _trim_history_to_budget(messages: list[dict], model_id: str, locale: str) ->
     return messages[-behalten:] if behalten else messages[-_MIN_MESSAGES:]
 
 
+#: Das Merkmalstor der Sprecherauswahl. Vorgabe AUS.
+#:
+#: Es aendert das PRODUKTGEFUEHL und nicht nur eine Zahl: eine Figur, die
+#: nicht antwortet, sieht fuer den Menschen aus wie ein Fehler, und in der
+#: Nutzerstudie zu Mehrfigurengespraechen wurde der schweigsame Agent von
+#: 7 von 12 als schlechtester bewertet. Solche Aenderungen gehoeren hinter ein
+#: Tor und dem Nutzer vorgelegt, nicht ausgerollt.
+SPEAKER_SELECTION_GATE = "chat_speaker_selection_enabled"
+
+
+async def _leer_dict() -> dict:
+    """Ein aufgeloester Platzhalter fuer `asyncio.gather`.
+
+    `gather` will Erwartbares, kein fertiges Ergebnis. Ohne diese Zeile
+    stuende an der Stelle ein `if` um die ganze Welle herum — und damit zwei
+    Wellen, die auseinanderlaufen koennen.
+    """
+    return {}
+
+
+def _letzte_nutzerzeile(history: list[dict]) -> str:
+    """Die juengste Zeile des Menschen im Verlauf, oder leer.
+
+    Die Nutzernachricht DIESES Zuges steht noch nicht darin — sie wird erst im
+    Kontextaufbau angehaengt. Die Sprecherauswahl faellt aber im Vorlauf, und
+    was sie braucht, ist der Text, auf den geantwortet wird: im gewoehnlichen
+    Fall hat `ChatService` ihn bereits geschrieben, und dann ist er genau
+    diese Zeile.
+    """
+    for msg in reversed(history):
+        if msg.get("sender_role") == "user":
+            return str(msg.get("content") or "")
+    return ""
+
+
 @dataclass(slots=True)
 class _GroupTurnSetup:
     """Alles, was eine Gruppenantwort braucht, bevor der erste Agent spricht.
@@ -402,6 +442,9 @@ class _GroupTurnSetup:
     #: `test_chat_round_trips.py` ist EINE Rundreise je Agent, und die gehoert
     #: dem Erinnerungsabruf.
     focalization: dict[str, dict] = field(default_factory=dict)
+    #: Die Sprecherwahl dieser Runde. Steht das Merkmalstor aus — die
+    #: Vorgabe —, ist sie die urspruengliche Reihenfolge und niemand schweigt.
+    sprecher: Sprecherwahl = field(default_factory=Sprecherwahl)
 
 
 @dataclass
@@ -1413,12 +1456,16 @@ class ChatAIService:
         #
         # `_get_locale` puffert je Dienst; es steht trotzdem in Welle 1, damit
         # der erste Aufruf nicht die zweite Welle aufhaelt.
-        agents, event_refs, simulation, locale, model = await asyncio.gather(
+        agents, event_refs, simulation, locale, model, auswahl_an = await asyncio.gather(
             self._load_conversation_agents(conversation_id),
             self._load_event_references(conversation_id),
             self._load_simulation(),
             self._get_locale(),
             self._model_resolver.resolve_text_model("chat_response"),
+            # Das Merkmalstor haengt an nichts und gehoert deshalb in Welle 1:
+            # es kostet dort keine Wartezeit, und Welle 2 kann seine Antwort
+            # schon benutzen. Vorgabe AUS.
+            self._gate_open(SPEAKER_SELECTION_GATE),
         )
 
         event_ids = [ref.get("event_id") for ref in event_refs if ref.get("event_id")]
@@ -1435,6 +1482,7 @@ class ChatAIService:
             history,
             relationships,
             focalization,
+            meinungen,
             _,
         ) = await asyncio.gather(
             self._prompt_resolver.resolve("chat_system_prompt", locale),
@@ -1443,6 +1491,9 @@ class ChatAIService:
             self._load_history(conversation_id, model.model_id),
             self._build_relationship_contexts(agent_ids, locale),
             self._load_recent_focalization(conversation_id),
+            # Nur bei offenem Tor. Eine Abfrage fuer ein abgeschaltetes
+            # Merkmal ist keine Vorsorge, sondern Kosten ohne Leser.
+            self._load_opinions(agent_ids) if auswahl_an else _leer_dict(),
             self._prime_mood_contexts(agent_ids, locale),
         )
 
@@ -1460,7 +1511,77 @@ class ChatAIService:
             history=history,
             relationships=relationships,
             focalization=focalization,
+            sprecher=waehle_sprecher(
+                agent_names=[a.get("name", "Agent") for a in agents],
+                agent_ids=agent_ids,
+                # Die Nutzernachricht dieses Zuges steht noch nicht im
+                # Verlauf; sie kommt erst im Kontextaufbau dazu. Die Auswahl
+                # braucht sie aber JETZT, also holt sie sich die letzte
+                # Nutzerzeile aus dem Verlauf, den sie hat.
+                user_message=_letzte_nutzerzeile(history),
+                still_seit=schweigerunden(history, agent_ids),
+                anteilnahme=meinungen,
+                aktiv=auswahl_an,
+            ),
         )
+
+    async def _gate_open(self, key: str) -> bool:
+        """Ob ein Merkmalstor offen ist. Fail-closed.
+
+        Fehlt die Zeile, ist das Tor ZU. `parse_setting_bool` ist seit F32
+        positiv-pruefend (`{"true","1","yes","on"}`), ein jsonb-Null-Umlauf
+        oder ein Tippfehler im SQL kann ein Tor also nicht versehentlich
+        scharfstellen.
+        """
+        try:
+            response = await (
+                self._supabase.table("platform_settings")
+                .select("setting_value")
+                .eq("setting_key", key)
+                .limit(1)
+                .execute()
+            )
+        except Exception:
+            logger.exception("Merkmalstor %s nicht gelesen — bleibt zu", key)
+            return False
+        rows = extract_list(response)
+        return bool(rows) and parse_setting_bool(rows[0].get("setting_value"))
+
+    async def _load_opinions(self, agent_ids: list[str]) -> dict[str, dict[str, int]]:
+        """Die Meinungsmatrix der Runde, in EINER Abfrage.
+
+        `{von: {ueber: opinion_score}}`, nur zwischen den Anwesenden — bei
+        drei Figuren sechs Zeilen. Gelesen wird sie im Vorlauf, nicht je
+        Sprecher: die Matrix ist fuer alle dieselbe, nur ihre AUSLEGUNG
+        unterscheidet sich, und die ist reine Rechnung ohne Netz.
+
+        ⚠ Gemessen am 05.09.2026: zwischen heutigen Gespraechsteilnehmern sind
+        28 von 32 Meinungen genau null. Diese Abfrage traegt also heute wenig
+        — sie ist gebaut, damit die Auswahl mitwaechst, wenn die Autonomie
+        laeuft, und nicht, weil sie heute etwas leistet. Was heute traegt, ist
+        die Schweigedauer. Siehe `speaker_selection.py`.
+        """
+        if len(agent_ids) < 2:
+            return {}
+        ids = ",".join(agent_ids)
+        try:
+            response = await (
+                self._supabase.table("agent_opinions")
+                .select("agent_id, target_agent_id, opinion_score")
+                .in_("agent_id", agent_ids)
+                .filter("target_agent_id", "in", f"({ids})")
+                .execute()
+            )
+        except Exception:
+            logger.exception("Meinungsmatrix fuer %s nicht gelesen", agent_ids)
+            return {}
+        matrix: dict[str, dict[str, int]] = {}
+        for zeile in extract_list(response):
+            von = str(zeile.get("agent_id") or "")
+            ueber = str(zeile.get("target_agent_id") or "")
+            if von and ueber:
+                matrix.setdefault(von, {})[ueber] = int(zeile.get("opinion_score") or 0)
+        return matrix
 
     async def _load_recent_focalization(self, conversation_id: UUID) -> dict[str, dict]:
         """Die Fokalisierungs-Bilanz der letzten Zuege, je Figur dieses Fadens.
@@ -1487,6 +1608,38 @@ class ChatAIService:
             return {}
         return {str(row["agent_id"]): row for row in extract_list(response) if row.get("agent_id")}
 
+    @staticmethod
+    def _sprechreihenfolge(setup: _GroupTurnSetup) -> list[int]:
+        """Wer diese Runde antwortet, in welcher Reihenfolge.
+
+        Die Entscheidung faellt im Vorlauf (`waehle_sprecher`); hier steht nur
+        der Rueckfall. Er ist nicht Zierrat: `_GroupTurnSetup` traegt die Wahl
+        als Feld mit Vorgabewert, und ein Aufrufer, der den Vorlauf umgeht,
+        bekaeme sonst eine LEERE Runde — also ein stummes Gespraech statt
+        eines langsamen. Dieselbe Bauart wie beim Verlaufs-Rueckfall in
+        `_build_group_turn_context`.
+
+        ⚠ Ein zweiter Grund, warum das hier steht und nicht inline: die Wahl
+        muss in BEIDEN Gruppenfassungen dieselbe sein. Zwei Kopien einer
+        Reihenfolge sind zwei Gelegenheiten, sie unterschiedlich zu aendern —
+        genau dafuer gibt es `_GroupTurnSetup` ueberhaupt.
+        """
+        gewaehlt = [i for i in setup.sprecher.reihenfolge if 0 <= i < len(setup.agents)]
+        if gewaehlt:
+            if setup.sprecher.schweigt:
+                logger.info(
+                    "Sprecherauswahl: %d von %d antworten (%s)",
+                    len(gewaehlt),
+                    len(setup.agents),
+                    "; ".join(
+                        f"{setup.agent_names[i]}: {setup.sprecher.grund.get(i, '?')}"
+                        for i in setup.sprecher.schweigt
+                        if i < len(setup.agent_names)
+                    ),
+                )
+            return gewaehlt
+        return list(range(len(setup.agents)))
+
     async def generate_group_response(
         self,
         conversation_id: UUID,
@@ -1504,7 +1657,9 @@ class ChatAIService:
         event_context = setup.event_context
         saved_messages: list[dict] = []
 
-        for idx, agent in enumerate(agents):
+        reihenfolge = self._sprechreihenfolge(setup)
+        for idx in reihenfolge:
+            agent = agents[idx]
             extra_parts, history_messages, closing_instruction = await self._build_group_turn_context(
                 conversation_id=conversation_id,
                 agents=agents,
@@ -1600,7 +1755,9 @@ class ChatAIService:
         event_context = setup.event_context
         saved_messages: list[dict] = []
 
-        for idx, agent in enumerate(agents):
+        reihenfolge = self._sprechreihenfolge(setup)
+        for idx in reihenfolge:
+            agent = agents[idx]
             extra_parts, history_messages, closing_instruction = await self._build_group_turn_context(
                 conversation_id=conversation_id,
                 agents=agents,
@@ -1633,8 +1790,11 @@ class ChatAIService:
                 prompt_template=prompt_template,
                 model=model,
                 history_messages=history_messages,
-                agent_index=idx,
-                agent_total=len(agents),
+                # Die Zaehlung folgt der SPRECHREIHENFOLGE, nicht der
+                # Besetzungsliste. „Agent 3 von 3" waere falsch, wenn nur zwei
+                # sprechen — und der Balken in der Oberflaeche haengt daran.
+                agent_index=reihenfolge.index(idx),
+                agent_total=len(reihenfolge),
                 extra_context="\n\n".join(extra_parts),
                 closing_instruction=closing_instruction,
                 extra_metadata={"group_turn_index": idx},
