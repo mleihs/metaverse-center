@@ -113,13 +113,68 @@ betragslosen Zeilen, sobald sie irgendwo auf 0 fallen.
 **Nicht mit umgestellt** (ausserhalb Schritt 2). Wer diese vier Stellen anfasst,
 nimmt `formatAmount` aus `utils/kontor-format.ts`.
 
+### 3.6 · Die Zeichentinte traegt auf ihrer EIGENEN Schraffur nicht
+
+Der Entwurf staffelt die Zellzustaende ueber vier Tintenstufen und setzt `░` in
+`--k-ink-3` auf die Schraffur. Gemessen:
+
+    --color-text-glyph      auf --color-hatch-bg   2,55 (dunkel) · 2,74 (Papier)
+    --color-text-muted      auf --color-hatch-bg   3,83 (dunkel) · 3,96 (Papier)
+    --color-text-secondary  auf --color-hatch-bg   5,19 (dunkel) · 5,98 (Papier)
+
+Die Zeichentinte faellt dort sogar unter die **3 : 1 fuer bedeutungstragende
+Zeichen** (SC 1.4.11) — sie ist gegen den SEITENgrund getunt, und die Schraffur
+ist ein vierter. Der Muted-Ton faellt unter die 4,5 fuer Satz.
+
+Das ist `TODO-OPUS.md` §6.4 in einer **dritten** Gestalt, die dort nicht steht:
+nicht „Sammelbalken unsichtbar" und nicht „Satz auf der Schraffur unlesbar",
+sondern das ZEICHEN auf seiner eigenen Schraffur. Und beide falschen Wahlen
+sind die naheliegenderen, weil die Sammelzeile „ohne Angabe" leiser wirken
+SOLL als eine Datenzeile.
+
+**Auf der Schraffur steht Sekundaertinte oder hoeher.** Schraffur und Tinte
+stehen deshalb in DERSELBEN CSS-Regel (`.kontor-cell--unrecorded`), damit die
+Paarung an der Verwendungsstelle nicht trennbar ist — und Teil 3 des Tores
+misst sie aus dem Stilmodul nach.
+
+### 3.7 · `--text-xs` liegt unter der Untergrenze der Datenregion
+
+`--text-xs` steht auf `0.64rem` = **10,24 px**. Die kleinste branchenweit in
+Daten eingesetzte Groesse ist **11 px** (alle sechs untersuchten Produkte). Die
+Zaehlbasis `n = 512 von 640` ist keine Randnotiz, sondern die Aussage des
+Panels — sie steht auf `--_kontor-micro: 11px`, einem Tier-3-Token mit der
+Begruendung daneben, nicht auf dem Plattform-Token.
+
+---
+
+## 3a · Wo `velg-frontend-design` gegen den Entwurf steht
+
+Der Skill ist Vokabular fuer die Plattform, nicht fuer dieses Panel. Fuenf
+Stellen, an denen sein Standardvorschlag hier falsch waere — alle bereits nach
+`DESIGN-AUTORITAET.md` entschieden, hier nur damit sie nicht beim naechsten
+Bauteil zurueckkommen:
+
+| Skill sagt | Panel macht | Warum |
+|---|---|---|
+| Hover hebt (`--hover-transform`, lift) | Hover ist NUR Farbe, unter 1,15 : 1 | Eine Zeile, die sich hebt, verschiebt die Zahlenspalten unter dem Zeiger (Autoritaet #11) |
+| „Dramatische Animationen", Kaskaden, Scanlines, Eckklammern | nichts davon | Arbeitswerkzeug fuer eine Person. Dichte erwuenscht, Schmuck nicht — das Stilmodul enthaelt kein `transform`, keinen `--shadow-*`, keine Kaskade |
+| Amber ist `--color-warning` (semantisch) | Amber ist Traegerfarbe, das Panel benutzt keine Warning-Variante | Steigende Kosten sind nicht „Warnung", sie sind das Normalgeschaeft (Autoritaet #9) |
+| kein U+2014 | `—` ist ein Zellzustand | Notation, nicht Interpunktion — als Konstante, nie in `msg()` (Autoritaet #5) |
+| `--text-xs` als kleinste Groesse | `--_kontor-micro: 11px` | siehe §3.7 |
+
+**Der Rest des Skills gilt unveraendert** und ist eingehalten: Tokens statt
+Hexwerten, `static styles` statt inline, keine farbigen Kantenstreifen, kein
+hartes `text-transform`, `prefers-reduced-motion`, i18n fuer alles ausser den
+vier Notationszeichen.
+
 ---
 
 ## 4 · Stand des Baus
 
     Schritt 1  Tokens                       ✅  10 Rollen, beide Polaritaeten, Tor + Test
     Schritt 2  Zahlenformat, sechs Zustaende ✅  utils/kontor-format.ts, 29 Tests
-    Schritt 3  Tabellen-Primitive            ⬜
+    Schritt 3  Tabellen-Primitive            ✅  shared/kontor-table-styles.ts
+                                                 + kontor-cell.ts, 11 Tests, Tor Teil 3
     Schritt 4  Kopfkacheln als Selektor      ⬜
     Schritt 5  Hauptdiagramm                 ⬜
     Schritt 6  Aufschluesselungen            ⬜
@@ -133,3 +188,5 @@ nimmt `formatAmount` aus `utils/kontor-format.ts`.
 | `scripts/lint-series-palette-grounds.mjs` Teil 2 | 254 Paarungen: Mindest-, Hoechstschwelle, Tinte auf der Schraffur, und dass es seinen Gegenstand ueberhaupt findet | ✅ fuenfmal (min · max · Tinte · Satz umbenannt · Rolle ohne Schwelle) |
 | `tests/kontor-palette-polarity.test.ts` | dass beide Saetze geschrieben werden, dass ein dunkler Wirt im hellen zurueckkippt, und dass CSS und TS nicht auseinanderlaufen | ✅ (Doppelung auseinandergezogen) |
 | `tests/kontor-format.test.ts` | die sechs Zustaende, die Rundungsleiter, U+2212, Locale-Unabhaengigkeit, die Zaehlbasis | ✅ fuenfmal (null als Null · kein below · null als $0.00 · Bindestrich · Intl) |
+| `scripts/lint-series-palette-grounds.mjs` Teil 3 | dass jede Regel, die die Schraffur setzt, in DERSELBEN Regel eine Tinte erklaert, die darauf traegt | ✅ viermal (die Wahl des Entwurfs · Zeichentinte · Paarung getrennt · Schraffur ganz weg) |
+| `tests/kontor-cell.test.ts` | dass Zustand, Klasse und CSS-Regel nicht auseinanderlaufen, und dass die drei Zeichenzustaende vorlesbar sind | ✅ viermal (Klasse ohne Regel · Regel ohne Zustand · zwei Zustaende auf einer Klasse · keine vorlesbare Fassung) |

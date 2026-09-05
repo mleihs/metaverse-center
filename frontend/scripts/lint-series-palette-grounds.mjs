@@ -95,6 +95,9 @@ for (const b of bloecke) {
   const text2 = themeSrc
     .slice(b.index, b.index + 6000)
     .match(/color_text_secondary:\s*'(#[0-9a-fA-F]{6})'/);
+  const text3 = themeSrc
+    .slice(b.index, b.index + 6000)
+    .match(/color_text_muted:\s*'(#[0-9a-fA-F]{6})'/);
   const davor = themeSrc.slice(Math.max(0, b.index - 700), b.index);
   const davorWeit = themeSrc.slice(Math.max(0, b.index - 8000), b.index);
   /*
@@ -127,6 +130,8 @@ for (const b of bloecke) {
     gruende: [b[1], surface ? surface[1] : b[1], b[2]],
     hell: text ? luminanz(b[1]) > luminanz(text[1]) : null,
     tinte2: text2 ? text2[1] : null,
+    tinte1: text ? text[1] : null,
+    tinte3: text3 ? text3[1] : null,
   });
 }
 
@@ -403,4 +408,110 @@ console.log(`             ohne Schwelle, mit Begruendung: ${ohneSchwelle.join(' 
 console.log(
   `             Tintenprobe (--color-hatch-bg) nur auf ${[...PLATTFORM_SKINS].join(' + ')} — ` +
     'das Panel rendert nur dort (DESIGN-AUTORITAET #10).',
+);
+
+// ════════════════════════════════════════════════════════════════════════════
+// TEIL 3 · Die Paarung Schraffur / Tinte im Stilmodul
+// ════════════════════════════════════════════════════════════════════════════
+//
+// ── WOHER ───────────────────────────────────────────────────────────────────
+//
+// `--color-hatch-bg` ist kein Wert, sondern ein VIERTER GRUND: die Schraffur
+// liegt hinter Text. Teil 2 prueft, dass sie die Sekundaertinte traegt — aber
+// nicht, dass die Zelle sie auch benutzt. Genau da ist es im Entwurf
+// schiefgegangen: dort steht `░` in `--k-ink-3` auf der eigenen Schraffur.
+//
+//     --color-text-glyph      auf --color-hatch-bg   2,55 (dunkel) · 2,74 (Papier)
+//     --color-text-muted      auf --color-hatch-bg   3,83 (dunkel) · 3,96 (Papier)
+//     --color-text-secondary  auf --color-hatch-bg   5,19 (dunkel) · 5,98 (Papier)
+//
+// Die ZEICHENtinte faellt dort sogar unter die 3 : 1 fuer bedeutungstragende
+// Zeichen — sie ist gegen den SEITENgrund getunt. Zwei plausible Waehlbare
+// sind also falsch, und die falsche Wahl ist die naheliegendere: die
+// Sammelzeile „ohne Angabe" SOLL leiser sein als eine Datenzeile.
+//
+// ── WAS ES PRUEFT ───────────────────────────────────────────────────────────
+//
+// Jede CSS-Regel in `kontor-table-styles.ts`, die `--color-hatch-bg` setzt,
+// muss in DERSELBEN Regel eine `color` erklaeren, und die muss auf der
+// Schraffur 4,5 : 1 tragen — in beiden Plattform-Skins. Getrennt gesetzte
+// Paarungen sind der Fehler selbst, deshalb ist „keine color in der Regel"
+// ein Befund und kein uebersprungener Fall.
+
+const KONTOR_STYLES = 'src/components/shared/kontor-table-styles.ts';
+const stilSrc = read(KONTOR_STYLES);
+
+/** Tintentokens auf ihren Wert je Plattform-Skin abbilden. */
+const skinTinten = (skinName) => {
+  const t = themen.find((x) => x.name === skinName);
+  if (!t) return null;
+  const kontorSatzFuer = t.hell ? KONTOR_PAPER : KONTOR_DARK;
+  return {
+    '--color-text-primary': t.tinte1,
+    '--color-text-secondary': t.tinte2,
+    '--color-text-muted': t.tinte3,
+    '--color-text-glyph': kontorSatzFuer['--color-text-glyph'],
+    '--color-hatch-bg': kontorSatzFuer['--color-hatch-bg'],
+  };
+};
+
+const teil3Fehler = [];
+// Regelkoerper grob zerlegen: `selektor { … }`. Reicht, weil das Modul flach
+// ist (keine verschachtelten Regeln) — und wenn es das eines Tages nicht mehr
+// ist, findet der Vorbedingungsblock unten keine Paarung mehr und meldet das.
+const regeln = [...stilSrc.matchAll(/([^{};]+)\{([^{}]*)\}/g)].map((m) => ({
+  selektor: m[1].trim().split('\n').pop().trim(),
+  koerper: m[2],
+}));
+const schraffurRegeln = regeln.filter((r) => r.koerper.includes('--color-hatch-bg'));
+
+if (schraffurRegeln.length === 0) {
+  teil3Fehler.push(
+    `keine Regel in ${KONTOR_STYLES} setzt --color-hatch-bg — Teil 3 haette nichts geprueft`,
+  );
+}
+for (const skin of PLATTFORM_SKINS) {
+  if (!skinTinten(skin)) teil3Fehler.push(`${skin}: Tintenwerte nicht auflösbar`);
+}
+
+let t3Geprueft = 0;
+for (const regel of schraffurRegeln) {
+  const farbe = regel.koerper.match(/(?:^|\n)\s*color:\s*var\((--[a-z0-9-]+)\)/);
+  if (!farbe) {
+    teil3Fehler.push(
+      `${regel.selektor}: setzt --color-hatch-bg, erklaert aber keine eigene color — ` +
+        'die Tinte kaeme dann von aussen und waere auf der Schraffur ungeprueft',
+    );
+    continue;
+  }
+  for (const skin of PLATTFORM_SKINS) {
+    const tinten = skinTinten(skin);
+    if (!tinten) continue;
+    const tinte = tinten[farbe[1]];
+    const grund = tinten['--color-hatch-bg'];
+    if (!tinte || !grund) {
+      teil3Fehler.push(`${regel.selektor} · ${skin}: ${farbe[1]} ist kein bekanntes Tintentoken`);
+      continue;
+    }
+    t3Geprueft++;
+    const k = kontrast(tinte, grund);
+    if (k < 4.5) {
+      teil3Fehler.push(
+        `${regel.selektor} · ${skin}: ${farbe[1]} ${tinte} auf der Schraffur ${grund} = ` +
+          `${k.toFixed(2)} : 1 (min 4,5) — auf der Schraffur steht Sekundaertinte oder hoeher`,
+      );
+    }
+  }
+}
+
+if (teil3Fehler.length) {
+  console.error('\nFAIL: die Paarung Schraffur / Tinte traegt nicht.');
+  console.error('      Die Schraffur ist ein VIERTER Grund, kein Wert.\n');
+  for (const f of teil3Fehler) console.error(`  ${f}`);
+  process.exit(1);
+}
+
+console.log(
+  `Teil 3 PASS: ${schraffurRegeln.length} Schraffur-Regel(n) paaren Tinte und Grund ` +
+    `(${t3Geprueft} Paarungen ueber ${PLATTFORM_SKINS.size} Skins).`,
 );
