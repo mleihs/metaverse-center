@@ -56,8 +56,8 @@ END $$;
 COMMENT ON COLUMN public.simulations.content_rating IS
   'VORGABE der Bilddarstellung dieser Welt: general | mature. Womit ein Besucher startet, der nichts eingestellt hat. Keine Obergrenze — die Einstellung des Nutzers gewinnt.';
 
--- 2. Die Feststellung am Konto. NULL heisst „nicht festgestellt", nicht
---    „minderjaehrig" — der Unterschied zaehlt, wenn spaeter ein Verfahren
+-- 2. Die Feststellung am Konto. NULL bedeutet ``nicht festgestellt`` und NICHT
+--    ``minderjaehrig`` — der Unterschied zaehlt, wenn spaeter ein Verfahren
 --    dazukommt und wissen muss, wen es noch nie gefragt hat.
 ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS adult_verified_at timestamptz;

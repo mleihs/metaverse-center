@@ -119,8 +119,8 @@ class RatingDecision:
     """Welche Stufe wirklich gilt — und warum nicht die gewuenschte.
 
     ``grund`` ist leer, wenn die angefragte Stufe durchging. Sonst nennt er die
-    Schranke, die gegriffen hat, und zwar so, dass man es dem Nutzer zeigen
-    kann: „diese Welt ist jugendfrei" ist eine Auskunft, „abgelehnt" ist keine.
+    Schranke, die gegriffen hat, und zwar als anzeigbaren Satz: ein Grund, der
+    die Ursache benennt, ist eine Auskunft; ein blosses ``abgelehnt`` ist keine.
     """
 
     wirksam: ContentRating
