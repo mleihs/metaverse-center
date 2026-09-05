@@ -2,8 +2,8 @@
 
 Vier Arten, so etwas falsch zu bauen, und gegen jede steht hier ein Test:
 
-* Die Rechnung nimmt das MAXIMUM statt des Minimums — dann hebt ein Klick die
-  Stufe der Welt an.
+* Die Rechnung begrenzt den Nutzer, wo sie ihn nicht begrenzen soll — eine
+  erste Fassung machte die Weltstufe zur harten Decke, also zur Bevormundung.
 * Die Grenze haengt an einer Einstellung — dann ist sie eine Vorgabe.
 * Der Wortfilter sucht Vorkommen statt ganzer Woerter — dann faengt er
   `flamboyant` und wird abgeschaltet.
@@ -14,6 +14,7 @@ import pytest
 
 from backend.services.image_content_policy import (
     ContentRating,
+    default_rating_for_world,
     resolve_rating,
     screen_prompt,
 )
@@ -23,49 +24,44 @@ MAT = ContentRating.MATURE
 
 
 class TestDieRechnung:
-    def test_das_minimum_gewinnt_nicht_das_maximum(self):
-        d = resolve_rating(welt=GEN, nutzer_volljaehrig=True, nutzer_wunsch=MAT, angefragt=MAT)
-        assert d.wirksam is GEN
-        assert d.herabgestuft
-
-    def test_der_eigene_wunsch_kann_senken(self):
-        # Das ist die Einflussnahme: volljaehrig, Erwachsenenwelt — und trotzdem
-        # jugendfrei, weil der Nutzer es so eingestellt hat.
-        d = resolve_rating(welt=MAT, nutzer_volljaehrig=True, nutzer_wunsch=GEN, angefragt=MAT)
-        assert d.wirksam is GEN
-        assert "Einstellungen" in d.grund
-
-    def test_der_eigene_wunsch_kann_nicht_anheben(self):
-        # Und das ist die Grenze der Einflussnahme.
-        d = resolve_rating(welt=GEN, nutzer_volljaehrig=True, nutzer_wunsch=MAT, angefragt=MAT)
-        assert d.wirksam is GEN
-
-    def test_der_eigene_wunsch_wird_zuerst_genannt(self):
-        # Wer selbst abgeschaltet hat, soll das erfahren — die Auskunft fuehrt
-        # zu einer Einstellung, die er aendern kann. „Diese Welt ist
-        # jugendfrei" waere hier eine Sackgasse.
-        d = resolve_rating(welt=GEN, nutzer_volljaehrig=False, nutzer_wunsch=GEN, angefragt=MAT)
-        assert "Einstellungen" in d.grund
-
-    def test_ohne_festgestellte_volljaehrigkeit_bleibt_es_jugendfrei(self):
-        d = resolve_rating(welt=MAT, nutzer_volljaehrig=False, nutzer_wunsch=MAT, angefragt=MAT)
-        assert d.wirksam is GEN
-
-    def test_alle_vier_muessen_zustimmen(self):
-        d = resolve_rating(welt=MAT, nutzer_volljaehrig=True, nutzer_wunsch=MAT, angefragt=MAT)
+    def test_der_nutzer_schaltet_es_an(self):
+        # Der eigentliche Punkt: er stellt es EIN, nicht nur aus.
+        d = resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT, angefragt=MAT)
         assert d.wirksam is MAT
         assert not d.herabgestuft
 
+    def test_und_er_schaltet_es_aus(self):
+        d = resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=GEN, angefragt=MAT)
+        assert d.wirksam is GEN
+        assert "Einstellungen" in d.grund
+
+    def test_die_welt_begrenzt_ihn_nicht(self):
+        # Eine erste Fassung machte die Weltstufe zur harten Decke. Das war
+        # Bevormundung: wer in einer jugendfrei angelegten Welt Erwachsenen-
+        # darstellung einstellt, bekommt sie. `resolve_rating` kennt die Welt
+        # gar nicht mehr — der Test bindet das an die Signatur.
+        import inspect
+
+        assert "welt" not in inspect.signature(resolve_rating).parameters
+
+    def test_die_welt_bleibt_die_vorgabe(self):
+        # Sie beschreibt den Ton, in dem eine Welt angelegt wurde, damit
+        # niemand ueberrascht wird und niemand suchen muss.
+        assert default_rating_for_world(MAT) is MAT
+        assert default_rating_for_world(GEN) is GEN
+
+    def test_ohne_festgestellte_volljaehrigkeit_bleibt_es_jugendfrei(self):
+        d = resolve_rating(nutzer_volljaehrig=False, nutzer_wunsch=MAT, angefragt=MAT)
+        assert d.wirksam is GEN
+
     def test_wer_nichts_verlangt_bekommt_die_niedrigste(self):
         # Eine Vorgabe, die sich irrt, soll in die harmlose Richtung irren.
-        assert resolve_rating(welt=MAT, nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN
+        assert resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN
 
-    def test_die_welt_wird_vor_dem_konto_genannt(self):
-        # Wer in einer jugendfreien Welt sitzt, soll nicht nebenbei erfahren,
-        # dass es ausserdem an seinem Konto laege.
-        d = resolve_rating(welt=GEN, nutzer_volljaehrig=False, nutzer_wunsch=MAT, angefragt=MAT)
-        assert "Welt" in d.grund
-        assert "Volljaehrigkeit" not in d.grund
+    def test_der_eigene_wunsch_wird_zuerst_genannt(self):
+        # Die Auskunft soll zu einer Einstellung fuehren, die er aendern kann.
+        d = resolve_rating(nutzer_volljaehrig=False, nutzer_wunsch=GEN, angefragt=MAT)
+        assert "Einstellungen" in d.grund
 
 
 class TestDieGrenze:
@@ -129,35 +125,27 @@ class TestDieGrenzeIstKeineEinstellung:
 
 
 class TestDerKlientKannNichtsAnheben:
-    """Die Durchsetzung, erschoepfend geprueft statt zugesichert.
+    """Die eine Schranke, erschoepfend geprueft statt zugesichert.
 
-    `angefragt` ist der einzige der vier Werte, den ein Client beeinflusst — die
-    anderen drei liest der Server aus der Datenbank. Dieser Test geht jede
-    Kombination durch und verlangt, dass keine Anfrage ein Ergebnis erzeugt, das
-    hoeher liegt als das Minimum der drei serverseitigen Werte.
-
-    Eine Zusicherung im Kommentar waere hier zu wenig: wer spaeter eine vierte
-    Bedingung einbaut und die Reihenfolge vertauscht, faellt genau hier auf.
+    `angefragt` ist der einzige Wert, den ein Client beeinflusst — Wunsch und
+    Feststellung liest der Server aus der Datenbank. Der Wunsch gehoert dem
+    Nutzer und darf alles; die Feststellung gehoert ihm nicht.
     """
 
-    @pytest.mark.parametrize("welt", [GEN, MAT])
     @pytest.mark.parametrize("volljaehrig", [False, True])
     @pytest.mark.parametrize("wunsch", [GEN, MAT])
     @pytest.mark.parametrize("angefragt", [GEN, MAT])
-    def test_nie_hoeher_als_die_serverseitige_obergrenze(self, welt, volljaehrig, wunsch, angefragt):
-        obergrenze = MAT if (welt is MAT and volljaehrig and wunsch is MAT) else GEN
+    def test_nie_hoeher_als_wunsch_und_feststellung(self, volljaehrig, wunsch, angefragt):
+        obergrenze = MAT if (volljaehrig and wunsch is MAT) else GEN
         d = resolve_rating(
-            welt=welt,
             nutzer_volljaehrig=volljaehrig,
             nutzer_wunsch=wunsch,
             angefragt=angefragt,
         )
         rang = {GEN: 0, MAT: 1}
         assert rang[d.wirksam] <= rang[obergrenze]
-        # Und die Anfrage darf auch nicht ueber sich selbst hinauswachsen.
         assert rang[d.wirksam] <= rang[angefragt]
 
     def test_die_vorgabe_ist_die_niedrigste(self):
-        # Ein Aufrufer, der `angefragt` vergisst, bekommt jugendfrei — nicht das,
-        # was Welt und Konto gerade hergeben.
-        assert resolve_rating(welt=MAT, nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN
+        # Ein Aufrufer, der `angefragt` vergisst, bekommt jugendfrei.
+        assert resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN

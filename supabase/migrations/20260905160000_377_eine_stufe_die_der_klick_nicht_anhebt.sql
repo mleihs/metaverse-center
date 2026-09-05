@@ -1,15 +1,20 @@
 -- Migration 377: die Inhaltsstufe eines Bildes
 --
--- Ein Schalter im Verfasser waere die falsche Bauform. Die Stufe haengt nicht
--- am Klick, sondern an der WELT — eine Simulation hat einen Ton, und der gilt
--- fuer alles darin. Und sie braucht eine Obergrenze, die der Klick nicht
--- anheben kann: die des Nutzers.
+-- Der Nutzer stellt sie ein, und zwar frei — an und aus.
 --
---     wirksam = min(Stufe der Welt, Stufe des Nutzers, angefragte Stufe)
+--     wirksam = min(Wunsch des Nutzers, Feststellung, Anfrage)
 --
--- Das Minimum, nicht das Maximum. Die Rechnung steht in
--- `backend/services/image_content_policy.py`; hier stehen nur die zwei Werte,
--- aus denen sie gebildet wird.
+-- Die Stufe der WELT steht bewusst nicht in dieser Rechnung. Sie ist eine
+-- VORGABE: womit ein Besucher startet, der nichts eingestellt hat. Sie
+-- begrenzt ihn nicht. Eine erste Fassung machte daraus eine harte Obergrenze
+-- — das war eine Bevormundung, die niemand verlangt hatte.
+--
+-- Die einzige Schranke, die bleibt, ist die Feststellung der Volljaehrigkeit,
+-- und sie ist keine Produktentscheidung: Kalifornien SB 243 (seit 01.01.2026),
+-- UK Online Safety Act (seit Juli 2025), `Free Speech Coalition v. Paxton`
+-- (Supreme Court, Juni 2025). Sie schuetzt den Betreiber.
+--
+-- Die Rechnung steht in `backend/services/image_content_policy.py`.
 --
 -- WAS DIESE MIGRATION NICHT TUT: sie stellt die Volljaehrigkeit nicht fest.
 -- `adult_verified_at` ist ein Zeitstempel, den ein Pruefverfahren setzt, kein
@@ -32,8 +37,8 @@
 
 BEGIN;
 
--- 1. Die Stufe der Welt. Vorgabe jugendfrei — eine Vorgabe, die sich irrt,
---    soll in die harmlose Richtung irren.
+-- 1. Die VORGABE der Welt: womit ein Besucher startet, der nichts eingestellt
+--    hat. Keine Obergrenze — wer etwas anderes einstellt, bekommt es.
 ALTER TABLE public.simulations
   ADD COLUMN IF NOT EXISTS content_rating text NOT NULL DEFAULT 'general';
 
@@ -49,7 +54,7 @@ BEGIN
 END $$;
 
 COMMENT ON COLUMN public.simulations.content_rating IS
-  'Obergrenze der Bilddarstellung dieser Welt: general | mature. Der Klick eines Nutzers kann sie nicht anheben, nur unterschreiten.';
+  'VORGABE der Bilddarstellung dieser Welt: general | mature. Womit ein Besucher startet, der nichts eingestellt hat. Keine Obergrenze — die Einstellung des Nutzers gewinnt.';
 
 -- 2. Die Feststellung am Konto. NULL heisst „nicht festgestellt", nicht
 --    „minderjaehrig" — der Unterschied zaehlt, wenn spaeter ein Verfahren
@@ -80,9 +85,8 @@ END $$;
 --     Erwachsenendarstellung moechte, stellt sie hier ab — und die Rechnung
 --     nimmt das Minimum, also gewinnt der Wunsch gegen die Erlaubnis.
 --
---     Umgekehrt gilt es nicht: dieser Wert kann keine Stufe anheben, die Welt
---     oder Feststellung nicht hergeben. Deshalb steht er in derselben
---     Minimum-Rechnung und nicht daneben.
+--     Er gilt in BEIDE Richtungen: an und aus. Begrenzt wird er nur durch
+--     die Feststellung — nicht durch die Vorgabe der Welt.
 ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS image_content_preference text NOT NULL DEFAULT 'general';
 
@@ -98,7 +102,7 @@ BEGIN
 END $$;
 
 COMMENT ON COLUMN public.user_profiles.image_content_preference IS
-  'Was der Nutzer sehen MOECHTE: general | mature. Kann die Stufe nur senken, nie anheben — die Rechnung nimmt das Minimum aus Welt, Feststellung, Wunsch und Anfrage.';
+  'Was der Nutzer sehen will: general | mature. Er stellt es frei ein, an und aus. Begrenzt wird es nur durch die festgestellte Volljaehrigkeit.';
 
 COMMENT ON COLUMN public.user_profiles.adult_verified_at IS
   'Wann die Volljaehrigkeit FESTGESTELLT wurde. NULL heisst nicht festgestellt. Kein selbst gesetztes Haekchen.';

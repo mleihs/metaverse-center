@@ -9,37 +9,50 @@ Klick nicht anheben kann — die des Nutzers. Drittens sind es verschiedene
 MODELLE: Flux 2 filtert beim Anbieter, die SDXL-Abkoemmlinge tun es nicht, und
 zwischen beiden liegt nicht ein Regler, sondern eine Modellwahl.
 
-Deshalb VIER Groessen und eine Rechnung:
+Deshalb eine Rechnung, und sie hat GENAU EINE Schranke:
 
-    wirksam = min(Welt, Feststellung, Wunsch, Anfrage)
+    wirksam = min(Wunsch des Nutzers, Feststellung, Anfrage)
 
-Das Minimum, nicht das Maximum. Wer keine Stufe gesetzt hat, bekommt die
-niedrigste — eine Vorgabe, die sich irrt, soll in die harmlose Richtung irren.
+Die drei Groessen und was sie tun:
 
-Die vier sind nicht dasselbe, und die Trennung ist der Punkt:
-
-    Welt          Der Ton der Simulation. Setzt der Architekt.
-    Feststellung  Was der Nutzer DARF. Setzt ein Pruefverfahren, nie er selbst.
-    Wunsch        Was der Nutzer WILL. Setzt er selbst, jederzeit.
+    Wunsch        Was der Nutzer will. Er stellt es EIN und AUS, frei.
+    Feststellung  Ob die Volljaehrigkeit festgestellt ist. Kein Wunsch, ein
+                  Rechtszustand — siehe unten.
     Anfrage       Was dieser eine Aufruf haette gern.
 
-Der Wunsch kann nur SENKEN. Wer volljaehrig ist und in einer Erwachsenenwelt
-sitzt, aber jugendfreie Bilder moechte, bekommt sie — das ist Einflussnahme.
-Wer die Stufe anheben will, die Welt oder Feststellung nicht hergeben, bekommt
-sie nicht — das ist der Grund, warum alle vier in DERSELBEN Minimum-Rechnung
-stehen und nicht nebeneinander.
+DIE WELT IST EINE VORGABE, KEINE DECKE. Ihr `content_rating` sagt, womit ein
+Besucher STARTET, der nichts eingestellt hat. Es begrenzt ihn nicht. Eine
+erste Fassung dieses Moduls machte daraus eine harte Obergrenze; das war eine
+Bevormundung, die niemand verlangt hatte, und sie ist raus. Wer in einer
+jugendfrei angelegten Welt Erwachsenendarstellung will und sie einstellt,
+bekommt sie.
+
+WARUM DIE FESTSTELLUNG BLEIBT, und sie ist die einzige, die bleibt:
+
+Sie ist keine Produktentscheidung, sondern eine Rechtslage, und sie schuetzt
+den Betreiber, nicht den Nutzer vor sich selbst. Kalifornien SB 243 (seit
+01.01.2026) verbietet sexuell explizite Inhalte, wo der Betreiber weiss, dass
+der Nutzer minderjaehrig ist. Der UK Online Safety Act verlangt seit Juli 2025
+wirksame Altersfeststellung. `Free Speech Coalition v. Paxton` (Supreme Court,
+Juni 2025) haelt Alterspruefungen der Bundesstaaten fuer zulaessig; rund 25
+Staaten haben eigene Gesetze. Der GUARD Act lag im April 2026 im
+Justizausschuss.
+
+Wer sie trotzdem herausnehmen will, entfernt hier eine Zeile — sie steht
+absichtlich an einer Stelle und nicht an fuenf. Das ist eine Entscheidung des
+Betreibers und keine, die dieses Modul fuer ihn trifft.
 
 WIE DAS DURCHGESETZT WIRD, und nicht nur gemeint
 
-Die Rechnung laeuft auf dem Server, in dieser einen Funktion. Der Aufrufer
-schickt `angefragt` — einen WUNSCH, keine Feststellung. `welt`,
-`nutzer_volljaehrig` und `nutzer_wunsch` liest der Server aus der Datenbank,
-nie aus der Anfrage. Ein Client, der `mature` schickt, erhoeht damit nichts;
-er bittet um etwas, das die drei anderen Werte erlauben muessen.
+Die Rechnung laeuft auf dem Server, in dieser einen Funktion. `nutzer_wunsch`
+und `nutzer_volljaehrig` liest der Server aus der Datenbank, nie aus der
+Anfrage — sonst waere die Feststellung eine Behauptung des Clients. Der
+Nutzer aendert seinen Wunsch ueber seine Einstellungen, nicht ueber einen
+Parameter im Bildaufruf.
 
 `test_image_content_policy.py::TestDerKlientKannNichtsAnheben` bindet genau das
-an den Code: fuer jede Kombination aus Welt, Feststellung und Wunsch gilt, dass
-keine Anfrage ein hoeheres Ergebnis erzeugt als das Minimum der drei.
+an den Code: keine Anfrage erzeugt ein hoeheres Ergebnis als das Minimum aus
+Wunsch und Feststellung.
 
 DIE GRENZE, DIE KEINE STUFE VERSCHIEBT
 
@@ -79,6 +92,7 @@ from enum import StrEnum
 __all__ = [
     "ContentRating",
     "RatingDecision",
+    "default_rating_for_world",
     "resolve_rating",
     "screen_prompt",
 ]
@@ -117,19 +131,32 @@ class RatingDecision:
         return bool(self.grund)
 
 
+def default_rating_for_world(welt: ContentRating) -> ContentRating:
+    """Womit ein Besucher STARTET, der nichts eingestellt hat.
+
+    Eine Vorgabe, keine Grenze. Sie beschreibt den Ton, in dem eine Welt
+    angelegt wurde, damit niemand in einer Erwachsenenwelt ueberrascht wird und
+    niemand in einer jugendfreien erst etwas suchen muss. Wer etwas anderes
+    einstellt, bekommt etwas anderes — `resolve_rating` liest diesen Wert
+    nicht.
+    """
+    return welt
+
+
 def resolve_rating(
     *,
-    welt: ContentRating,
     nutzer_volljaehrig: bool,
     nutzer_wunsch: ContentRating = ContentRating.GENERAL,
     angefragt: ContentRating = ContentRating.GENERAL,
 ) -> RatingDecision:
-    """Das Minimum aus Welt, Feststellung, Wunsch und Anfrage.
+    """Das Minimum aus Wunsch, Feststellung und Anfrage.
 
-    Reihenfolge der Gruende ist nicht beliebig. Zuerst der eigene Wunsch: wer
-    selbst abgeschaltet hat, soll das erfahren und nicht raten, ob es an der
-    Welt liegt — und die Auskunft fuehrt zu einer Einstellung, die er aendern
-    kann. Dann die Welt. Zuletzt die Feststellung, die persoenlichste der drei.
+    Die Welt steht hier NICHT mehr. Sie gibt vor, sie begrenzt nicht — siehe
+    `default_rating_for_world` und den Kopf dieses Moduls.
+
+    Reihenfolge der Gruende: zuerst der eigene Wunsch, weil die Auskunft dann zu
+    einer Einstellung fuehrt, die der Nutzer selbst aendern kann. Erst danach
+    die Feststellung, die er nicht selbst setzen kann.
     """
     if _RANG[angefragt] <= _RANG[ContentRating.GENERAL]:
         return RatingDecision(ContentRating.GENERAL)
@@ -139,9 +166,6 @@ def resolve_rating(
             nutzer_wunsch,
             "Du hast Erwachsenendarstellung in deinen Einstellungen abgeschaltet.",
         )
-
-    if _RANG[welt] < _RANG[angefragt]:
-        return RatingDecision(welt, "Diese Welt ist auf jugendfreie Darstellung eingestellt.")
 
     if not nutzer_volljaehrig:
         return RatingDecision(
