@@ -244,6 +244,7 @@ class ModelResolver:
         #: weil sie aus `platform_settings` kommt und nicht aus den
         #: Einstellungen dieser Welt — zwei Herkuenfte, zwei Speicher.
         self._mature_cache: dict | None = None
+        self._toleranz_cache: dict[str, int] = {}
 
     async def _load_settings(self) -> dict[str, str]:
         """Load all AI-related settings for this simulation."""
@@ -356,6 +357,51 @@ class ModelResolver:
 
         return str(self._mature_cache.get(purpose) or self._mature_cache.get("fallback") or "")
 
+    async def _safety_tolerance(self, rating: ContentRating) -> int:
+        """Wie offen das Modell erzeugen darf — vom Betreiber, nicht aus dem Code.
+
+        Zwei Schluessel, `image_safety_tolerance_general` und
+        `image_safety_tolerance_mature`, und die Zahl bedeutet in beiden
+        Familien etwas anderes: Flux 2 nimmt sie woertlich als
+        `safety_tolerance` (1 streng bis 6 offen), die SD-Abkoemmlinge kennen
+        nur einen Schalter, der ab 5 umlegt (siehe `to_replicate_params`).
+
+        Diese Zeilen standen vorher NUR in `forge_image_service`, und zwar als
+        `5 if MATURE else 2` — mit einem Kommentar darueber, der behauptete,
+        die Werte kaemen aus `image_safety_tolerance_*`. Sie kamen nie von
+        dort. Jeder andere Aufrufer der Erwachsenenspur bekam still die
+        vorsichtige 2, also ein weichgezeichnetes Bild ohne Fehlermeldung und
+        ohne dass jemand den eingestellten Wert wiedergefunden haette.
+        """
+        schluessel = (
+            "image_safety_tolerance_mature"
+            if rating is ContentRating.MATURE
+            else "image_safety_tolerance_general"
+        )
+        if schluessel not in self._toleranz_cache:
+            zeile = await maybe_single_data(
+                self._supabase.table("platform_settings")
+                .select("setting_value")
+                .eq("setting_key", schluessel)
+                .maybe_single()
+            )
+            wert = (zeile or {}).get("setting_value")
+            if isinstance(wert, str):
+                try:
+                    wert = json.loads(wert)
+                except (json.JSONDecodeError, TypeError):
+                    wert = None
+            # Die Vorgabe irrt in die vorsichtige Richtung, wenn der Schluessel
+            # fehlt — aber NUR fuer die jugendfreie Stufe. Fehlt der
+            # Erwachsenenschluessel, waere eine 2 keine Vorsicht, sondern eine
+            # stille Verweigerung dessen, was der Nutzer eingestellt hat.
+            vorgabe = 5 if rating is ContentRating.MATURE else 2
+            try:
+                self._toleranz_cache[schluessel] = int(wert) if wert is not None else vorgabe
+            except (TypeError, ValueError):
+                self._toleranz_cache[schluessel] = vorgabe
+        return self._toleranz_cache[schluessel]
+
     async def resolve_image_model(
         self,
         purpose: str,
@@ -457,6 +503,7 @@ class ModelResolver:
                 output_quality=output_quality,
                 lora_url=lora_url,
                 lora_scale=lora_scale,
+                safety_tolerance=await self._safety_tolerance(rating),
                 source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
             )
 
@@ -505,6 +552,7 @@ class ModelResolver:
             num_inference_steps=steps,
             scheduler=scheduler,
             negative_prompt=negative,
+            safety_tolerance=await self._safety_tolerance(rating),
             source="simulation" if ai_settings.get(f"image_model_{purpose}") else "platform",
         )
 

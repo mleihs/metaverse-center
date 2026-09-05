@@ -547,10 +547,10 @@ class ForgeImageService:
         if references:
             image_model.reference_image_url = references[0]
             image_model.extra_reference_urls = tuple(references[1:])
-        # Die Toleranz haengt an der Stufe und ist keine Konstante mehr. 5 ist
-        # die offenste, 2 die vorsichtige — welche gilt, hat der Betreiber in
-        # `image_safety_tolerance_*` stehen, nicht dieser Code.
-        image_model.safety_tolerance = 5 if rating is ContentRating.MATURE else 2
+        # Die Toleranz setzt der Aufloeser, er kennt die Stufe. Hier stand sie
+        # frueher als `5 if MATURE else 2` — mit einem Kommentar, der behauptete,
+        # sie komme aus `image_safety_tolerance_*`. Jetzt tut sie es wirklich,
+        # und zwar fuer jeden Aufrufer und nicht nur fuer diesen.
 
         params = image_model.to_replicate_params()
         raw_bytes = await self._replicate.generate_image(
