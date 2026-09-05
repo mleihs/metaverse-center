@@ -187,6 +187,89 @@ Migration.
 
 ---
 
+## Zweite Welle: warum Charakter nicht mitwanderte (`113da4d2`)
+
+Auf die Frage, ob eine Eigenschaft aus einem Gruppengespräch sich später
+wiederfindet, war die Antwort „im Prinzip ja, praktisch kaum". Nachgemessen
+hatte das **vier** benennbare Ursachen.
+
+### 1. Die Ich-Schicht hat nie eine Zeile geschrieben
+
+`_fire_and_forget_digest` nahm seit Migration 373 ein `participants`
+entgegen — beide Gruppenpfade gaben es mit — und reichte es nicht an
+`ensure_digests` weiter. Ohne Besetzung bleibt `fehlende_episoden` leer, die
+Vorlage `chat_character_episode` wird nie aufgelöst.
+
+```
+vorher   geteiltes Protokoll 14/14   Ich-Erinnerung  0/42
+nachher                     14/14                   42/42
+```
+
+⚠ **Ein toter Parameter ist schlimmer als ein fehlender.** Ein fehlender ist
+ein `TypeError` beim ersten Aufruf. Ein toter sieht an der Aufrufstelle
+richtig aus, steht in der Signatur, ist dokumentiert — und tut nichts.
+
+**Das Tor dagegen:** `test_kein_toter_parameter.py` prüft per AST sieben
+Chat- und Gedächtnisdateien. Vorher gemessen, wie laut es wäre: **drei
+Fundstellen, alle drei echt.** Ruffs `ARG`-Gruppe wäre über den ganzen Baum
+zu laut, und ein lautes Tor wird abgeschaltet. Daneben ein Verhaltenstest —
+ein Formtor sieht eine richtige Weitergabe an die *falsche* Stelle nicht.
+
+### 2. Auslöser und Leser waren sich uneinig
+
+`REFLECTION_TRIGGER = 50` machte fällig, `reflect()` las `.limit(20)`, und
+der Rest fiel danach dauerhaft aus dem Zähler: **30 von 50 Beobachtungen
+erreichten nie eine Reflexion und galten als erledigt.**
+
+Zwei Änderungen, die zweite trägt: `REFLECTION_WINDOW = 50` als benannte
+Konstante (ein Test bindet `WINDOW >= TRIGGER`), und **der Wasserstand** —
+jede Reflexion trägt in `source_id` die jüngste Beobachtung, die sie wirklich
+gelesen hat, und gezählt wird ab *ihr* statt ab dem Zeitpunkt der Arbeit.
+Gelesen wird von vorn (`desc=False`). Eine Zahl allein hätte den Rückstand
+von 195 nur an anderer Stelle abgeschnitten.
+
+### 3. Der Herzschlag stand seit dem 02.09. 13:32 UTC
+
+`heartbeat_enabled` war auf `false` gesetzt worden — 17 Minuten nach dem
+letzten Takt und am selben Tag, an dem die Reflexion als Phase 9.7
+verdrahtet wurde. Drei Tage ohne Autonomie, ohne Flüstern, ohne Verdichtung.
+`/api/v1/health` meldete durchgehend healthy, 21 von 41 Welten waren fällig,
+`memory_reflection` stand mit NULL Zeilen im Aufrufbuch.
+
+Der Aufseher in `app.py` fängt den anderen Fall: eine Aufgabe, die *abstirbt*.
+Für diesen gab es nichts, weil er kein Fehler IST. Aber eine Entscheidung,
+die niemand mehr sieht, ist von einem Ausfall nicht zu unterscheiden.
+`BaseSchedulerMixin._melde_abgeschaltet` schreibt jetzt stündlich eine Zeile
+mit der Dauer — kein Sentry, kein Fehler. Dreizehn Zeitgeber teilen sich
+diesen Rumpf und mehrere sind mit Absicht aus.
+
+**Der Schalter steht seit 05.09. 14:17 UTC wieder auf `true`.** Vorher die
+Kosten gemessen: 11,62 USD über 1244 Aufrufe seit Bestehen, unter 1 USD am
+Tag. `agent_continuation_enabled` und `news_scanner_enabled` bleiben aus.
+
+### 4. Ein Parameter, der eine Grenze versprach (Migration 381)
+
+Vom neuen Tor gefunden: `retrieve(simulation_id)` filterte nie. Schaden heute
+null — 0 Erinnerungen in fremder Welt, 0 Figuren in zwei Welten — und genau
+das ist das Heimtückische: die Grenze hielt, weil eine Figur zufällig einer
+Welt gehört. Jetzt ist der Parameter ein Filter, NULL heisst „über alle
+Welten dieser Figur". Dritter Fund: `_persist(simulation_id)` auf einer
+Tabelle ohne Weltspalte — ersatzlos gestrichen.
+
+### ⚠ Die Falle, die mich fast eine Messung gekostet hätte
+
+Die Abnahme der Ich-Schicht lief über `get_admin_supabase()` und kam leer
+zurück. Ich hielt es für ein Rechteproblem. Es war **`.env` zeigt auf
+`http://127.0.0.1:54321`**, nicht auf Prod — dieselbe Falle, vor der die
+Bildpfad-Sitzung am selben Nachmittag gewarnt hat. Mit den Werten aus
+`~/.config/metaspots/velgarien-coolify.env` lief es sofort.
+
+Die Migrationen waren NICHT betroffen: sie gehen über die Management-API mit
+der Projektkennung in der URL. Aber alles, was über `backend.dependencies`
+läuft, geht lokal ins Leere — und zwar still.
+
+---
+
 ## Handmessprotokoll — SCHULDIG, noch nicht gelaufen
 
 Punkt 1c bleibt Handmessung. Der Prompt hat sich in drei Punkten geändert
