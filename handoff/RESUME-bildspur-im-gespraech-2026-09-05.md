@@ -140,13 +140,13 @@ Ohne Hinweis sieht ein ersetztes Bild aus wie ein gelungenes (§1). Mögliche
 Form: die wirksame Stufe an der Bildunterschrift nennen — sie steht schon in
 `metadata.scene_image.rating`.
 
-**⛔ Keine Klassifizierung der AUSGABE bauen.** Der Betreiber hat das
-ausdrücklich abgelehnt („lass diese verifizierungskacke"). Es geht um eine
-Auskunft, nicht um eine Prüfung.
+**⛔ Keine Klassifizierung der AUSGABE bauen.** Ausdrücklich abgelehnt, in
+deutlichen Worten und ohne Einschränkung. Es geht um eine Auskunft, nicht um
+eine Prüfung.
 
 ### P4 — Die Mikroanimation am Auslöser
 
-Der Betreiber findet sie „nicht sehr schön". Aktuell: Passermarken
+Als zu unruhig beanstandet. Aktuell: Passermarken
 (`marker-corners--tight`) belichten, Arm 8 → 15 px, 1200 ms, Amber-Rahmen,
 gedimmtes Sinnbild. **Ruhiger machen.** Die Ruhedarstellung NICHT anfassen —
 sie ist gerade erst repariert (`677bab7a`).
@@ -177,9 +177,9 @@ Fünf Commits liegen ungedeployt: `a23e5f44`, `5cefb226`, `677bab7a` (Frontend!)
   Spalten wurden entfernt und eine Migration prüft ihre Abwesenheit. Nicht
   wieder vorschlagen.
 * **Keine Verifizierungs-/Klassifizierungsmaschinerie** für Modellausgaben.
-* **„WIR BEVORMUNDEN UNSERE NUTZER NICHT."** Die Weltstufe ist eine Vorgabe,
-  keine Decke. Ein erster Entwurf machte sie zur harten Grenze — das war der
-  Fehler.
+* **Keine Bevormundung der Nutzer** — nachdrücklich und unmissverständlich
+  festgehalten. Die Weltstufe ist eine Vorgabe, keine Decke. Ein erster Entwurf
+  machte sie zur harten Grenze — das war der Fehler.
 * **Kein Gesprächs-Wortlaut im Repo.** Nicht in Code, Kommentar, Test, Migration
   oder Commit-Nachricht. Tor: `scripts/lint-no-chat-content.sh`.
 * Durcharbeiten ohne Rückfragen, Zwischenstände melden.
