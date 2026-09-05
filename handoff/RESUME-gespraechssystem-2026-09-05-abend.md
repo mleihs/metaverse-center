@@ -270,7 +270,67 @@ läuft, geht lokal ins Leere — und zwar still.
 
 ---
 
-## Handmessprotokoll — SCHULDIG, noch nicht gelaufen
+## Handmessprotokoll — GELAUFEN, 05.09.2026 abends
+
+Frischer Faden, drei Figuren, sechs Fallen, alle Antworten mit
+`FocalizationService.measure` und der Selbstbündelungszählung. **Zwei Läufe,
+und der erste war zweimal wertlos** — das ist der lehrreiche Teil.
+
+### ⚠ Lauf 0: 18 Züge, 0 %, und die Zahl war Müll
+
+`FORGE_MOCK_MODE=true` in der lokalen `.env`. Alle 18 Antworten lauteten
+`[MOCK] <Name> responds to the conversation.`, exakt 50/51 Zeichen. Der
+Detektor meldete pflichtgemäß 0 % allwissend.
+
+**Aufgefallen ist es nur an der gleichen Zeichenlänge.** Hätte das Modell
+zufällig kurze Antworten geliefert, wäre die Null als Erfolg durchgegangen —
+dieselbe Fehlerklasse wie der ganze Tag, diesmal im Messgerät selbst. Das
+Skript prüft jetzt `settings.forge_mock_mode` und bricht ab. Die 18
+Mock-Zeilen wurden gelöscht.
+
+### ⚠ Lauf 1: mein Messgerät trug den Fehler, den es messen sollte
+
+Ich baute die Anreden mit `namen[i].split()[0]`. Bei einer Figur, deren Name
+mit einem TITEL beginnt, ist das der Titel — genau der Befund, den
+`chat/names.py` heute früh behoben hat. Drei der sechs Fallen sprachen sie
+damit über ihren Titel an, den `_addressed_note` zu Recht nicht auflöst: sie
+bekam in keiner Runde „der Mensch spricht dich an".
+
+    Lauf 1 (Anrede über den Titel)     27 % allwissend · 5 % Selbstbündelung
+    Lauf 2 (Anrede über `anrede_teile`) 11 % allwissend · 0 % Selbstbündelung
+
+### Das Ergebnis, sauber gemessen
+
+```
+Züge gemessen        18   (3 Figuren × 6 Fallen, echte Modellaufrufe)
+allwissend (zero)     2   = 11 %
+Selbstbündelung       0   =  0 %
+Marke im Text         0   von 18
+```
+
+**Was hält:** Die Marke `[User]` / `[dein Gegenüber]` kommt in 18 Zügen
+**null** mal vor — Migration 375 hält, gegen 11 von 24 vor der Reparatur. Die
+Selbstbündelung ist bei null, gegen gemessene 6–37 % je nach Sprechposition.
+Zwei Figuren von drei sind über alle sechs Fallen durchgehend `internal`.
+
+**Was nicht hält, und das ist der offene Befund:** die 11 % sind **eine
+einzige Figur**. Sie liefert in 2 von 6 Runden `mehrere_fremde_ohne_ich` und
+in 3 weiteren `unclear`; die beiden anderen Figuren nie. Die Belege habe ich
+angesehen — es sind **echte Treffer, keine Fehlalarme**: sie nennt sich selbst
+in der dritten Person neben einer anderen, im selben Satz, ohne Wahrnehmenden.
+
+**Die naheliegende Hypothese, ungeprüft:** ihr Name beginnt mit einem Titel,
+also steht in `{agent_name}` ein Titel plus Vorname, und das Modell erzählt
+sie eher in der dritten Person als die beiden mit gewöhnlichen Namen. Prüfbar
+mit einer vierten Figur mit Titel gegen eine ohne. **Das ist die nächste
+Messung.**
+
+Die zwei Messfäden heissen `MESSUNG 2026-09-05 …` und
+`MESSUNG 2 2026-09-05 …` und können gelöscht werden.
+
+---
+
+## Handmessprotokoll — die Anleitung
 
 Punkt 1c bleibt Handmessung. Der Prompt hat sich in drei Punkten geändert
 (dritter Zweig der Lage-Ansage, `{focalization_note}`, korrigierte
