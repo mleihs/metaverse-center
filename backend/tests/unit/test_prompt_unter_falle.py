@@ -6,7 +6,7 @@ Schicht (b) des Plans vom 05.09.2026. Die drei Schichten, ehrlich getrennt:
     (b) DIESE DATEI              der Prompt unter denselben Fallen
     (c) Handmessung              der Modelllauf, Protokoll im Handoff
 
-Der Anlass ist eine Frage, die ein zweiter Agent gestellt hat und die den
+Der Anlass ist eine Frage aus der Sitzung `velgarien-rebuild-af`, die den
 ganzen Tag getragen hat: *stellt die Pruefung die Lage HER, in der der Fehler
 entstehen kann, oder wartet sie darauf?* Die Handmessungen vom 05.09. haben
 die Lage hergestellt und 0 % gemessen. Sie standen in keinem automatisierten
@@ -336,7 +336,8 @@ class TestFalle4KollektivAdressiert:
 
 
 class TestWerGemeintIstHaengtAmNamen:
-    """Gegengelesen am 05.09.2026, hier selbst nachgemessen.
+    """Gegengelesen von der Sitzung `velgarien-rebuild-af` am 05.09.2026,
+    hier selbst nachgemessen.
 
     `name.split()[0]` ist nicht immer ein Vorname. Bei „Doktor Freundlich" ist
     das erste Feld der TITEL — und der Fehler geht in die schlimmere Richtung:

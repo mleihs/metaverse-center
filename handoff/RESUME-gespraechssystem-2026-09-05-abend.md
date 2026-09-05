@@ -13,6 +13,27 @@ gemessen wurde und was offen bleibt.
 
 ---
 
+## ⚠ Zwei Sitzungen, nicht eine
+
+Am 05.09. waren mehrere Sitzungen im geteilten Baum. Zwei davon kommen in
+dieser Übergabe vor, und sie sind **verschieden**:
+
+* **`velgarien-rebuild-af`** — hat morgens gegengelesen. Von dort kommen die
+  Frage „stellt die Prüfung die Lage her oder wartet sie darauf?", der Befund
+  Titel-als-Vorname, der Genitiv und die vollständige
+  Anführungszeichen-Kreuztabelle. Belegt in
+  `handoff/RESUME-gespraechssystem-2026-09-05.md`, Nachtrag 1 und 2.
+* **Die Bildpfad-Sitzung** (Migration 377, `model_resolver.py`,
+  `image_*`, `ChatComposer.ts`) — hat abends parallel im selben Baum
+  gearbeitet. Von dort kommt **nichts** an der Fokalisierung.
+
+Der erste Entwurf dieser Übergabe nannte beide „ein zweiter Agent". Das ist
+kein Beleg, sondern eine Verwechslung mit zwei Kandidaten — und die
+Bildpfad-Sitzung hat richtiggestellt, dass sie nicht gemeint war. Wo die
+Herkunft bekannt ist, gehört der Name hin.
+
+---
+
 ## Was gebaut wurde
 
 Vier Commits auf `main`, drei Migrationen auf Prod.
@@ -224,7 +245,12 @@ Abweichung ist ein Befund.
   369 kaputte Abfrage ein Jahr lang grün gemeldet.
 * **`git status` in `frontend/`** ließ `git add` mit „did not match any files"
   scheitern. Pfade sind relativ zum Arbeitsverzeichnis, nicht zur Wurzel.
-* **Geteilter Baum.** Eine zweite Sitzung arbeitet an `model_resolver.py`,
+* **Eine anonyme Zuschreibung ist kein Beleg.** „Ein zweiter Agent" stand in
+  Commits und Kommentaren für ZWEI verschiedene Sitzungen — die
+  gegenlesende und die parallel arbeitende. Wer das später nachschlägt,
+  landet bei der falschen. Richtiggestellt in einem eigenen Commit; die
+  Namen stehen jetzt dort, wo die Herkunft bekannt ist.
+* **Geteilter Baum.** Die Bildpfad-Sitzung arbeitet an `model_resolver.py`,
   `image_*`, `ChatComposer.ts`. Vier ihrer Tests waren zwischenzeitlich rot,
   ohne dass es an mir lag — **im geteilten Baum ist ein Gesamtlauf keine
   Aussage über die eigene Arbeit**. Nur eigene Pfade committen.

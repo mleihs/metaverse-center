@@ -222,8 +222,8 @@ def test_die_drei_zuege_vom_vierten_september(text):
 # Die Fallen
 # ═══════════════════════════════════════════════════════════════════════════
 #
-# WOHER DIESER ABSCHNITT KOMMT. Ein zweiter Agent hat am 05.09.2026 die Frage
-# gestellt, an der die ganze Sitzung haengt:
+# WOHER DIESER ABSCHNITT KOMMT. Die Sitzung `velgarien-rebuild-af` hat am
+# 05.09.2026 die Frage gestellt, an der die ganze Sitzung haengt:
 #
 #     Stellt der Detektor die Lage HER, in der Allwissenheit entstehen kann,
 #     oder wartet er darauf?
@@ -233,8 +233,9 @@ def test_die_drei_zuege_vom_vierten_september(text):
 # 0-%-Quote misst dann irgendwann wieder nur, dass niemand gefragt hat.
 #
 # Dieselbe Lehre kam an einem Tag in drei Kleidern: der Nebenlaeufigkeitstest
-# des Peers, dieser Detektor und die Sternchen-Gegenprobe — jedes Mal meldete
-# eine Pruefung Erfolg, die ihre eigene Bedingung nie hergestellt hatte.
+# aus `velgarien-rebuild-af`, dieser Detektor und die Sternchen-Gegenprobe —
+# jedes Mal meldete eine Pruefung Erfolg, die ihre eigene Bedingung nie
+# hergestellt hatte.
 # Deshalb steht unten nicht nur der Korpus, sondern auch ein Test AUF den
 # Korpus: ein Fallenkorpus ohne Fallen besteht sonst muehelos.
 #
@@ -430,7 +431,8 @@ class TestDerKorpusStelltSeineBedingungHer:
 class TestDieAnfuehrungszeichenSindEineKlasse:
     """Die vollstaendige Kreuztabelle von `_ohne_rede`.
 
-    Gegengelesen und selbst nachgemessen am 05.09.2026: von den neun
+    Nachgereicht von der Sitzung `velgarien-rebuild-af`, hier selbst
+    nachgemessen am 05.09.2026: von den neun
     Kombinationen der drei ueblichen Konventionen fielen **fuenf** durch.
     Was hielt, waren genau die drei sauberen Paare plus „…”.
 

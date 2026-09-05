@@ -182,9 +182,9 @@ class FocalizationService:
     #: Woertliche Rede — als KLASSEN, nicht als Paare.
     #:
     #: Die erste Fassung hat drei saubere Konventionen gepaart: „…“, “…” und
-    #: "…". Nachgemessen am 05.09.2026 (Gegenlesen durch einen zweiten
-    #: Agenten, hier selbst nachgerechnet) fallen davon **5 von 9**
-    #: Kombinationen durch:
+    #: "…". Nachgemessen am 05.09.2026 — die Kreuztabelle kam von der Sitzung
+    #: `velgarien-rebuild-af`, hier selbst nachgerechnet — fallen davon
+    #: **5 von 9** Kombinationen durch:
     #:
     #:                      schliessend
     #:       oeffnend     “        ”        "

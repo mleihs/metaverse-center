@@ -10,7 +10,7 @@ die Anweisung geschrieben wird.
 
 ``_addressed_note`` nahm das erste Feld des Namens und nannte es Vorname. Bei
 „Doktor Freundlich" ist das erste Feld der TITEL. Nachgemessen am 05.09.2026
-(Gegenlesen durch einen zweiten Agenten, von hier aus bestaetigt):
+(gegengelesen von der Sitzung `velgarien-rebuild-af`, hier selbst nachgemessen):
 
     Figur „Doktor Freundlich", Text „Der Doktor hat abgesagt."
         -> die Figur haelt sich fuer gemeint
