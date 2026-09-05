@@ -36,6 +36,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { localeService } from '../../../services/i18n/locale-service.js';
 import { captureError } from '../../../services/SentryService.js';
 import { icons } from '../../../utils/icons.js';
+import { markerCornerStyles } from '../../shared/marker-styles.js';
 import { VelgToast } from '../../shared/Toast.js';
 
 const DEFAULT_CHAR_LIMIT = 10000;
@@ -76,7 +77,9 @@ function speechRecognitionConstructor(): SpeechRecognitionConstructor | undefine
 @localized()
 @customElement('velg-chat-composer')
 export class ChatComposer extends LitElement {
-  static styles = css`
+  static styles = [
+    markerCornerStyles,
+    css`
     :host {
       display: block;
       --_composer-bg: color-mix(in srgb, var(--color-surface-raised) 80%, transparent);
@@ -184,35 +187,106 @@ export class ChatComposer extends LitElement {
      * a muted icon so the amber send button keeps the primacy of the row. It
      * only raises its voice while the microphone is actually open.
      */
+    /* Der Szenen-Ausloeser: ein Sucher, kein zweites Mikrofon.
+     *
+     * Die erste Fassung hatte 1px Rahmen, keinen Grund und keinen Schatten,
+     * waehrend seine beiden Nachbarn 2px bzw. 3px Rahmen, opaken Grund und
+     * einen 3px-Hartschatten tragen. In diesem Satz ist genau das die
+     * Schreibweise fuer „inaktiv" — der Knopf war gerendert, sichtbar und
+     * anklickbar, und wurde trotzdem uebersehen, weil er wie Beiwerk aussah.
+     * Er uebernimmt deshalb die Grammatik des Mikrofons Zug um Zug: gleiche
+     * Kantenlaenge, gleicher versenkter Grund, gleicher Schatten, gleiches
+     * Anheben beim Zeigen und Einsinken beim Druecken.
+     *
+     * Eigen bleibt ihm der Sucher — die Passermarken aus marker-styles. Das
+     * Mikrofon HOERT zu, dieser Knopf RAHMT, was schon gesagt wurde. Die
+     * Marken sagen das ohne eine zweite Farbe und ohne eine zweite Form, und
+     * sie nehmen dem Senden-Knopf nichts weg: der bleibt der einzige mit
+     * Amber als Flaeche. */
     .composer__scene {
-      display: inline-flex;
+      position: relative;
+      display: flex;
       align-items: center;
       justify-content: center;
       width: 40px;
       height: 40px;
+      padding: 0;
       flex-shrink: 0;
-      background: none;
-      border: var(--border-width-thin) solid var(--color-border);
       color: var(--color-text-muted);
+      background: var(--color-surface-sunken);
+      border: var(--border-medium);
+      box-shadow: var(--shadow-sm);
       cursor: pointer;
+      /* Ruhend nur angedeutet: der Sucher soll auffallen, wenn man ihn
+         ansieht, und nicht mit dem Rahmen des Knopfes konkurrieren. */
+      --marker-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
       transition:
         color var(--transition-fast),
-        border-color var(--transition-fast);
+        border-color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
     }
 
     .composer__scene:hover:not(:disabled) {
-      color: var(--color-primary);
-      border-color: var(--color-primary);
+      color: var(--_composer-focus-border);
+      border-color: var(--_composer-focus-border);
+      --marker-color: var(--_composer-focus-border);
+      transform: translate(-2px, -2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .composer__scene:active:not(:disabled) {
+      transform: translate(0);
+      box-shadow: var(--shadow-pressed);
     }
 
     .composer__scene:focus-visible {
       outline: none;
+      border-color: var(--color-border-focus);
       box-shadow: var(--ring-focus);
     }
 
     .composer__scene:disabled {
-      opacity: 0.45;
+      opacity: 0.5;
       cursor: not-allowed;
+    }
+
+    .composer__scene svg {
+      flex-shrink: 0;
+    }
+
+    /* Waehrend gemalt wird, arbeitet der SUCHER, nicht ein Rad.
+     *
+     * Ein Rad heisst „es laedt" und koennte alles sein. Die wandernden
+     * Passermarken heissen „dieser Rahmen belichtet gerade" — dieselbe
+     * Dunkelkammer-Sprache, die die Plattform in der Bildwerkstatt schon
+     * fuehrt, und sie unterscheidet das Malen vom Senden nebenan. */
+    .composer__scene--busy,
+    .composer__scene--busy:disabled {
+      opacity: 1;
+      color: var(--_composer-focus-border);
+      border-color: var(--_composer-focus-border);
+      --marker-color: var(--_composer-focus-border);
+    }
+
+    .composer__scene--busy svg {
+      opacity: 0.35;
+    }
+
+    .composer__scene--busy::after {
+      animation: scene-belichten 1200ms var(--ease-in-out) infinite;
+    }
+
+    @keyframes scene-belichten {
+      0%,
+      100% {
+        --marker-arm: 8px;
+        opacity: 1;
+      }
+      50% {
+        --marker-arm: 15px;
+        opacity: 0.45;
+      }
     }
 
     .composer__mic {
@@ -482,7 +556,8 @@ export class ChatComposer extends LitElement {
         transition: none;
       }
     }
-  `;
+  `,
+  ];
 
   // --- Properties ---
 
@@ -899,13 +974,19 @@ export class ChatComposer extends LitElement {
           }
           <button
             type="button"
-            class="composer__scene"
+            class=${classMap({
+              composer__scene: true,
+              'marker-corners': true,
+              'marker-corners--tight': true,
+              'composer__scene--busy': this.picturing,
+            })}
             ?disabled=${isDisabled || this.picturing}
-            aria-label=${msg('Draw this round')}
-            title=${msg('Draw this round')}
+            aria-busy=${this.picturing ? 'true' : 'false'}
+            aria-label=${this.picturing ? msg('Drawing this round') : msg('Draw this round')}
+            title=${this.picturing ? msg('Drawing this round') : msg('Draw this round')}
             @click=${this._requestScene}
           >
-            ${this.picturing ? html`<div class="composer__spinner"></div>` : icons.image(18)}
+            ${icons.image(18)}
           </button>
           <button
             class=${classMap({

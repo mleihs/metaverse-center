@@ -9051,6 +9051,7 @@ CARTOGRAPHIC NOTE: Cartographers assigned to Speranza report elevated morale and
 'sfecdd5e13f68c9ba': `Genehmigt`,
 'sfed75a6bed535046': `Filtere nach Resonance-Titel, Beschreibung oder Signaturtyp. Die Suche durchsucht alle sichtbaren Felder. Kombiniere mit Status-Chips und Signatur-Dropdown für präzises Filtern.`,
 'sfed79eea86c2ba22': `Splitterverzeichnis`,
+'sfed8aeec3719f5d3': `Wird gemalt`,
 'sfee3475a0eb0f055': `Was du lernst`,
 'sfee4769ba09e2ccc': `Artikel werden nach Gewicht sortiert …`,
 'sfee55c56fb646ef4': `Depeschen als Inhaltspaket ausgeliefert`,

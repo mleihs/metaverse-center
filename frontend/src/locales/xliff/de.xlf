@@ -32225,6 +32225,10 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source><x id="0" equiv-text="${scene.references}"/> characters as reference</source>
   <target><x id="0" equiv-text="${scene.references}"/> Figuren als Vorlage</target>
 </trans-unit>
+<trans-unit id="sfed8aeec3719f5d3">
+  <source>Drawing this round</source>
+  <target>Wird gemalt</target>
+</trans-unit>
 </body>
 </file>
 </xliff>
