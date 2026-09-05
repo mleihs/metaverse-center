@@ -485,7 +485,35 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ── Erst sagen, ob es einen Gegenstand gibt ───────────────────────────
+      #
+      # `SENTRY_AUTH_TOKEN` war am 05.09.2026 WEDER ein GitHub-Secret NOCH eine
+      # Coolify-Build-Variable. Der Schritt darunter lief trotzdem und schlug
+      # bei JEDEM Push auf main fehl — ein dauerhaft roter Lauf, an den man
+      # sich gewoehnt, bis er nichts mehr meldet.
+      #
+      # Er wird jetzt uebersprungen, wenn das Token fehlt. Aber NICHT
+      # schweigend: ein `::warning::` steht in der Laufzusammenfassung und
+      # nennt, was dabei verlorengeht. Ein uebersprungener Schritt, der sagt,
+      # dass er uebersprungen wurde, ist eine Meldung; einer, der schweigt,
+      # ist eine Luecke, die wie Erfolg aussieht.
+      #
+      # `secrets` ist im `if` einer JOB-Ebene nicht lesbar, deshalb hier als
+      # Schritt mit Ausgabe.
+      - name: Ist ein Sentry-Token hinterlegt?
+        id: token
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: |
+          if [ -n "$SENTRY_AUTH_TOKEN" ]; then
+            echo "vorhanden=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "vorhanden=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Sentry-Release uebersprungen::SENTRY_AUTH_TOKEN ist nicht als GitHub-Secret hinterlegt. Folge: dieser Release wird in Sentry nicht angelegt, Commits werden nicht zugeordnet, und der Docker-Build laedt keine Source Maps hoch — jeder Stapelauszug in Sentry bleibt minifiziert. Abhilfe: Token mit Bereich project:releases anlegen, als GitHub-Secret UND als Coolify-Build-Variable hinterlegen. Siehe docs/guides/sentry-cicd-integration.md."
+          fi
+
       - name: Associate commits & register deploy
+        if: steps.token.outputs.vorhanden == 'true'
         uses: getsentry/action-release@v3
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}

@@ -255,3 +255,44 @@ The `release` value in Sentry must match between the uploaded source maps and th
 ### Local development
 
 The plugin is automatically disabled in local dev (`SENTRY_AUTH_TOKEN` is not set). No source maps are uploaded, no network calls are made. The `disable` option returns a noop plugin.
+
+---
+
+## ⚠ Stand 05.09.2026: das Token fehlt im gesamten Auslieferungsweg
+
+`SENTRY_AUTH_TOKEN` ist **weder ein GitHub-Secret noch eine
+Coolify-Build-Variable**. Vorhanden sind nur `SENTRY_ORG` und `SENTRY_PROJECT`
+(GitHub) sowie `SENTRY_DSN` / `VITE_SENTRY_DSN` (Coolify).
+
+**Eine fehlende Variable, drei Wirkungen** — alle drei am 05.09.2026 gemessen:
+
+1. **Keine Source Maps in Sentry.** `sentryVitePlugin` schaltet sich bei
+   fehlendem Token ab (`disable: !process.env.SENTRY_AUTH_TOKEN`). Jeder
+   Stapelauszug in Sentry ist minifiziert.
+2. **Die Karten gingen statt dessen an die Öffentlichkeit.**
+   `sourcemaps.filesToDeleteAfterUpload` räumt erst NACH einem Upload auf —
+   ohne Upload wird nicht aufgeräumt. Gemessen: **133 Dateien, 46 MB**, unter
+   `/assets/*.map` öffentlich abrufbar, mit `sourcesContent` und 365
+   Quelldateien. Behoben: `build.sourcemap` ist ohne Token `false` — entweder
+   die Karten gehen zu Sentry, oder es gibt sie nicht. Ein drittes Ziel hatten
+   sie nie. Das Abbild schrumpft dabei von 46 MB auf 13 MB.
+3. **Der CI-Job `sentry-release` fiel bei jedem Push auf main.** Er wird jetzt
+   übersprungen, wenn das Token fehlt — aber mit einem `::warning::` in der
+   Laufzusammenfassung, das benennt, was verlorengeht. Ein übersprungener
+   Schritt, der sagt, dass er übersprungen wurde, ist eine Meldung; einer, der
+   schweigt, ist eine Lücke, die wie Erfolg aussieht.
+
+**Und die Prüfung konnte es nicht sehen:** `assertDeployEnv` verlangte
+`VITE_SENTRY_RELEASE` nur, *wenn* das Token gesetzt ist. Fehlte es, war die
+Bedingung falsch und die Prüfung schwieg. Sie warnt jetzt ausdrücklich.
+
+### Was zu tun ist, damit Sentry wieder Klartext zeigt
+
+1. In Sentry ein **Organization Auth Token** mit dem Bereich
+   `project:releases` anlegen.
+2. Als **GitHub-Secret** `SENTRY_AUTH_TOKEN` hinterlegen (für `sentry-release`).
+3. Als **Coolify-Variable** mit aktiviertem *Build Variable* hinterlegen (für
+   den Source-Map-Upload im Docker-Build) — **niemals** als Runtime-Variable,
+   es darf nicht ins Laufzeit-Abbild.
+4. Danach einmal deployen und prüfen: der Build schreibt wieder `.map`-Dateien,
+   lädt sie hoch und löscht sie anschließend; `/assets/*.map` antwortet mit 404.
