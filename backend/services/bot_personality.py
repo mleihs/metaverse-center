@@ -647,9 +647,11 @@ class StrategistPersonality(BotPersonality):
         # Sort zones by security level (weakest first)
         sorted_zones = sorted(
             state.own_zones,
-            key=lambda z: SECURITY_TIER_ORDER.index(z.get("security_level", "moderate"))
-            if z.get("security_level", "moderate") in SECURITY_TIER_ORDER
-            else 3,
+            key=lambda z: (
+                SECURITY_TIER_ORDER.index(z.get("security_level", "moderate"))
+                if z.get("security_level", "moderate") in SECURITY_TIER_ORDER
+                else 3
+            ),
         )
         max_forts = _rng.randint(1, 2)
         for zone in sorted_zones[:max_forts]:

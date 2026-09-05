@@ -1,7 +1,8 @@
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { type AIUsageStats, adminApi } from '../../services/api/AdminApiService.js';
+import { formatAmount, formatCount } from '../../utils/kontor-format.js';
 import {
   adminAnimationStyles,
   adminForgeSectionStyles,
@@ -14,6 +15,23 @@ import '../shared/VelgMetricCard.js';
  *
  * Displays aggregated usage stats from ai_usage_log (migration 150):
  * total calls, tokens, estimated cost, breakdowns by model/purpose/provider.
+ *
+ * ── ZWEI KORREKTUREN AM 05.09.2026 ─────────────────────────────────────────
+ *
+ * 1. **Der Mittelwert traegt seine Zaehlbasis.** Bis Migration 389 stand hier
+ *    `avg_cost_per_call.toFixed(4)` ueber einer RPC, die die Summe durch JEDEN
+ *    beantworteten Aufruf teilte -- auch durch die 204 von 1 644, die keinen
+ *    Betrag tragen. Der angezeigte Wert war dadurch 14,2 % zu niedrig, und die
+ *    Summe daneben stimmte die ganze Zeit. Genau deshalb hat es niemand
+ *    bemerkt: es gab keine Zahl, die widersprach.
+ *
+ * 2. **Kein `toFixed` mehr.** `toFixed(4)` zeigt unseren kleinsten gemessenen
+ *    Betrag ($0.000012) als `$0.0000` -- eine Null, die keine ist. Die
+ *    Betraege laufen jetzt durch `formatAmount` aus `utils/kontor-format.ts`,
+ *    dieselbe Funktion wie im Kostenpanel: Rundung nach Groessenordnung,
+ *    fester Formatierer, und ein `·` statt einer erfundenen Null.
+ *    `toLocaleString()` ist aus demselben Grund weg -- es tauscht mit der
+ *    UI-Sprache die Trennzeichen und damit die Zeichenbreiten.
  */
 @localized()
 @customElement('velg-admin-ai-usage-tab')
@@ -136,10 +154,18 @@ export class VelgAdminAIUsageTab extends LitElement {
             </select>
           </div>
           <div class="stats-grid">
-            <velg-metric-card label=${msg('Total Calls')} value=${s.total_calls.toLocaleString()}></velg-metric-card>
+            <velg-metric-card label=${msg('Total Calls')} value=${formatCount(s.total_calls)}></velg-metric-card>
             <velg-metric-card label=${msg('Total Tokens')} value=${this._formatTokens(s.total_tokens)}></velg-metric-card>
-            <velg-metric-card label=${msg('Est. Cost')} value=${`$${s.total_cost_usd.toFixed(2)}`} variant="warning"></velg-metric-card>
-            <velg-metric-card label=${msg('Avg/Call')} value=${`$${s.avg_cost_per_call.toFixed(4)}`}></velg-metric-card>
+            <velg-metric-card
+              label=${msg('Est. Cost')}
+              value=${formatAmount(s.total_cost_usd).text}
+              variant="warning"
+            ></velg-metric-card>
+            <velg-metric-card
+              label=${msg('Avg/Call')}
+              value=${formatAmount(s.avg_cost_per_call).text}
+              sublabel=${this._basisLabel(s)}
+            ></velg-metric-card>
           </div>
         </div>
 
@@ -182,7 +208,30 @@ export class VelgAdminAIUsageTab extends LitElement {
   private _formatTokens(n: number): string {
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
-    return n.toLocaleString();
+    // formatCount statt toLocaleString: derselbe feste Formatierer wie in
+    // jeder anderen Zahlenspalte. Eine Tokenzahl, die im Deutschen 15.044.505
+    // und im Englischen 15,044,505 heisst, wechselt mit der Sprache ihre
+    // Zeichenbreite -- und die Spalte darunter ist tabular-nums.
+    return formatCount(n);
+  }
+
+  /**
+   * Die Zaehlbasis unter dem Mittelwert.
+   *
+   * Sie ist keine Verzierung: der Mittelwert IST die Summe geteilt durch
+   * genau diese Zahl. Ein Mittelwert ohne sie ist eine Behauptung -- und
+   * dieser hier war ueber ein Jahr lang die falsche (Migration 389).
+   *
+   * `avg_cost_basis === 0` heisst „nicht ausgesagt" und nicht „null Zeilen
+   * haben beigetragen": eine Datenbank, die Migration 389 noch nicht gesehen
+   * hat, liefert das Feld gar nicht. Dann steht hier nichts, statt eine Basis
+   * von null zu behaupten.
+   */
+  private _basisLabel(s: AIUsageStats): string {
+    if (!s.avg_cost_basis || !s.avg_cost_of) return '';
+    const n = formatCount(s.avg_cost_basis);
+    const of = formatCount(s.avg_cost_of);
+    return msg(str`n = ${n} of ${of}`);
   }
 
   private _renderBreakdownTable(
@@ -205,9 +254,9 @@ export class VelgAdminAIUsageTab extends LitElement {
             (item) => html`
             <tr>
               <td>${(item as Record<string, unknown>)[keyField]}</td>
-              <td class="num">${item.calls.toLocaleString()}</td>
+              <td class="num">${formatCount(item.calls)}</td>
               <td class="num">${this._formatTokens(item.tokens)}</td>
-              <td class="num">$${item.cost.toFixed(4)}</td>
+              <td class="num">${formatAmount(item.cost).text}</td>
             </tr>
           `,
           )}
@@ -235,8 +284,8 @@ export class VelgAdminAIUsageTab extends LitElement {
             ([source, data]) => html`
             <tr>
               <td>${source}</td>
-              <td class="num">${data.calls.toLocaleString()}</td>
-              <td class="num">$${data.cost.toFixed(4)}</td>
+              <td class="num">${formatCount(data.calls)}</td>
+              <td class="num">${formatAmount(data.cost).text}</td>
             </tr>
           `,
           )}
@@ -264,9 +313,9 @@ export class VelgAdminAIUsageTab extends LitElement {
             (day) => html`
             <tr>
               <td>${day.date}</td>
-              <td class="num">${day.calls.toLocaleString()}</td>
+              <td class="num">${formatCount(day.calls)}</td>
               <td class="num">${this._formatTokens(day.tokens)}</td>
-              <td class="num">$${day.cost.toFixed(4)}</td>
+              <td class="num">${formatAmount(day.cost).text}</td>
             </tr>
           `,
           )}

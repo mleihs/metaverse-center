@@ -112,8 +112,8 @@ class TestThePythonPathAppliesThem:
 
         calls: list[tuple[str, dict]] = []
         supabase = MagicMock()
-        supabase.rpc = lambda name, params: calls.append((name, params)) or MagicMock(
-            execute=AsyncMock(return_value=MagicMock(data={}))
+        supabase.rpc = lambda name, params: (
+            calls.append((name, params)) or MagicMock(execute=AsyncMock(return_value=MagicMock(data={})))
         )
 
         with pytest.MonkeyPatch.context() as patch:

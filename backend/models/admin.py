@@ -207,17 +207,34 @@ class ImpersonateResponse(BaseModel):
 
 
 class AIUsageStatsResponse(BaseModel):
-    """AI usage stats from get_ai_usage_stats RPC (migration 152/169)."""
+    """AI usage stats from get_ai_usage_stats RPC (migration 152/169/389).
+
+    ``avg_cost_per_call`` carries its own count basis. Until migration 389 it
+    divided the sum by EVERY answered call, including the 204 of 1 644 that
+    carry no amount at all -- measured on production 2026-09-05, that made the
+    displayed average 14.2 % too low while the sum next to it stayed right.
+    A mean without its basis is a claim; these three fields are one number.
+    """
 
     period_days: int
     total_calls: int
     total_tokens: int
     total_cost_usd: float
     avg_cost_per_call: float
+    #: Rows that carry an amount -- the divisor of ``avg_cost_per_call``.
+    avg_cost_basis: int = 0
+    #: Rows in the window. ``basis`` of ``of`` is the pair the panel shows.
+    avg_cost_of: int = 0
+    #: ``avg_cost_of - avg_cost_basis``. Not an edge case: every eighth row.
+    unrecorded_calls: int = 0
     by_provider: list[dict[str, Any]]
     by_model: list[dict[str, Any]]
     by_purpose: list[dict[str, Any]]
     by_simulation: list[dict[str, Any]]
+    #: The five outcomes as their own axis -- the one aggregation in the RPC
+    #: without an ``outcome = 'ok'`` filter, because here the outcome IS the
+    #: axis. Absent before migration 389, hence the default.
+    by_outcome: dict[str, Any] = Field(default_factory=dict)
     daily_trend: list[dict[str, Any]]
     key_sources: dict[str, Any]
 

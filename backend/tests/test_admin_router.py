@@ -881,6 +881,86 @@ class TestAdminAIUsage:
         "backend.routers.admin.AIUsageService.get_platform_stats",
         new_callable=AsyncMock,
     )
+    def test_average_carries_its_count_basis(self, mock_stats: AsyncMock, client: TestClient):
+        """The mean reaches the client together with the rows it was drawn from.
+
+        Migration 389. Until then the RPC divided the sum by EVERY answered
+        call -- measured on production 2026-09-05, 204 of 1 644 rows carry no
+        amount at all, so the displayed average was 14.2 % too low while the
+        sum beside it stayed correct. That is why the error survived a year:
+        nothing next to it disagreed.
+
+        The numbers below are the production ones, so a regression that drops
+        the basis fails against a case that really happened.
+        """
+        _setup_admin()
+        mock_stats.return_value = {
+            "period_days": 180,
+            "total_calls": 1644,
+            "total_tokens": 15044505,
+            "total_cost_usd": 11.889,
+            "avg_cost_per_call": 0.008256,
+            "avg_cost_basis": 1440,
+            "avg_cost_of": 1644,
+            "unrecorded_calls": 204,
+            "by_provider": [],
+            "by_model": [],
+            "by_purpose": [],
+            "by_simulation": [],
+            "by_outcome": {"ok": {"calls": 1644}, "http_error": {"calls": 2}},
+            "daily_trend": [],
+            "key_sources": {},
+        }
+        resp = client.get("/api/v1/admin/ai-usage/stats?days=180")
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+
+        assert data["avg_cost_basis"] == 1440
+        assert data["avg_cost_of"] == 1644
+        assert data["unrecorded_calls"] == 204
+        # The basis is not decorative: it is exactly the divisor.
+        assert data["avg_cost_per_call"] == pytest.approx(data["total_cost_usd"] / data["avg_cost_basis"], rel=1e-3)
+        # And it is NOT the divisor the old RPC used.
+        assert data["avg_cost_per_call"] != pytest.approx(data["total_cost_usd"] / data["avg_cost_of"], rel=1e-3)
+        # The outcome axis survives the model.
+        assert set(data["by_outcome"]) == {"ok", "http_error"}
+
+    @patch(
+        "backend.routers.admin.AIUsageService.get_platform_stats",
+        new_callable=AsyncMock,
+    )
+    def test_pre_389_payload_still_parses(self, mock_stats: AsyncMock, client: TestClient):
+        """A database that has not run migration 389 yet must not 500.
+
+        The deploy applies code before migrations in at least one ordering, so
+        for a window the new model meets the old RPC. The four new fields carry
+        defaults for exactly that window -- and the defaults are the honest
+        ones: a basis of 0 says "not stated", not "zero rows contributed".
+        """
+        _setup_admin()
+        mock_stats.return_value = {
+            "period_days": 30,
+            "total_calls": 100,
+            "total_tokens": 50000,
+            "total_cost_usd": 12.50,
+            "avg_cost_per_call": 0.125,
+            "by_provider": [],
+            "by_model": [],
+            "by_purpose": [],
+            "by_simulation": [],
+            "daily_trend": [],
+            "key_sources": {},
+        }
+        resp = client.get("/api/v1/admin/ai-usage/stats")
+        assert resp.status_code == 200
+        data = resp.json()["data"]
+        assert data["avg_cost_basis"] == 0
+        assert data["by_outcome"] == {}
+
+    @patch(
+        "backend.routers.admin.AIUsageService.get_platform_stats",
+        new_callable=AsyncMock,
+    )
     def test_ai_usage_stats_custom_days(self, mock_stats: AsyncMock, client: TestClient):
         _setup_admin()
         mock_stats.return_value = {

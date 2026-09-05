@@ -732,7 +732,24 @@ export interface AIUsageStats {
   total_calls: number;
   total_tokens: number;
   total_cost_usd: number;
+  /**
+   * Der Mittelwert -- und die drei Felder darunter sind Teil DERSELBEN Zahl.
+   *
+   * Bis Migration 389 teilte die RPC die Summe durch JEDEN beantworteten
+   * Aufruf, auch durch die 204 von 1 644, die gar keinen Betrag tragen. Auf
+   * Prod gemessen (05.09.2026) war der angezeigte Mittelwert dadurch 14,2 %
+   * zu niedrig, waehrend die Summe daneben stimmte -- weshalb der Fehler ein
+   * Jahr lang niemandem auffiel.
+   */
   avg_cost_per_call: number;
+  /** Zeilen MIT Betrag -- der Teiler von `avg_cost_per_call`. */
+  avg_cost_basis: number;
+  /** Zeilen im Zeitfenster. `basis` von `of` ist das Paar, das angezeigt wird. */
+  avg_cost_of: number;
+  /** `avg_cost_of - avg_cost_basis`. Kein Randfall: jede achte Zeile. */
+  unrecorded_calls: number;
+  /** Die fuenf Ausgaenge als eigene Achse. Vor Migration 389 nicht vorhanden. */
+  by_outcome?: Record<string, { calls: number; tokens: number; cost: number }>;
   by_provider: (AIUsageBreakdown & { provider: string })[];
   by_model: (AIUsageBreakdown & { model: string })[];
   by_purpose: (AIUsageBreakdown & { purpose: string })[];

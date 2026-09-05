@@ -422,7 +422,7 @@ class ForgeThemeOutput(BaseModel):
     image_style_prompt_scene: str = Field(
         default="",
         description="Visual style suffix for images made from a live conversation. "
-        "MUST STAY UNDER 12 WORDS — it is the only style prompt that rides on models "
+        "MUST STAY UNDER 12 WORDS – it is the only style prompt that rides on models "
         "with a 77-token CLIP window, where every word it takes is a word the scene "
         "itself loses. Light and film stock, nothing more. "
         "E.g. 'cold fluorescent light, desaturated, documentary photography, film grain'.",
