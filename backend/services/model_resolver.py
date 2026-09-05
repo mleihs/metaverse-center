@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass
 from uuid import UUID
 
 from backend.services.constants import PLATFORM_DEFAULT_MODELS
+from backend.services.image_content_policy import ContentRating
+from backend.services.image_model_families import ImageModelFamily, family_for
 from backend.services.platform_model_config import get_platform_model
+from backend.utils.db import maybe_single_data
 from backend.utils.responses import extract_list
 from supabase import AsyncClient as Client
 
@@ -115,18 +119,38 @@ class ResolvedImageModel:
     # img2img reference
     reference_image_url: str = ""
     img2img_strength: float = 0.75
+    #: Weitere Referenzbilder — die Figurenkonstanz einer Szene mit mehreren
+    #: Personen. Nur Flux 2 nimmt sie (`input_images`, bis zu acht); jede
+    #: andere Familie verwendet `reference_image_url` allein.
+    extra_reference_urls: tuple[str, ...] = ()
+    #: Wie freizuegig das Modell sein darf, 1 (streng) bis 6 (offen). Bis zum
+    #: 05.09.2026 stand hier fest verdrahtet die 5. Eine Zahl, die niemand
+    #: waehlen kann, ist keine Einstellung — und bei einer Plattform mit
+    #: Inhaltsstufen ist sie genau die falsche Konstante.
+    safety_tolerance: int = 2
     # Metadata
     source: str = "platform_default"
 
     @property
+    def family(self) -> ImageModelFamily:
+        """Welche Felder dieses Modell annimmt. Siehe `image_model_families`."""
+        return family_for(self.model)
+
+    @property
     def is_flux(self) -> bool:
         """Check if this is a Flux model."""
-        return "flux" in self.model.lower()
+        return self.family.name.startswith("flux")
 
     @property
     def is_img2img(self) -> bool:
         """Check if this model should use img2img pipeline."""
         return bool(self.reference_image_url)
+
+    @property
+    def references(self) -> list[str]:
+        """Alle Referenzbilder, so viele wie die Familie nimmt."""
+        alle = [self.reference_image_url, *self.extra_reference_urls]
+        return [u for u in alle if u][: self.family.max_references]
 
     @property
     def prompt_param_name(self) -> str:
@@ -140,52 +164,66 @@ class ResolvedImageModel:
         return "prompt"
 
     def to_replicate_params(self) -> dict:
-        """Build params dict for ReplicateService.generate_image()."""
-        if self.is_img2img:
-            # bxclib2/flux_img2img specific params
-            if "flux_img2img" in self.model:
-                return {
-                    "image": self.reference_image_url,
-                    "denoising": self.img2img_strength,
-                    "steps": self.num_inference_steps,
-                }
-            # Generic img2img fallback for other models
-            params: dict = {
-                "image": self.reference_image_url,
-                "prompt_strength": self.img2img_strength,
-                "num_inference_steps": self.num_inference_steps,
-                "output_format": self.output_format or "png",
-                "output_quality": self.output_quality,
-            }
-            if self.aspect_ratio:
-                params["aspect_ratio"] = self.aspect_ratio
-            return params
+        """Die Felder, die DIESES Modell annimmt — und keine anderen.
 
-        if self.is_flux:
-            params = {
-                "megapixels": "1",
-                "guidance": self.guidance_scale,
-                "num_inference_steps": self.num_inference_steps,
-                "output_format": self.output_format,
-                "output_quality": self.output_quality,
-                "safety_tolerance": 5,  # max permissiveness (1=strict, 5=max for flux-2-pro)
-            }
-            if self.aspect_ratio:
-                params["aspect_ratio"] = self.aspect_ratio
-            if self.lora_url and "lora" in self.model.lower():
-                params["hf_lora"] = self.lora_url
-                params["lora_scale"] = self.lora_scale
-            return params
+        Vorher entschied ein `is_flux` ueber drei Familien mit drei Schemata.
+        Was dabei herauskam, steht im Kopf von `image_model_families`: drei
+        Felder gingen an ein Modell, das sie nicht kennt, und Replicate hat das
+        weder abgelehnt noch gemeldet.
 
-        # SD params
-        return {
-            "width": self.width,
-            "height": self.height,
-            "guidance_scale": self.guidance_scale,
-            "num_inference_steps": self.num_inference_steps,
-            "scheduler": self.scheduler,
-            "negative_prompt": self.negative_prompt,
-        }
+        Gebaut wird jetzt aus der Familie. Ein Feld, das sie nicht fuehrt, wird
+        nicht gesendet — nicht, weil es schadet, sondern weil ein gesendetes
+        Feld ohne Wirkung eine Einstellung vortaeuscht, die es nicht gibt.
+        """
+        fam = self.family
+        params: dict = {}
+
+        if fam.supports_guidance:
+            params["guidance"] = self.guidance_scale
+        if fam.steps_field:
+            params[fam.steps_field] = self.num_inference_steps
+
+        if fam.size_field == "megapixels":
+            params["megapixels"] = "1"
+        elif fam.size_field == "resolution":
+            # Flux 2 rechnet in Megapixeln als ZAHL, nicht als Zeichenkette.
+            # Ohne dieses Feld nimmt das Modell seine eigene Vorgabe, und die
+            # ist nicht die guenstigste.
+            params["resolution"] = 1
+        elif fam.size_field == "width_height":
+            params["width"] = self.width
+            params["height"] = self.height
+
+        if fam.supports_negative_prompt and self.negative_prompt:
+            params["negative_prompt"] = self.negative_prompt
+
+        if fam.safety == "tolerance":
+            params["safety_tolerance"] = self.safety_tolerance
+        elif fam.safety == "checker":
+            # Der Schalter ist umgekehrt gepolt: `True` schaltet die Pruefung
+            # AB. Er faellt nur auf der offensten Stufe, damit eine Welt ohne
+            # Inhaltsstufe nicht versehentlich ungefiltert erzeugt.
+            params["disable_safety_checker"] = self.safety_tolerance >= 5
+
+        refs = self.references
+        if refs:
+            if fam.reference == "list":
+                params[fam.reference_field] = refs
+            else:
+                params[fam.reference_field] = refs[0]
+                if fam.strength_field:
+                    params[fam.strength_field] = self.img2img_strength
+
+        if self.aspect_ratio and fam.supports_aspect_ratio and fam.size_field != "width_height":
+            params["aspect_ratio"] = self.aspect_ratio
+        if fam.supports_output_fields:
+            params["output_format"] = self.output_format or "png"
+            params["output_quality"] = self.output_quality
+        if self.lora_url and "lora" in self.model.lower():
+            params["hf_lora"] = self.lora_url
+            params["lora_scale"] = self.lora_scale
+
+        return params
 
 
 class ModelResolver:
@@ -202,6 +240,10 @@ class ModelResolver:
         self._supabase = supabase
         self._simulation_id = simulation_id
         self._settings_cache: dict[str, str] | None = None
+        #: Die Modelltabelle der Erwachsenenspur. Eigener Zwischenspeicher,
+        #: weil sie aus `platform_settings` kommt und nicht aus den
+        #: Einstellungen dieser Welt — zwei Herkuenfte, zwei Speicher.
+        self._mature_cache: dict | None = None
 
     async def _load_settings(self) -> dict[str, str]:
         """Load all AI-related settings for this simulation."""
@@ -285,7 +327,41 @@ class ModelResolver:
             source="platform.fallback",
         )
 
-    async def resolve_image_model(self, purpose: str) -> ResolvedImageModel:
+    async def _mature_model(self, purpose: str) -> str:
+        """Das Modell der Erwachsenenspur, oder ``""`` wenn sie nicht eingerichtet ist.
+
+        Getrennte Zeile und nicht ein Regler am bestehenden Modell: Flux 2
+        filtert beim Anbieter, die SDXL-Abkoemmlinge tun es nicht, und zwischen
+        beiden liegt keine Zahl, sondern eine andere Familie mit anderen
+        Parametern (siehe `image_model_families`).
+
+        Leer heisst: die Stufe ist nicht eingerichtet. Dann faellt der Aufruf auf
+        die jugendfreie Spur zurueck — das ist die richtige Richtung, in die
+        eine fehlende Einstellung irren soll.
+        """
+        if self._mature_cache is None:
+            zeile = await maybe_single_data(
+                self._supabase.table("platform_settings")
+                .select("setting_value")
+                .eq("setting_key", "image_models_mature")
+                .maybe_single()
+            )
+            wert = (zeile or {}).get("setting_value")
+            if isinstance(wert, str):
+                try:
+                    wert = json.loads(wert)
+                except (json.JSONDecodeError, TypeError):
+                    wert = {}
+            self._mature_cache = wert if isinstance(wert, dict) else {}
+
+        return str(self._mature_cache.get(purpose) or self._mature_cache.get("fallback") or "")
+
+    async def resolve_image_model(
+        self,
+        purpose: str,
+        *,
+        rating: ContentRating = ContentRating.GENERAL,
+    ) -> ResolvedImageModel:
         """Resolve the best image model for the given purpose.
 
         The model string uses SDK convention:
@@ -294,8 +370,14 @@ class ModelResolver:
         """
         ai_settings = await self._load_settings()
 
+        # Die Erwachsenenspur hat Vorrang vor der Weltwahl, aber nur, wenn die
+        # Stufe schon durch `image_content_policy.resolve_rating` gegangen ist —
+        # dieser Aufruf PRUEFT sie nicht, er fuehrt sie aus. Wer `rating` hier
+        # setzt, ohne vorher zu rechnen, umgeht Welt und Konto.
+        mature_model = await self._mature_model(purpose) if rating is ContentRating.MATURE else ""
+
         # Resolve model (may be "black-forest-labs/flux-dev" or "stability-ai/stable-diffusion:hash")
-        sim_model = ai_settings.get(f"image_model_{purpose}")
+        sim_model = mature_model or ai_settings.get(f"image_model_{purpose}")
         if not sim_model:
             sim_model = PLATFORM_DEFAULT_IMAGE_MODELS.get(
                 purpose,
