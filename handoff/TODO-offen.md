@@ -1133,3 +1133,137 @@ dieselbe Vorsicht wie heute Morgen: **ein Schloss öffnen, eine Runde messen.**
 **Nicht gemessen:** wie oft `_execute_interaction` je Tick überhaupt läuft, also
 wie schnell sich eine geöffnete Schleife füllen würde. Das entscheidet nicht,
 WELCHER Weg richtig ist, aber es sagt, wie lange man auf die Wirkung wartet.
+
+---
+
+## T11 · Der Formatier-Sweep liegt scharf und ungezündet — ⏸ WARTET AUF EINEN FREIEN BAUM
+
+**Stand 05.09.2026, 20:00 Uhr.** Alles vorbereitet, nichts committet. Der
+Sweep selbst ist ein einziger Befehl; er darf nur nicht laufen, solange eine
+zweite Sitzung im Baum schreibt.
+
+### Was schon dasteht (unkommittiert im Arbeitsbaum)
+
+    pyproject.toml              [tool.ruff.format] mit den Messzahlen
+    .github/workflows/ci.yml    ruff format --check --diff backend/ scripts/
+    .git-blame-ignore-revs      angelegt, SHA muss nach dem Commit hinein
+    CLAUDE.md                   drei Zeilen unter Process
+    backend/models/ambient_weather.py   zwei # fmt: off-Marken
+    backend/models/social_story.py      eine # fmt: off-Marke
+
+### Der Sweep
+
+    ruff format backend/ scripts/
+    # 357 von 807 Dateien, +4045 Zeilen netto
+
+Danach den SHA in `.git-blame-ignore-revs` eintragen und einmal
+`git config blame.ignoreRevsFile .git-blame-ignore-revs` setzen (GitHub liest
+die Datei von sich aus, lokal muss die Zeile einmal gesetzt werden).
+
+### ⚠ Konfiguration und Sweep MÜSSEN zusammen gehen
+
+Der CI-Schritt prüft die Formatierung. Wird er ohne den Sweep gepusht, ist CI
+sofort rot mit 357 Dateien. Wird der Sweep ohne den Schritt gepusht, zerfällt
+die Reinheit beim nächsten Commit wieder. Ein Commit, oder zwei direkt
+hintereinander gepusht.
+
+### Was gemessen wurde, damit niemand es noch einmal messen muss
+
+    806 von 807 Dateien   bitgleicher Syntaxbaum danach
+                          (die eine Ausnahme ist Leerraum in einem Docstring)
+    38 Lint-Fehler        vorher, 38 nachher, regelweise identisch
+    0                     Änderungen an nutzersichtbaren Zeichenketten
+    +4045 Zeilen          in 174 Dateien, aus auseinandergezogenen Literalen
+    157 Zeilen            in 19 Dateien verlieren handausgerichtete
+                          Kommentarspalten
+    1 Datei               hat eine ECHTE Matrix (CLIMATE_FALLBACK, zwölf
+                          Monatswerte je Klimazone) — geschützt
+
+### Was NICHT gemessen wurde
+
+Ob die 4 roten Tests in `test_forge_router.py` nach dem Sweep grün sind. Sie
+waren beim Messen schon rot und gehören einer parallelen Sitzung (Migration
+387), nicht dem Sweep.
+
+### Die Falle, die eine Viertelstunde gekostet hat
+
+`# fmt: off` wird **nur erkannt, wenn es allein auf seiner Zeile steht.**
+`# fmt: off  — weil die Spalte gelesen wird` ist kein Pragma, sondern ein
+Kommentar. Die Marke steht da und tut nichts, ohne jede Meldung. Begründung
+gehört in eine Zeile DARÜBER.
+
+### Warum überhaupt
+
+Nicht wegen der Korrektheit — das leistet `ruff check`, und das ist längst
+erzwungen. Sondern wegen der Diff-Hygiene, und der Anlass war konkret: ein
+`ruff format` über `backend/services/`, um sieben Dateien aufzuräumen, hat
+**77 fremde Dateien** in den Commit gezogen. In einem formatierreinen Baum ist
+ein gezielter Lauf anderswo wirkungslos. Ein Diff, in dem nur die Änderung
+steht, wird gelesen; einer mit 77 Rauschdateien wird durchgewinkt.
+
+---
+
+## T12 · Zwei Skin-Fehler, die das Kostenpanel unlesbar machen würden — 🔴 OFFEN, GEMESSEN
+
+Beim Recherchieren für das Kostenpanel gefunden, beide unabhängig von diesem
+Panel und beide seit Längerem wirksam.
+
+### T12a · `SERIES_LIGHT` wurde gegen EINEN der drei Papiergründe getunt
+
+`EchartsChart.ts` führt eine helle Serienpalette für den Atlas-Skin. Der Skin
+hat aber drei Gründe (`page`, `raised`, `sunken`). Auf `sunken` fallen **vier
+von fünf** Serienfarben unter 3:1 (gemessen 2,54–2,59).
+
+Das ist derselbe Fehler, den `theme-presets.ts` für die vier Tinten bereits
+gefunden und behoben hat ([[eine-tinte-gegen-einen-grund-steht-auf-dreien]]) —
+die Diagrammpalette hat die Korrektur nicht mitbekommen.
+
+### T12b · `color-scheme: dark` steht fest auf `:root`
+
+`_colors.css:6`, projektweit zwei Vorkommen, beide `dark`, und `ThemeService`
+schreibt es nirgends. Im Atlas-Skin bleiben damit Scrollbalken,
+Formularelemente und das `<select>`-Menü dunkel, während das Papier hell ist.
+
+`color-scheme` ist die **einzige** Eigenschaft, die dieses Browser-Chrome
+erreicht. Tokens erreichen es per Definition nicht — es ist also kein Fall,
+den ein weiteres Token lösen könnte.
+
+### T12c · Ein Fund, der Arbeit spart
+
+`EchartsChart.ts` begründet sein `dispose()` + `init()` beim Themewechsel
+damit, dass ECharts das Theme einer laufenden Instanz nicht wechseln könne.
+**Das galt bis ECharts 5; installiert ist 6.1.0.** `setTheme(theme, opts)` ist
+seit 6.0.0 öffentliche API und in
+`node_modules/echarts/lib/core/echarts.js:513` real implementiert. Spart beim
+Skinwechsel den Canvas-Neuaufbau, den Zoom-Zustand und einen Frame Flackern.
+
+### T12d · Zwei abgekündigte ECharts-APIs, die wir noch benutzen würden
+
+- `grid.containLabel` ist seit 6.0 abgekündigt. Ersatz:
+  `outerBoundsMode: 'same'` + `outerBoundsContain: 'axisLabel'`.
+- `tooltip.appendToBody` ist seit 5.5 abgekündigt. Ersatz: `tooltip.appendTo`.
+  **Das trifft uns härter als andere:** unser Wrapper rendert in Shadow DOM,
+  `document.body` liegt außerhalb, der Tooltip verlöre jede Formatierung.
+  `appendTo` nimmt ein `HTMLElement` und kann auf einen Knoten INNERHALB des
+  Shadow-Roots zeigen. Dieselbe Klasse, die für `document.head` schon in
+  CLAUDE.md steht.
+
+---
+
+## T13 · Das Kostenbuch weiß nicht, WER bezahlt hat — 🔴 OFFEN
+
+Am 05.09.2026 mitgemessen, nicht behoben: `ai_usage_log.user_id` ist in
+**1510 von 1510** Zeilen NULL. Nur `run_ai` reicht ein `user_id` durch; alle
+anderen Buchungsstellen tun es nicht.
+
+Damit gibt es keine Achse „welche Person verbraucht wie viel" — weder für ein
+Panel noch für die Durchsetzung von Nutzerbudgets. `BudgetEnforcementService`
+kennt Nutzerbudgets (`get_budget_states` wiegt global / je Zweck / je
+Simulation / je Nutzer), aber die Nutzer-Sprosse kann nie greifen, weil das
+Buch die Person nicht kennt.
+
+`ChatAIService._chat_budget` sagt es selbst im Docstring: „`user_id` is not
+threaded through the chat services today". Das ist die Stelle.
+
+Verwandt und schon behoben: `key_source` (Commit `2a0235d6`) — dieselbe
+Familie, andere Spalte.

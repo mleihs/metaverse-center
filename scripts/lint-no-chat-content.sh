@@ -148,8 +148,27 @@ MUSTER = [
     # Deshalb jetzt: Zuschreibung, dann irgendwas bis zum Anfuehrungszeichen,
     # dann ein Zitat ab 14 Zeichen. Kurze Zitate bleiben frei, weil dort fast
     # immer eine Beschriftung der Oberflaeche steht und kein Gespraech.
+    # ⚠ 05.09.2026: `Nutzers?` hatte KEINE Wortgrenze und traf damit in jedem
+    # Kompositum — `Nutzerkennung`, `Nutzerbudget`, `Nutzerverhalten`. Ein
+    # Commit, der eine Tabellenzeile „ohne Nutzerkennung … 24" enthielt und
+    # drei Zeilen weiter ein technisches Zitat in Anfuehrungszeichen, wurde
+    # dadurch als Gespraechs-Wortlaut gemeldet und machte CI auf `main` rot.
+    #
+    # Die Loesung ist NICHT ein weicheres Muster und auch keine wachsende
+    # Ausschlussliste. Sondern eine POSITIVE Liste: welche Woerter schreiben
+    # ueberhaupt jemandem etwas zu? Gemessen ueber den ganzen Baum, 20
+    # Komposita gefunden — davon sind genau vier Zuschreibungen
+    # (`Nutzernachricht`, `Nutzerzeile`, `Nutzeraussage`, `Nutzerwunsch`), der
+    # Rest ist Technik (`-kennung`, `-budget`, `-gruppe`, `-verwaltung`,
+    # `-parameter`, `-daten`, `-verhalten`, `-studie`, `-schaft`, …).
+    #
+    # Das macht das Tor SCHAERFER, nicht weicher: vorher meldete es auch
+    # `Nutzerverhalten` neben einem beliebigen Zitat.
     ("zugeschriebenes Zitat",
-     re.compile(r'(Nutzers?|User|Mensch(en)?|Anwender|Betreiber)[^„"]{0,160}?„([^"]{14,300})"', re.S)),
+     re.compile(r'(?:Nutzer(?:nachricht|zeile|aussage|wunsch)(?:en|n)?'
+                r'|Nutzer(?:s|in|innen)?\b'
+                r'|User\b|Mensch(?:en)?\b|Anwender(?:in|innen)?\b|Betreiber(?:in|innen)?\b)'
+                r'[^„"]{0,160}?„([^"]{14,300})"', re.S)),
     # Eine Sprechermarke MIT Text ist eine Gespraechszeile. Erlaubt sind genau
     # die erfundenen Testfiguren — an ihnen erkennt man auf einen Blick, dass
     # ein Beispiel ein Beispiel ist. Jeder ANDERE Zweiwortname an dieser Stelle
