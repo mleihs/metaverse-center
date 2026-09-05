@@ -14,8 +14,10 @@ import pytest
 
 from backend.services.image_content_policy import (
     ContentRating,
+    SceneVantage,
     default_rating_for_world,
     resolve_rating,
+    resolve_vantage,
     screen_prompt,
 )
 
@@ -26,12 +28,12 @@ MAT = ContentRating.MATURE
 class TestDieRechnung:
     def test_der_nutzer_schaltet_es_an(self):
         # Der eigentliche Punkt: er stellt es EIN, nicht nur aus.
-        d = resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT, angefragt=MAT)
+        d = resolve_rating(nutzer_wunsch=MAT, angefragt=MAT)
         assert d.wirksam is MAT
         assert not d.herabgestuft
 
     def test_und_er_schaltet_es_aus(self):
-        d = resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=GEN, angefragt=MAT)
+        d = resolve_rating(nutzer_wunsch=GEN, angefragt=MAT)
         assert d.wirksam is GEN
         assert "Einstellungen" in d.grund
 
@@ -50,17 +52,21 @@ class TestDieRechnung:
         assert default_rating_for_world(MAT) is MAT
         assert default_rating_for_world(GEN) is GEN
 
-    def test_ohne_festgestellte_volljaehrigkeit_bleibt_es_jugendfrei(self):
-        d = resolve_rating(nutzer_volljaehrig=False, nutzer_wunsch=MAT, angefragt=MAT)
-        assert d.wirksam is GEN
+    def test_es_gibt_keine_altersfeststellung_mehr(self):
+        # Das Projekt sitzt in Oesterreich; der Betreiber hat entschieden, sie
+        # nicht zu fuehren. Der Test bindet die Entscheidung an die Signatur,
+        # damit sie nicht unbemerkt zurueckkommt.
+        import inspect
+
+        assert "nutzer_volljaehrig" not in inspect.signature(resolve_rating).parameters
 
     def test_wer_nichts_verlangt_bekommt_die_niedrigste(self):
         # Eine Vorgabe, die sich irrt, soll in die harmlose Richtung irren.
-        assert resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN
+        assert resolve_rating(nutzer_wunsch=MAT).wirksam is GEN
 
     def test_der_eigene_wunsch_wird_zuerst_genannt(self):
         # Die Auskunft soll zu einer Einstellung fuehren, die er aendern kann.
-        d = resolve_rating(nutzer_volljaehrig=False, nutzer_wunsch=GEN, angefragt=MAT)
+        d = resolve_rating(nutzer_wunsch=GEN, angefragt=MAT)
         assert "Einstellungen" in d.grund
 
 
@@ -124,28 +130,58 @@ class TestDieGrenzeIstKeineEinstellung:
             assert verdaechtig not in quelle, f"{verdaechtig} macht die Grenze einstellbar"
 
 
+class TestDerBlick:
+    """Der Blick ist eine Wahl, keine Schranke — und der Unterschied ist der Punkt.
+
+    Bei der Inhaltsstufe gibt es eine Richtung, in die ein Irrtum harmlos ist,
+    deshalb dort ein Minimum. Hier gibt es sie nicht: die Totale ist nicht
+    gefaehrlicher als der Leserblick, nur anders. Also gewinnt, wer zuletzt
+    gewaehlt hat.
+    """
+
+    def test_die_anfrage_gewinnt(self):
+        assert (
+            resolve_vantage(
+                welt=SceneVantage.HUMAN,
+                nutzer_wahl=SceneVantage.AGENT,
+                angefragt=SceneVantage.WIDE,
+            )
+            is SceneVantage.WIDE
+        )
+
+    def test_ohne_anfrage_gilt_die_eigene_wahl(self):
+        assert resolve_vantage(welt=SceneVantage.HUMAN, nutzer_wahl=SceneVantage.WIDE) is SceneVantage.WIDE
+
+    def test_ohne_wahl_gilt_die_welt(self):
+        assert resolve_vantage(welt=SceneVantage.WIDE) is SceneVantage.WIDE
+
+    def test_ohne_alles_der_leserblick(self):
+        # Immer stimmig, nie allwissend — die harmloseste der drei, falls doch
+        # jemand eine Reihenfolge sucht.
+        assert resolve_vantage() is SceneVantage.HUMAN
+
+    def test_es_gibt_kein_minimum(self):
+        # Die Welt kann den Nutzer NICHT auf den Leserblick festnageln.
+        assert resolve_vantage(welt=SceneVantage.HUMAN, nutzer_wahl=SceneVantage.WIDE) is not SceneVantage.HUMAN
+
+
 class TestDerKlientKannNichtsAnheben:
     """Die eine Schranke, erschoepfend geprueft statt zugesichert.
 
-    `angefragt` ist der einzige Wert, den ein Client beeinflusst — Wunsch und
-    Feststellung liest der Server aus der Datenbank. Der Wunsch gehoert dem
-    Nutzer und darf alles; die Feststellung gehoert ihm nicht.
+    `angefragt` ist der einzige Wert, den ein Client mitschickt; den Wunsch
+    liest der Server aus der Datenbank. Das ist kein Misstrauen, sondern
+    Haltbarkeit — eine Einstellung, die pro Aufruf mitreist, ist beim naechsten
+    Klienten wieder weg.
     """
 
-    @pytest.mark.parametrize("volljaehrig", [False, True])
     @pytest.mark.parametrize("wunsch", [GEN, MAT])
     @pytest.mark.parametrize("angefragt", [GEN, MAT])
-    def test_nie_hoeher_als_wunsch_und_feststellung(self, volljaehrig, wunsch, angefragt):
-        obergrenze = MAT if (volljaehrig and wunsch is MAT) else GEN
-        d = resolve_rating(
-            nutzer_volljaehrig=volljaehrig,
-            nutzer_wunsch=wunsch,
-            angefragt=angefragt,
-        )
+    def test_nie_hoeher_als_der_wunsch(self, wunsch, angefragt):
+        d = resolve_rating(nutzer_wunsch=wunsch, angefragt=angefragt)
         rang = {GEN: 0, MAT: 1}
-        assert rang[d.wirksam] <= rang[obergrenze]
+        assert rang[d.wirksam] <= rang[wunsch]
         assert rang[d.wirksam] <= rang[angefragt]
 
     def test_die_vorgabe_ist_die_niedrigste(self):
         # Ein Aufrufer, der `angefragt` vergisst, bekommt jugendfrei.
-        assert resolve_rating(nutzer_volljaehrig=True, nutzer_wunsch=MAT).wirksam is GEN
+        assert resolve_rating(nutzer_wunsch=MAT).wirksam is GEN

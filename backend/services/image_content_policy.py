@@ -9,50 +9,37 @@ Klick nicht anheben kann — die des Nutzers. Drittens sind es verschiedene
 MODELLE: Flux 2 filtert beim Anbieter, die SDXL-Abkoemmlinge tun es nicht, und
 zwischen beiden liegt nicht ein Regler, sondern eine Modellwahl.
 
-Deshalb eine Rechnung, und sie hat GENAU EINE Schranke:
+Deshalb eine Rechnung, und sie hat keine Schranke ausser dem Nutzer selbst:
 
-    wirksam = min(Wunsch des Nutzers, Feststellung, Anfrage)
+    wirksam = min(Wunsch des Nutzers, Anfrage)
 
-Die drei Groessen und was sie tun:
-
-    Wunsch        Was der Nutzer will. Er stellt es EIN und AUS, frei.
-    Feststellung  Ob die Volljaehrigkeit festgestellt ist. Kein Wunsch, ein
-                  Rechtszustand — siehe unten.
-    Anfrage       Was dieser eine Aufruf haette gern.
+    Wunsch    Was der Nutzer will. Er stellt es EIN und AUS, frei.
+    Anfrage   Was dieser eine Aufruf haette gern.
 
 DIE WELT IST EINE VORGABE, KEINE DECKE. Ihr `content_rating` sagt, womit ein
-Besucher STARTET, der nichts eingestellt hat. Es begrenzt ihn nicht. Eine
-erste Fassung dieses Moduls machte daraus eine harte Obergrenze; das war eine
-Bevormundung, die niemand verlangt hatte, und sie ist raus. Wer in einer
-jugendfrei angelegten Welt Erwachsenendarstellung will und sie einstellt,
-bekommt sie.
+Besucher STARTET, der nichts eingestellt hat. Es begrenzt ihn nicht.
 
-WARUM DIE FESTSTELLUNG BLEIBT, und sie ist die einzige, die bleibt:
+KEINE ALTERSFESTSTELLUNG. Eine erste Fassung dieses Moduls verlangte sie und
+berief sich auf Kalifornien SB 243, den UK Online Safety Act und rund 25
+US-Bundesstaaten. Das Projekt sitzt in Oesterreich, und dort gibt es diese
+Pflicht nicht — die Entscheidung hat der Betreiber getroffen, nicht dieses
+Modul. Wer die Plattform spaeter in einen Markt bringt, der sie kennt, baut
+die Bedingung an genau einer Stelle wieder ein: in `resolve_rating`.
 
-Sie ist keine Produktentscheidung, sondern eine Rechtslage, und sie schuetzt
-den Betreiber, nicht den Nutzer vor sich selbst. Kalifornien SB 243 (seit
-01.01.2026) verbietet sexuell explizite Inhalte, wo der Betreiber weiss, dass
-der Nutzer minderjaehrig ist. Der UK Online Safety Act verlangt seit Juli 2025
-wirksame Altersfeststellung. `Free Speech Coalition v. Paxton` (Supreme Court,
-Juni 2025) haelt Alterspruefungen der Bundesstaaten fuer zulaessig; rund 25
-Staaten haben eigene Gesetze. Der GUARD Act lag im April 2026 im
-Justizausschuss.
-
-Wer sie trotzdem herausnehmen will, entfernt hier eine Zeile — sie steht
-absichtlich an einer Stelle und nicht an fuenf. Das ist eine Entscheidung des
-Betreibers und keine, die dieses Modul fuer ihn trifft.
+Was BLEIBT, und was etwas anderes ist: die Grenze weiter unten. Sie prueft
+nicht, WER etwas sehen darf, sondern WAS dargestellt wird. Das ist keine
+Alterspruefung und keine Frage der Rechtsordnung.
 
 WIE DAS DURCHGESETZT WIRD, und nicht nur gemeint
 
 Die Rechnung laeuft auf dem Server, in dieser einen Funktion. `nutzer_wunsch`
-und `nutzer_volljaehrig` liest der Server aus der Datenbank, nie aus der
-Anfrage — sonst waere die Feststellung eine Behauptung des Clients. Der
-Nutzer aendert seinen Wunsch ueber seine Einstellungen, nicht ueber einen
-Parameter im Bildaufruf.
+liest der Server aus der Datenbank, nicht aus der Anfrage — der Nutzer aendert
+ihn ueber seine Einstellungen, nicht ueber einen Parameter im Bildaufruf. Das
+ist kein Misstrauen, sondern Haltbarkeit: eine Einstellung, die pro Aufruf
+mitgeschickt wird, ist beim naechsten Klienten wieder weg.
 
 `test_image_content_policy.py::TestDerKlientKannNichtsAnheben` bindet genau das
-an den Code: keine Anfrage erzeugt ein hoeheres Ergebnis als das Minimum aus
-Wunsch und Feststellung.
+an den Code: keine Anfrage erzeugt ein hoeheres Ergebnis als der Wunsch.
 
 DIE GRENZE, DIE KEINE STUFE VERSCHIEBT
 
@@ -68,7 +55,7 @@ Hosten pruefen, Prompts filtern, und Ausgaben gegen verifizierte Hashlisten
 abgleichen. Dieses Modul leistet die mittlere. Die dritte fehlt noch und steht
 als solche im Aufrufer.
 
-WAS DAS RECHT DAZU SAGT (Stand 05.09.2026)
+ZUR RECHTSLAGE, damit die Entscheidung nachvollziehbar bleibt (Stand 05.09.2026)
 
 Kalifornien SB 243 gilt seit dem 01.01.2026 fuer Companion-Chatbots und
 verbietet sexuell explizite Inhalte, wo der Betreiber weiss, dass der Nutzer
@@ -78,9 +65,12 @@ Altersfeststellung fuer Erwachseneninhalte. `Free Speech Coalition v. Paxton`
 (Supreme Court, Juni 2025) haelt Alterspruefungen der Bundesstaaten fuer
 zulaessig; rund 25 Staaten haben eigene Gesetze.
 
-Praktisch heisst das: `user_is_adult` ist in diesem Modul ein Parameter, aber
-in der Anwendung eine FESTSTELLUNG. Wer ihn aus einem Hakchen im Profil
-speist, hat die Pflicht nicht erfuellt, sondern nur verschoben.
+Diese Pflichten gelten in Kalifornien, dem Vereinigten Koenigreich und rund 25
+US-Bundesstaaten. Das Projekt sitzt in Oesterreich; der Betreiber hat
+entschieden, dass sie hier nicht greifen. Der Absatz bleibt stehen, damit die
+Entscheidung eine Grundlage hat und nicht bloss eine Auslassung ist — und
+damit jemand, der die Plattform spaeter woanders anbietet, weiss, wonach er
+suchen muss.
 """
 
 from __future__ import annotations
@@ -91,11 +81,37 @@ from enum import StrEnum
 
 __all__ = [
     "ContentRating",
+    "SceneVantage",
     "RatingDecision",
     "default_rating_for_world",
     "resolve_rating",
+    "resolve_vantage",
     "screen_prompt",
 ]
+
+
+class SceneVantage(StrEnum):
+    """Aus wessen Blick ein Szenenbild entsteht.
+
+    Die eine Frage, die beim Uebergang von Prosa zu Bild neu dazukommt: ein
+    Text braucht keine Kameraposition, ein Bild hat immer eine.
+
+    Hier gibt es KEINE Rangfolge und kein Minimum, anders als bei der
+    Inhaltsstufe. Es gibt kein schaedlicheres und kein harmloseres Ergebnis,
+    nur einen Geschmack — deshalb waehlt der Nutzer frei, und die Welt gibt
+    nur vor, womit er startet.
+    """
+
+    HUMAN = "human"
+    """Der Blick des Lesers. Immer stimmig, nie allwissend."""
+
+    AGENT = "agent"
+    """Der Blick einer Figur. Was sie nicht wahrnehmen konnte, gehoert nicht
+    ins Bild — `agent_recent_focalization` weiss es."""
+
+    WIDE = "wide"
+    """Die Totale. Im TEXT ist das die Fokalisierungsstufe null und ein Fehler;
+    im BILD ist sie legitim, weil ein Bild keinen Erzaehler vortaeuscht."""
 
 
 class ContentRating(StrEnum):
@@ -131,6 +147,22 @@ class RatingDecision:
         return bool(self.grund)
 
 
+def resolve_vantage(
+    *,
+    welt: SceneVantage = SceneVantage.HUMAN,
+    nutzer_wahl: SceneVantage | None = None,
+    angefragt: SceneVantage | None = None,
+) -> SceneVantage:
+    """Der Blick: was gerade verlangt wurde, sonst die Wahl, sonst die Vorgabe.
+
+    Keine Rechnung, eine Reihenfolge — und das ist der Unterschied zur
+    Inhaltsstufe. Dort gibt es eine Richtung, in die ein Irrtum harmlos ist;
+    hier nicht. Wer die Totale will, bekommt die Totale, auch wenn die Welt
+    den Leserblick vorgibt.
+    """
+    return angefragt or nutzer_wahl or welt
+
+
 def default_rating_for_world(welt: ContentRating) -> ContentRating:
     """Womit ein Besucher STARTET, der nichts eingestellt hat.
 
@@ -145,18 +177,19 @@ def default_rating_for_world(welt: ContentRating) -> ContentRating:
 
 def resolve_rating(
     *,
-    nutzer_volljaehrig: bool,
     nutzer_wunsch: ContentRating = ContentRating.GENERAL,
     angefragt: ContentRating = ContentRating.GENERAL,
 ) -> RatingDecision:
-    """Das Minimum aus Wunsch, Feststellung und Anfrage.
+    """Das Minimum aus Wunsch und Anfrage.
 
-    Die Welt steht hier NICHT mehr. Sie gibt vor, sie begrenzt nicht — siehe
-    `default_rating_for_world` und den Kopf dieses Moduls.
+    Weder die Welt noch eine Altersfeststellung stehen hier — siehe den Kopf
+    des Moduls. Was bleibt, ist die Einstellung des Nutzers, und die gilt in
+    beide Richtungen.
 
-    Reihenfolge der Gruende: zuerst der eigene Wunsch, weil die Auskunft dann zu
-    einer Einstellung fuehrt, die der Nutzer selbst aendern kann. Erst danach
-    die Feststellung, die er nicht selbst setzen kann.
+    Der einzige Grund, warum diese Funktion ueberhaupt noch existiert und der
+    Aufrufer nicht einfach `nutzer_wunsch` nimmt: die Vorgabe. Ein Aufruf ohne
+    `angefragt` bekommt jugendfrei, nicht das, was der Wunsch gerade hergibt.
+    Eine Vorgabe, die sich irrt, soll in die harmlose Richtung irren.
     """
     if _RANG[angefragt] <= _RANG[ContentRating.GENERAL]:
         return RatingDecision(ContentRating.GENERAL)
@@ -165,12 +198,6 @@ def resolve_rating(
         return RatingDecision(
             nutzer_wunsch,
             "Du hast Erwachsenendarstellung in deinen Einstellungen abgeschaltet.",
-        )
-
-    if not nutzer_volljaehrig:
-        return RatingDecision(
-            ContentRating.GENERAL,
-            "Fuer diese Stufe muss die Volljaehrigkeit festgestellt sein.",
         )
 
     return RatingDecision(angefragt)
