@@ -26,6 +26,49 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+async def _lade_beste_aufloesung(
+    url: str,
+    allowed: set[str],
+) -> tuple[bytes, str]:
+    """Die grosse Fassung eines eigenen Speicherbildes holen, sonst die verlinkte.
+
+    `_upload_dual_resolution` legt JEDES erzeugte Bild zweimal ab:
+
+        {uuid}.full.avif   native Aufloesung, Qualitaet 85
+        {uuid}.avif        laengste Kante 1024, Qualitaet 80
+
+    und gibt die KLEINE zurueck. Sie steht deshalb in
+    `agents.portrait_image_url`, `buildings.image_url` und ueberall sonst — sie
+    ist die richtige Wahl fuer eine Seite, die geladen werden soll.
+
+    Fuer eine Bildvorlage ist sie die falsche. An zwoelf Prod-Portraeten am
+    05.09.2026 gemessen: wo das Original ueber 1024 lag, ist die grosse Fassung
+    880x1168 gegen 772x1024 und traegt rund die doppelte Datenmenge; wo es
+    darunter lag, sind beide dieselbe Datei. Es gibt also nichts zu verlieren
+    und in der Mehrzahl der Faelle Auflösung zu gewinnen — die ein
+    Bildmodell an einem Gesicht unmittelbar in Aehnlichkeit umsetzt.
+
+    Eine rohe PNG-Fassung gibt es nicht: `convert_to_avif` wandelt die Antwort
+    des Modells um, und die Rohdaten werden nicht abgelegt. `{uuid}.full.avif`
+    IST das Beste, was der Speicher hat.
+
+    Faellt still auf die uebergebene URL zurueck: eine fremde Stilvorlage folgt
+    unserer Namenskonvention nicht, und ein alter Eintrag hat vielleicht keine
+    grosse Fassung. Beides ist kein Fehler, sondern der Normalfall ausserhalb
+    unseres eigenen Speichers.
+    """
+    if url.endswith(".avif") and not url.endswith(".full.avif"):
+        gross = url[: -len(".avif")] + ".full.avif"
+        try:
+            return await safe_download(gross, allowed_content_types=allowed)
+        except Exception as fehler:  # noqa: BLE001 — jeder Grund fuehrt zum Rueckfall
+            logger.debug(
+                "Full-resolution reference not available, using the linked one",
+                extra={"url": gross, "error": str(fehler)},
+            )
+    return await safe_download(url, allowed_content_types=allowed)
+
+
 def _auf_vielfaches_von_16(img: PILImage) -> PILImage:
     """Kantenlaengen auf ein Vielfaches von 16 bringen, nach unten.
 
@@ -154,11 +197,13 @@ class ForgeImageService:
         3. Die Kantenlaengen werden auf ein Vielfaches von 16 gebracht. Siehe
            `_auf_vielfaches_von_16` — ohne das scheitert der Forge-Stilpfad an
            fast jedem echten Portraet.
+        4. Geholt wird die GROSSE Fassung, nicht die verlinkte. Siehe
+           `_lade_beste_aufloesung`.
         """
         from PIL import Image
 
         allowed = {"image/png", "image/jpeg", "image/webp", "image/avif", "image/gif"}
-        data, _ = await safe_download(url, allowed_content_types=allowed)
+        data, _ = await _lade_beste_aufloesung(url, allowed)
         img = Image.open(io.BytesIO(data))
         img = _auf_vielfaches_von_16(img)
         buf = io.BytesIO()
