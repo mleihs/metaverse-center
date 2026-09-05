@@ -80,8 +80,79 @@ _CONTEXT_WINDOWS: dict[str, int] = {
 _DEFAULT_CONTEXT_WINDOW = 32_000
 _TOKENS_PER_MESSAGE_ESTIMATE = 250
 _CONTEXT_RESERVE = 5_000  # system prompt + response headroom
-_HISTORY_BUDGET_RATIO = 0.6  # use 60% of context for history
-_MAX_MESSAGES_HARD = 200  # prevent huge DB queries
+#: Anteil des Kontextfensters, den der Verlauf belegen darf.
+#:
+#: ⚠ GEMESSEN WIRKUNGSLOS bei grossen Fenstern. Bei deepseek-v4 (1 Mio)
+#: erlaubt dieser Anteil 595 000 Token = 2 380 Nachrichten; gebunden hat
+#: immer `_VERBATIM_WINDOW`. Der Regler steht hier fuer kleine Fenster, wo
+#: er wirklich bindet — bei einem 8k-Modell sind 0,6 genau die Schranke,
+#: die verhindert, dass der Verlauf den Systemprompt verdraengt.
+#:
+#: ── WARUM DER VERLAUF UEBERHAUPT KLEINER WIRD ─────────────────────────
+#:
+#: Nicht wegen der Kosten (0,42 US-Cent je Zug) und nicht wegen der Latenz
+#: (r = −0,063 zwischen Eingabe-Token und Dauer, ueber 379 gemessene
+#: Aufrufe — die groesseren Prompts sind sogar schneller). Sondern:
+#:
+#: * LongMemEval misst beim Lesen der ganzen Historie (~115k) einen Abfall
+#:   von 87,0 auf 60,6 gegenueber gezieltem Abruf.
+#: * LaRA setzt den Umschlagpunkt, ab dem langer Kontext VERLIERT, zwischen
+#:   32k und 128k. NoLiMa gibt GPT-4o eine effektive Laenge von 8k, sobald
+#:   der gesuchte Treffer nicht woertlich uebereinstimmt.
+#: * ⚠ UND DER GRUND, DER UNS BESONDERS TRIFFT: bei Perspektivgrenzen ist
+#:   voller Wortlaut aktiv SCHAEDLICH. LoCoMo adversarial faellt im
+#:   Langkontext von 70,2 auf 2,1. Die ReverieMem-Ablation zeigt den
+#:   Zielkonflikt direkt: besseres Erinnern zerstoert das Verweigern
+#:   (79,6 erinnert / 47,0 verweigert gegen 68,1 / 81,2).
+#:
+#: Genau das ist unser Fall. Eine Figur, die nicht wissen DARF, was vor
+#: ihrem Beitritt geschah, verliert diese Grenze mit jedem Token mehr.
+#:
+#: ⚠ WAS DIE LITERATUR NICHT SAGT: dass Verdichtung den Wortlaut ersetzen
+#: soll. Im Gegenteil — woertliche Ausschnitte liegen 22,0 Punkte VOR
+#: extrahierten Artefakten, und HaluMem misst ~40 % Fehler in extrahierten
+#: Gedaechtnisinhalten. Die Formel lautet „woertlich, aber weniger davon",
+#: nicht „verdichtet statt woertlich". Deshalb schrumpft hier das Fenster,
+#: und die Verdichtung waechst NICHT als Ausgleich.
+_HISTORY_BUDGET_RATIO = 0.6
+#: Wie viele Nachrichten WOERTLICH mitgehen — das Fenster.
+#:
+#: ⚠ Diese Konstante hiess `_MAX_MESSAGES_HARD` und trug den Kommentar
+#: „prevent huge DB queries". Sie war damit versehentlich die Kontextpolitik
+#: dieses Systems: gemessen am 05.09.2026 band bei deepseek-v4 (1-Mio-Fenster)
+#: NICHT `_HISTORY_BUDGET_RATIO = 0.6` — das erlaubte rechnerisch 2 380
+#: Nachrichten —, sondern diese 200. Eine Schranke gegen grosse Abfragen
+#: entschied, wie viel eine Figur erinnert.
+#:
+#: ── WARUM 40, gegen Referenzen gemessen ───────────────────────────────
+#:
+#: Auslieferungswerte fuer den GESAMTEN Prompt in vergleichbaren Systemen:
+#: SillyTavern 8 192 · Oobabooga 8 192 · KoboldCpp 12 288 · RisuAI 4 000 ·
+#: Janitor 8–9 000 · AI Dungeon 4k–32k je Tarif. Drei unabhaengige Quellen
+#: nennen 32k als OBERGRENZE (Janitors Hilfe woertlich: „Avoid: 32k+",
+#: Begruendung „slower and more forgetful"). Unsere 200 Nachrichten waren
+#: allein im Verlauf ~34 200 Token — je Figur, dreimal je Nutzernachricht.
+#:
+#: Woertliche Fenster der Referenzen: LangChain `SummarizationMiddleware`
+#: behaelt 20 Nachrichten, Qvink (SillyTavern) 10, RisuAI mindestens 3,
+#: AI Dungeon historisch 20 Zuege. MemDelta misst, dass woertlicher Abruf
+#: mit ~5 000 Token die volle Historie statistisch einholt (47,2 gegen 49,8,
+#: p = 0,34) — bei unseren ~171 Token je Nachricht sind das rund 30.
+#:
+#: 40 ist die vorsichtige Wahl am oberen Rand dieses Korridors, und sie hat
+#: eine zweite Begruendung: `SEGMENT_SIZE` der Verdichtung ist ebenfalls 40.
+#: Das Fenster ist damit genau EIN Abschnitt breit, und der Schnitt zwischen
+#: „woertlich" und „verdichtet" faellt auf eine Abschnittsgrenze statt
+#: mitten hinein.
+#:
+#: ⚠ NICHT die Begruendung: Kosten oder Latenz. Beide sind gemessen und
+#: tragen nicht — 0,42 US-Cent je Zug, und die Korrelation zwischen
+#: Eingabe-Token und Dauer ist r = −0,063 ueber 379 Aufrufe. Der Grund ist
+#: QUALITAET, siehe `_HISTORY_BUDGET_RATIO`.
+_VERBATIM_WINDOW = 40
+
+#: Der alte Name, damit ein Aufrufer ausserhalb nicht still bricht.
+_MAX_MESSAGES_HARD = _VERBATIM_WINDOW
 _MIN_MESSAGES = 20
 
 #: Marke für eine Stimme, deren Namen niemand mehr kennt — ein Agent, der aus
@@ -1690,15 +1761,11 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
-                digest_text=ConversationDigestService.render(
-                    setup.digest_rows,
-                    setup.locale,
-                    since=agent.get("_joined_at"),
-                    # Ohne diese Kennung bekaeme jede Figur nur das geteilte
-                    # Protokoll — und genau diese Bauform misst 60,9 statt
-                    # 73,3 (ReverieMem-Ablation, Migration 373).
-                    agent_id=str(agent["id"]),
-                ),
+                # ROH, nicht gerendert. Gerendert wird erst drinnen, weil
+                # der Schnitt `verbatim_from` den PERSPEKTIVGEBUNDENEN
+                # Verlauf braucht — und den gibt es erst nach
+                # `_bound_to_perspective`.
+                digest_rows=setup.digest_rows,
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
                 focalization_row=setup.focalization.get(str(agent["id"])),
@@ -1788,15 +1855,11 @@ class ChatAIService:
                 user_message=user_message,
                 saved_messages=saved_messages,
                 model_id=model.model_id,
-                digest_text=ConversationDigestService.render(
-                    setup.digest_rows,
-                    setup.locale,
-                    since=agent.get("_joined_at"),
-                    # Ohne diese Kennung bekaeme jede Figur nur das geteilte
-                    # Protokoll — und genau diese Bauform misst 60,9 statt
-                    # 73,3 (ReverieMem-Ablation, Migration 373).
-                    agent_id=str(agent["id"]),
-                ),
+                # ROH, nicht gerendert. Gerendert wird erst drinnen, weil
+                # der Schnitt `verbatim_from` den PERSPEKTIVGEBUNDENEN
+                # Verlauf braucht — und den gibt es erst nach
+                # `_bound_to_perspective`.
+                digest_rows=setup.digest_rows,
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
                 focalization_row=setup.focalization.get(str(agent["id"])),
@@ -1857,7 +1920,7 @@ class ChatAIService:
         user_message: str,
         saved_messages: list[dict],
         model_id: str = "",
-        digest_text: str = "",
+        digest_rows: list[dict] | None = None,
         history: list[dict] | None = None,
         relationship_context: str = "",
         focalization_row: dict | None = None,
@@ -1895,8 +1958,8 @@ class ChatAIService:
             if relationship_context:
                 extra_parts.append(relationship_context)
 
-        if digest_text:
-            extra_parts.append(digest_text)
+        # Die Verdichtung wird weiter unten gerendert — sie braucht den
+        # perspektivgebundenen Verlauf, den es hier noch nicht gibt.
 
         # ⚠ Die Gruppen-Anweisung geht NICHT in `extra_parts`. Sie stand dort
         # bis zum 04.09.2026 und landete damit im System-Prompt, also an
@@ -1949,6 +2012,30 @@ class ChatAIService:
                 agent.get("name"),
                 ungesehen,
             )
+
+        # ── Erst JETZT die Verdichtung ──────────────────────────────────
+        #
+        # Sie darf nur tragen, was NICHT mehr woertlich dasteht, und wo das
+        # Fenster anfaengt, entscheidet die Perspektivgrenze mit: eine spaet
+        # beigetretene Figur hat ein kuerzeres Fenster und braucht deshalb
+        # einen anderen Schnitt als eine, die von Anfang an dabei war.
+        #
+        # Der Zeitstempel der aeltesten Nachricht, die sie woertlich sieht,
+        # ist genau dieser Schnitt.
+        aeltester_woertlich = str(history[0].get("created_at") or "") if history else ""
+        if digest_rows:
+            verdichtung = ConversationDigestService.render(
+                digest_rows,
+                locale,
+                since=agent.get("_joined_at"),
+                # Ohne diese Kennung bekaeme jede Figur nur das geteilte
+                # Protokoll — und genau diese Bauform misst 60,9 statt
+                # 73,3 (ReverieMem-Ablation, Migration 373).
+                agent_id=str(agent.get("id") or "") or None,
+                verbatim_from=aeltester_woertlich or None,
+            )
+            if verdichtung:
+                extra_parts.append(verdichtung)
         history_messages: list[dict[str, str]] = [
             self._as_turn(msg, agents=agents, current_agent_id=current_agent_id, locale=locale) for msg in history
         ]

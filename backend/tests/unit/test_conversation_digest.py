@@ -246,3 +246,160 @@ def test_die_stellschrauben_sind_positiv(wert):
     stiller Ausfall: `ensure_digests` teilte durch null, `load_digest_text`
     gaebe immer leer zurueck, und niemand bekaeme eine Meldung."""
     assert wert > 0
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Kein Abschnitt, der ohnehin woertlich dasteht
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestVerdichtungUndWortlautStehenNichtDoppelt:
+    """Gemessen am 05.09.2026 am groessten Faden auf Produktion:
+
+        Faden 585 Nachrichten = 14 Abschnitte à 40
+        Verdichtung deckte ab   Nachricht   0–559
+        woertlich gingen mit    Nachricht 385–584
+        ÜBERLAPP                175 Nachrichten
+
+    Dieselbe Strecke stand zweimal im Prompt: einmal als Bericht (8 095
+    Token) und einmal im Original (~29 900 Token).
+
+    Chub hat denselben Fehler und dieselbe Reparatur; ihre Doku sagt es
+    woertlich: „We only summarize the messages that are out of context (aka
+    messages that the AI no longer remembers)." Letta, LlamaIndex,
+    AI Dungeon und Anthropic lassen die Verdichtung den Wortlaut ERSETZEN
+    statt neben ihm zu stehen — keine der untersuchten Referenzen haelt
+    beides zugleich.
+
+    ⚠ Das heisst NICHT, dass Verdichtung besser waere als Wortlaut. Die
+    Forschung sagt das Gegenteil: woertliche Ausschnitte liegen 22,0 Punkte
+    VOR extrahierten Artefakten, und HaluMem misst ~40 % Fehler in
+    extrahierten Gedaechtnisinhalten. Die Formel ist „woertlich, aber
+    weniger davon" — deshalb faellt hier nur die DOPPLUNG weg, und die
+    Verdichtung waechst nicht als Ausgleich.
+    """
+
+    @staticmethod
+    def _zeilen():
+        """Vier Abschnitte, je zehn Minuten, chronologisch."""
+        return [
+            {
+                "segment_index": i,
+                "covers_from": f"2026-09-05T10:{i * 10:02d}:00",
+                "covers_to": f"2026-09-05T10:{i * 10 + 9:02d}:59",
+                "summary": f"Abschnitt {i}",
+                "agent_id": None,
+            }
+            for i in range(4)
+        ]
+
+    def test_ohne_schnitt_kommen_alle_abschnitte(self):
+        """Die Gegenprobe zuerst: ohne `verbatim_from` aendert sich nichts.
+        Ohne sie pruefte alles Weitere nur, dass die Funktion etwas
+        weglaesst."""
+        text = ConversationDigestService.render(self._zeilen(), "de")
+        for i in range(4):
+            assert f"Abschnitt {i}" in text
+
+    def test_was_im_fenster_steht_faellt_weg(self):
+        """Das Fenster beginnt um 10:20 — Abschnitt 2 und 3 liegen darin."""
+        text = ConversationDigestService.render(
+            self._zeilen(), "de", verbatim_from="2026-09-05T10:20:00"
+        )
+        assert "Abschnitt 0" in text
+        assert "Abschnitt 1" in text
+        assert "Abschnitt 2" not in text
+        assert "Abschnitt 3" not in text
+
+    def test_ein_halb_hineinragender_abschnitt_faellt_auch_weg(self):
+        """Verglichen wird `covers_to`. Ein Abschnitt, der nur zur Haelfte
+        ins Fenster ragt, faellt weg — die weggelassene Haelfte steht
+        woertlich da, waehrend ein doppelter Abschnitt beides kostet."""
+        text = ConversationDigestService.render(
+            self._zeilen(), "de", verbatim_from="2026-09-05T10:15:00"
+        )
+        assert "Abschnitt 1" not in text, "Abschnitt 1 endet 10:09:59 … prueft die Grenze"
+        assert "Abschnitt 0" in text
+
+    def test_liegt_alles_im_fenster_bleibt_die_verdichtung_leer(self):
+        """Ein junger Faden braucht keinen Bericht ueber das, was ganz
+        woertlich dasteht."""
+        text = ConversationDigestService.render(
+            self._zeilen(), "de", verbatim_from="2026-09-05T09:00:00"
+        )
+        assert text == ""
+
+    def test_der_schnitt_wirkt_zusammen_mit_der_perspektivgrenze(self):
+        """Beide Filter sind unabhaengig und muessen beide greifen: `since`
+        schneidet vorne (was die Figur nicht miterlebt hat), `verbatim_from`
+        hinten (was sie ohnehin woertlich liest)."""
+        text = ConversationDigestService.render(
+            self._zeilen(),
+            "de",
+            since="2026-09-05T10:10:00",
+            verbatim_from="2026-09-05T10:30:00",
+        )
+        assert "Abschnitt 0" not in text, "vor dem Beitritt"
+        assert "Abschnitt 1" in text
+        assert "Abschnitt 2" in text
+        assert "Abschnitt 3" not in text, "steht woertlich da"
+
+
+class TestDasFensterIstEineEntscheidungKeineAbfrageschranke:
+    """`_MAX_MESSAGES_HARD = 200` trug den Kommentar „prevent huge DB
+    queries" und war damit versehentlich die Kontextpolitik des Systems.
+
+    Gemessen: bei deepseek-v4 (1-Mio-Fenster) erlaubte
+    `_HISTORY_BUDGET_RATIO = 0.6` rechnerisch 2 380 Nachrichten — gebunden
+    hat immer die Kappe.
+    """
+
+    def test_das_fenster_hat_einen_namen_der_sagt_was_es_ist(self):
+        from backend.services.chat_ai_service import _VERBATIM_WINDOW
+
+        assert _VERBATIM_WINDOW == 40
+
+    def test_es_passt_zur_abschnittsgroesse_der_verdichtung(self):
+        """Das Fenster ist genau EIN Abschnitt breit. Damit faellt der
+        Schnitt zwischen „woertlich" und „verdichtet" auf eine
+        Abschnittsgrenze statt mitten hinein."""
+        from backend.services.chat.conversation_digest_service import SEGMENT_SIZE
+        from backend.services.chat_ai_service import _VERBATIM_WINDOW
+
+        assert _VERBATIM_WINDOW % SEGMENT_SIZE == 0
+
+    def test_es_liegt_im_korridor_der_referenzen(self):
+        """LangChain behaelt 20 Nachrichten, Qvink 10, RisuAI mindestens 3,
+        AI Dungeon historisch 20 Zuege. MemDelta misst, dass woertlicher
+        Abruf mit ~5 000 Token die volle Historie statistisch einholt
+        (p = 0,34) — bei ~171 Token je Nachricht rund 30.
+
+        40 ist der vorsichtige obere Rand. Ueber 100 waere ausserhalb jeder
+        Referenz."""
+        from backend.services.chat_ai_service import _VERBATIM_WINDOW
+
+        assert 10 <= _VERBATIM_WINDOW <= 100
+
+    def test_die_alte_kappe_zeigt_auf_dieselbe_zahl(self):
+        """Ein Aufrufer ausserhalb darf nicht still brechen."""
+        from backend.services.chat_ai_service import _MAX_MESSAGES_HARD, _VERBATIM_WINDOW
+
+        assert _MAX_MESSAGES_HARD == _VERBATIM_WINDOW
+
+    def test_der_verlauf_wird_wirklich_darauf_gekappt(self):
+        """Die Zusage selbst: `_max_history_messages` liefert das Fenster,
+        nicht das Tokenbudget. Bei einem 1-Mio-Modell erlaubte das
+        Verhaeltnis 2 380 — es darf nicht binden."""
+        from backend.services.chat_ai_service import _VERBATIM_WINDOW, _max_history_messages
+
+        assert _max_history_messages("deepseek/deepseek-v4-flash") == _VERBATIM_WINDOW
+
+    def test_bei_einem_kleinen_fenster_bindet_das_verhaeltnis(self):
+        """Die Gegenprobe: bei einem Modell, das nicht in der Tabelle steht
+        (32 000 angenommen), rechnet das Verhaeltnis 0,6 × 32 000 − 5 000 =
+        14 200 Token ÷ 250 = 56 Nachrichten. Das Fenster von 40 ist
+        kleiner, also bindet weiterhin es — aber die Rechnung ist nicht
+        tot, sie greift bei noch kleineren Fenstern."""
+        from backend.services.chat_ai_service import _max_history_messages
+
+        assert _max_history_messages("irgendein/unbekanntes-modell") == 40

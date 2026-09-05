@@ -139,6 +139,7 @@ class ConversationDigestService:
         *,
         since: str | None = None,
         agent_id: str | None = None,
+        verbatim_from: str | None = None,
     ) -> str:
         """Abschnitte zu einem Block. Reine Rechnung, kein Netz.
 
@@ -155,6 +156,32 @@ class ConversationDigestService:
         """
         if since:
             rows = [r for r in rows if str(r.get("covers_from") or "") >= since]
+
+        # ── Kein Abschnitt, der ohnehin woertlich dasteht ────────────────
+        #
+        # ⚠ GEMESSEN am 05.09.2026 am groessten Faden: von 200 woertlichen
+        # Nachrichten waren **175 zusaetzlich verdichtet** — die Abschnitte
+        # 9 bis 13 standen ZWEIMAL im Prompt, einmal als Bericht (8 095
+        # Token) und einmal im Original (~29 900 Token).
+        #
+        # Chub hat denselben Fehler und dieselbe Reparatur; ihre Doku sagt
+        # es woertlich: „We only summarize the messages that are out of
+        # context (aka messages that the AI no longer remembers)." Auch
+        # Letta, LlamaIndex, AI Dungeon und Anthropic lassen die
+        # Verdichtung den Wortlaut ERSETZEN statt neben ihm zu stehen —
+        # keine der untersuchten Referenzen haelt beides zugleich.
+        #
+        # `verbatim_from` ist der Zeitstempel der AELTESTEN Nachricht, die
+        # woertlich mitgeht. Ein Abschnitt, der bis dorthin oder darueber
+        # hinaus reicht, ist im Fenster und braucht keinen Bericht.
+        #
+        # Verglichen wird `covers_to`: ein Abschnitt, der nur zur HAELFTE
+        # ins Fenster ragt, faellt weg. Das ist die vorsichtige Richtung —
+        # die weggelassene Haelfte steht woertlich da, waehrend ein
+        # doppelter Abschnitt beides kostet.
+        if verbatim_from:
+            rows = [r for r in rows if str(r.get("covers_to") or "") < verbatim_from]
+
         if not rows:
             return ""
 
