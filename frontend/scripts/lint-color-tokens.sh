@@ -90,7 +90,6 @@ RESULT=$(grep -rnE '#[0-9a-fA-F]{3,8}\b' \
   grep -v '&#[0-9]' | \
   grep -v '/EchartsChart\.ts:' | \
   grep -v '/forge-placeholders\.ts:' | \
-  grep -v '/DailyBriefingModal\.ts:' | \
   grep -v '/VelgDarkroomStudio\.ts:' | \
   grep -v '/DesignSettingsPanel\.ts:' | \
   grep -v '/VelgDesignPreview\.ts:' | \

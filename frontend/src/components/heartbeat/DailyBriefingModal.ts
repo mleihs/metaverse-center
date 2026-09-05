@@ -14,6 +14,9 @@ import { localized, msg } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 
+import { appState } from '../../services/AppStateManager.js';
+import { themeService } from '../../services/ThemeService.js';
+import { PLATFORM_SKINS } from '../../services/theme-presets.js';
 import { entryNarrative } from '../../utils/locale-fields.js';
 import { navigate } from '../../utils/navigation.js';
 import { focusFirstElement, trapFocus } from '../shared/focus-trap.js';
@@ -60,31 +63,26 @@ export class VelgDailyBriefing extends LitElement {
     dispatchStyles,
     css`
     /* ─────────────────────────────────────────────────────
-     * PIN TO PLATFORM-DARK TOKENS
-     * Simulation themes override color tokens on the shell.
-     * This overlay must always render in the platform-dark
-     * palette, so we re-assert the :root defaults from
-     * _colors.css on :host, making all var() references
-     * resolve to the dark values regardless of sim theme.
+     * DIE TOKENS STEHEN NICHT MEHR HIER — siehe _applyPlatformSkin.
+     *
+     * Hier standen dreizehn feste Hexwerte, mit der Begruendung: eine
+     * Simulation faerbt die Huelle, und diese Auflage darf das nicht erben.
+     * Die Begruendung stimmt. Sie ist nur aelter als der Atlas-Skin und
+     * verwechselt deshalb zwei Achsen, die theme-presets.ts ausdruecklich
+     * trennt:
+     *
+     *   Simulationsthema  waehlt der ARCHITEKT, kleidet EINE Welt
+     *                     -> darf hier nicht durchschlagen. Richtig.
+     *   Plattform-Skin    waehlt der LESER, kleidet alles drumherum
+     *                     -> MUSS hier durchschlagen. Das fehlte.
+     *
+     * Feste Hexwerte halten beide Achsen gleichzeitig ab. Auf dem
+     * Atlas-Skin blieb die Depesche deshalb als einziges Fenster
+     * schwarz-amber stehen, waehrend jede Flaeche darum Papier war.
      * ───────────────────────────────────────────────────── */
 
     :host {
       display: block;
-
-      /* Re-assert platform-dark defaults (from _colors.css :root) */
-      --color-surface: #0a0a0a;
-      --color-surface-sunken: #060606;
-      --color-surface-raised: #111111;
-      --color-surface-overlay: #111111;
-      --color-text-primary: #e5e5e5;
-      --color-text-secondary: #a0a0a0;
-      --color-text-muted: #888888;
-      --color-text-inverse: #0a0a0a;
-      --color-border: #333333;
-      --color-border-light: #222222;
-      --color-primary: #f59e0b;
-      --color-primary-hover: #fbbf24;
-      --color-accent-amber: #f59e0b;
     }
 
     /* ── Backdrop ───────────────────────────────────────── */
@@ -324,7 +322,10 @@ export class VelgDailyBriefing extends LitElement {
       font-size: var(--text-lg);
       font-weight: var(--font-black);
       color: var(--color-text-primary);
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      /* Der Schein traegt die GRUNDfarbe, nicht Schwarz: so bekommt helle
+         Schrift einen dunklen Hof und dunkle Schrift einen hellen. Ein fester
+         schwarzer Hof unter der dunklen Tinte des Papiers waere Matsch. */
+      text-shadow: 0 1px 4px color-mix(in srgb, var(--color-surface) 80%, transparent);
     }
 
     .health__badge {
@@ -334,7 +335,9 @@ export class VelgDailyBriefing extends LitElement {
       letter-spacing: 0.15em;
       text-transform: var(--label-transform);
       padding: 2px 8px;
-      background: rgba(0, 0, 0, 0.6);
+      /* Ein Plaettchen aus dem eigenen Grund. Fest Schwarz waere auf Papier
+         ein schwarzer Fleck in einem hellen Blatt. */
+      background: color-mix(in srgb, var(--color-surface) 70%, transparent);
       border: 1px solid;
     }
 
@@ -650,7 +653,38 @@ export class VelgDailyBriefing extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this._applyPlatformSkin();
     document.addEventListener('keydown', this._boundKeyDown);
+  }
+
+  /**
+   * Den Skin des LESERS auflegen, das Thema der WELT nicht erben.
+   *
+   * Dieselbe Mechanik wie DungeonView:121 und DriftView:567, nur nicht auf
+   * `PLATFORM_DARK_CONFIG` festgenagelt, sondern auf den Satz, den der Leser
+   * gewaehlt hat. `applyConfig` schreibt die Tokens als Inline-Eigenschaften
+   * auf DIESES Element; Custom Properties erben ueber Schattengrenzen hinweg,
+   * also gelten sie im ganzen Fenster.
+   *
+   * WARUM ES NICHT REICHT, DEN ALTEN BLOCK EINFACH ZU LOESCHEN
+   *   Das Fenster haengt in `SimulationShell` (dort steht das Element,
+   *   Zeile 1205), und genau auf dieser Huelle liegt das Thema der Welt. Ohne
+   *   eigene Auflage wuerde die Depesche also die Farben der gerade
+   *   geoeffneten Simulation annehmen -- der Fehler, gegen den der alte Block
+   *   geschrieben war. Er bleibt abgewehrt, nur eben ohne den Leser
+   *   mitabzuwehren.
+   *
+   * WARUM BEIM OEFFNEN UND NICHT NUR BEIM EINHAENGEN
+   *   Das Element ueberlebt mehrere Tage in derselben Sitzung, der Umschalter
+   *   sitzt in der Fusszeile. Wer den Skin zwischen zwei Depeschen wechselt,
+   *   soll die naechste im neuen Satz sehen. Beim Oeffnen ist der einzige
+   *   Moment, der zaehlt -- geschlossen ist nichts zu faerben.
+   *
+   * `resetTheme` waere hier falsch: es entfernt das geteilte Custom-CSS der
+   *   Huelle. Die Inline-Tokens dieses Elements verschwinden mit ihm.
+   */
+  private _applyPlatformSkin(): void {
+    themeService.applyConfig(PLATFORM_SKINS[appState.platformSkin.value], this);
   }
 
   disconnectedCallback(): void {
@@ -669,6 +703,8 @@ export class VelgDailyBriefing extends LitElement {
   }
 
   private _show(): void {
+    // Der Leser kann den Skin zwischen zwei Depeschen gewechselt haben.
+    this._applyPlatformSkin();
     this._open = true;
     this._exiting = false;
     document.body.style.overflow = 'hidden';
