@@ -332,6 +332,7 @@ class ChatService:
         simulation_id: UUID,
         conversation_id: UUID,
         user_message_content: str,
+        user_id: UUID | None = None,
     ) -> list[dict]:
         """Orchestrate AI response generation (single or group).
 
@@ -347,6 +348,7 @@ class ChatService:
             supabase,
             simulation_id,
             openrouter_api_key=ai_config.openrouter_api_key,
+            user_id=user_id,
         )
 
         # Dispatch based on conversation agent count
@@ -372,6 +374,7 @@ class ChatService:
         simulation_id: UUID,
         conversation_id: UUID,
         user_message_content: str,
+        user_id: UUID | None = None,
     ) -> AsyncIterator[SSEEvent]:
         """Stream AI response generation (single or group).
 
@@ -384,6 +387,7 @@ class ChatService:
             supabase,
             simulation_id,
             openrouter_api_key=ai_config.openrouter_api_key,
+            user_id=user_id,
         )
 
         agents = await ChatService._load_conversation_agents(supabase, str(conversation_id))
@@ -400,6 +404,7 @@ class ChatService:
         supabase: Client,
         simulation_id: UUID,
         conversation_id: UUID,
+        user_id: UUID | None = None,
     ) -> AsyncIterator[SSEEvent]:
         """Re-trigger AI generation for the last user message in a conversation.
 
@@ -450,6 +455,7 @@ class ChatService:
             simulation_id,
             conversation_id,
             last_user["content"],
+            user_id=user_id,
         ):
             yield event
 

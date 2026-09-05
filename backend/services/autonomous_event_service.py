@@ -176,6 +176,7 @@ class AutonomousEventService:
         *,
         llm_budget: int = 5,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> list[dict]:
         """Check all trigger conditions and generate events.
 
@@ -282,6 +283,7 @@ class AutonomousEventService:
                     event_data,
                     sim_name,
                     openrouter_api_key=openrouter_api_key,
+                    user_id=user_id,
                 )
                 llm_calls_used += 1
 
@@ -530,6 +532,7 @@ class AutonomousEventService:
         sim_name: str,
         *,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> dict | None:
         """Create event with LLM-generated narrative."""
         trigger = event_data.get("trigger", "unknown")
@@ -602,6 +605,7 @@ class AutonomousEventService:
                 purpose="event_generation",
                 usage=openrouter.last_usage,
                 key_source=key_source_for(openrouter_api_key),
+                user_id=user_id,
             )
             # `repair_json_output` takes four arguments and is a coroutine.
             # This used to read `repair_json_output(content)` — one positional

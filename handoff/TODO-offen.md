@@ -1136,7 +1136,22 @@ WELCHER Weg richtig ist, aber es sagt, wie lange man auf die Wirkung wartet.
 
 ---
 
-## T11 · Der Formatier-Sweep liegt scharf und ungezündet — ⏸ WARTET AUF EINEN FREIEN BAUM
+## T14 · Der Formatier-Sweep — ✅ GEZÜNDET UND AUSGEROLLT (`cfba75e3`)
+
+> **Erledigt 05.09.2026, 20:45.** 349 von 799 Dateien, netto +2924 Zeilen.
+> Am tatsächlichen Baum gemessen (nicht an der Probe): **6498 von 6499**
+> Python-Dateien mit bitgleichem Syntaxbaum, die eine Ausnahme ist Leerraum
+> in einem Docstring. `ruff check` grün, **5981 Tests grün**, alle Backend-
+> Tore Exit 0. Die drei `# fmt: off`-Marken haben gehalten.
+>
+> Verankert: `[tool.ruff.format]`, CI-Schritt im selben Umfang wie `check`,
+> `.git-blame-ignore-revs` (SHA in `52a41a5f` nachgetragen), drei Zeilen
+> CLAUDE.md.
+>
+> Der Rest dieses Eintrags bleibt stehen — die Messzahlen und die
+> `# fmt: off`-Falle gelten weiter, und die Zahlen aus der Probe unten
+> weichen bewusst von denen oben ab: **eine Zahl aus einer Probe ist keine
+> Messung des Ernstfalls.**
 
 **Stand 05.09.2026, 20:00 Uhr.** Alles vorbereitet, nichts committet. Der
 Sweep selbst ist ein einziger Befehl; er darf nur nicht laufen, solange eine
@@ -1203,7 +1218,21 @@ steht, wird gelesen; einer mit 77 Rauschdateien wird durchgewinkt.
 
 ---
 
-## T12 · Zwei Skin-Fehler, die das Kostenpanel unlesbar machen würden — 🔴 OFFEN, GEMESSEN
+## T15 · Zwei Skin-Fehler — ✅ ALLE DREI BEHOBEN (`8fc0e715`)
+
+> **Erledigt 05.09.2026, 20:30.** Und das neue Tor
+> `lint-series-palette-grounds.mjs` fand beim ERSTEN Lauf **vier Fundstellen
+> mehr**, als der Befund unten kannte: ein Pergament-Theme hat mit `#E0D4BE`
+> einen noch dunkleren Grund als Atlas' `sunken`, dort standen die frisch
+> gesetzten Werte bei 2,91–2,93. Derselbe Fehler eine Ebene höher.
+>
+> Maßgeblich ist jetzt das Minimum über ALLE Gründe ALLER hellen Themes:
+> 180 Paarungen, 12 Themes. Gegenprobe gemacht.
+>
+> `color-scheme` steckte an ZWEI Stellen (`_colors.css` und hart in
+> `SimulationBroadsheet`), beide laufen jetzt über die Polarität.
+> `setTheme()` verifiziert statt geglaubt (`echarts.d.ts:9089`,
+> `echarts.js:513`, installiert 6.1.0). Dazu `containLabel` ersetzt.
 
 Beim Recherchieren für das Kostenpanel gefunden, beide unabhängig von diesem
 Panel und beide seit Längerem wirksam.
@@ -1250,7 +1279,7 @@ Skinwechsel den Canvas-Neuaufbau, den Zoom-Zustand und einen Frame Flackern.
 
 ---
 
-## T13 · Das Kostenbuch weiß nicht, WER bezahlt hat — 🔴 OFFEN
+## T16 · Das Kostenbuch weiß nicht, WER bezahlt hat — 🔴 OFFEN
 
 Am 05.09.2026 mitgemessen, nicht behoben: `ai_usage_log.user_id` ist in
 **1510 von 1510** Zeilen NULL. Nur `run_ai` reicht ein `user_id` durch; alle

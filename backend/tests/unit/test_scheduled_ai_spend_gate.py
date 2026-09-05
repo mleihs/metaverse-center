@@ -57,13 +57,14 @@ async def test_no_key_without_the_platform_switch(admin_override: bool) -> None:
         "backend.services.heartbeat_service.scheduled_ai_spend_allowed",
         new=AsyncMock(return_value=False),
     ):
-        key, has_key = await HeartbeatService._resolve_autonomy_key(
+        key, has_key, owner = await HeartbeatService._resolve_autonomy_key(
             admin=object(),  # darf nicht berührt werden
             sim_id=SIM_ID,
             admin_override=admin_override,
         )
     assert key is None
     assert has_key is False, "ohne die Plattformsperre darf kein Zeitgeber-Pfad einen Schlüssel bekommen"
+    assert owner is None, "hinter der Sperre wird gar nichts nachgeschlagen"
 
 
 @pytest.mark.asyncio
@@ -73,13 +74,54 @@ async def test_switch_on_restores_the_admin_override() -> None:
         "backend.services.heartbeat_service.scheduled_ai_spend_allowed",
         new=AsyncMock(return_value=True),
     ):
-        key, has_key = await HeartbeatService._resolve_autonomy_key(
+        key, has_key, _owner = await HeartbeatService._resolve_autonomy_key(
             admin=object(),
             sim_id=SIM_ID,
             admin_override=True,
         )
     assert key is None, "der Übersteuerer nutzt den Plattformschlüssel, nicht einen eigenen"
     assert has_key is True
+
+
+@pytest.mark.asyncio
+async def test_die_uebersteuerung_ueberlebt_eine_gescheiterte_besitzerabfrage() -> None:
+    """⚠ Der Regress, der beinahe ausgeliefert wurde.
+
+    Seit dem 05.09.2026 liefert `_resolve_autonomy_key` auch die Besitzerin
+    zurück, damit `ai_usage_log.user_id` nicht länger in 1510 von 1510 Zeilen
+    NULL steht.
+
+    Der erste Anlauf zog die Besitzerabfrage VOR die Übersteuerungsprüfung.
+    Damit hätte eine Welt ohne Besitzerzeile — oder ein Datenbankschluckauf —
+    die Admin-Übersteuerung STILL abgeschaltet: `has_key` wäre False geworden,
+    beide Modellphasen hätten übersprungen, und niemand hätte einen Fehler
+    gesehen. Eine Welt, die still aufhört zu denken.
+
+    Gefunden hat es der bestehende Test oben, weil er `object()` als Klienten
+    übergibt und die neue Abfrage darauf `.table` suchte. Dieser Test hier
+    hält die Lage fest, statt sich darauf zu verlassen, dass die nächste
+    Umbaurunde wieder zufällig an derselben Attrappe scheitert.
+
+    **Eine fehlende Kennung kostet eine Spalte im Kostenbuch, nicht die Phase.**
+    """
+
+    class Kaputt:
+        def table(self, *_a: object, **_k: object) -> object:
+            raise RuntimeError("Datenbank nicht erreichbar")
+
+    with patch(
+        "backend.services.heartbeat_service.scheduled_ai_spend_allowed",
+        new=AsyncMock(return_value=True),
+    ):
+        key, has_key, owner = await HeartbeatService._resolve_autonomy_key(
+            admin=Kaputt(),
+            sim_id=SIM_ID,
+            admin_override=True,
+        )
+
+    assert has_key is True, "die Übersteuerung darf nicht an der Besitzerabfrage hängen"
+    assert key is None
+    assert owner is None, "die Kennung fehlt — das ist der erlaubte Teil des Ausfalls"
 
 
 @pytest.mark.parametrize(

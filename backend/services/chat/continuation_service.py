@@ -108,6 +108,7 @@ class ContinuationService:
         *,
         budget: int = 2,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> list[dict[str, Any]]:
         """Fällige Fäden weiterreden lassen. Gibt die geschriebenen Wortwechsel zurück.
 
@@ -146,6 +147,7 @@ class ContinuationService:
                 # Fehlbuchung. Die Quelle wird da bestimmt, wo der Schluessel
                 # gewaehlt wird, und durchgereicht — nicht unten geraten.
                 key_source=key_source_for(openrouter_api_key),
+                user_id=user_id,
             )
             if wortwechsel:
                 ergebnisse.append(wortwechsel)
@@ -244,6 +246,7 @@ class ContinuationService:
         openrouter: OpenRouterService,
         budget_ctx: BudgetContext,
         key_source: str,
+        user_id: UUID | None,
     ) -> dict[str, Any] | None:
         conversation_id = UUID(str(faden["id"]))
         locale = str(faden.get("locale") or "de")
@@ -302,6 +305,7 @@ class ContinuationService:
             purpose=PURPOSE,
             usage=openrouter.last_usage or {},
             key_source=key_source,
+            user_id=user_id,
             metadata={"conversation_id": str(conversation_id)},
         )
 

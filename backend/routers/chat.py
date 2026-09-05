@@ -164,6 +164,7 @@ async def send_message(
         simulation_id,
         conversation_id,
         body.content,
+        user_id=user.id,
     )
 
     return SuccessResponse(data=all_messages)
@@ -221,6 +222,7 @@ async def stream_message(
                 simulation_id,
                 conversation_id,
                 body.content,
+                user_id=user.id,
             ):
                 # Check client disconnect between events
                 if await request.is_disconnected():
@@ -281,6 +283,7 @@ async def regenerate_response(
                 supabase,
                 simulation_id,
                 conversation_id,
+                user_id=user.id,
             ):
                 if await request.is_disconnected():
                     logger.info("Client disconnected during regenerate for conversation %s", conversation_id)

@@ -113,6 +113,7 @@ class WhisperService:
         *,
         llm_budget: int = 3,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> list[dict]:
         """Generate whispers for all bonded agents in a simulation.
 
@@ -166,6 +167,7 @@ class WhisperService:
                     context,
                     whisper_type,
                     openrouter_api_key=openrouter_api_key,
+                    user_id=user_id,
                 )
                 if whisper_content:
                     llm_calls_used += 1
@@ -500,6 +502,7 @@ class WhisperService:
         whisper_type: str,
         *,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> dict | None:
         """Generate a whisper via OpenRouter LLM with retry + hardened parsing.
 
@@ -580,6 +583,10 @@ class WhisperService:
                     # `platform` — Geld, das die Plattform nie ausgegeben hat,
                     # haette gegen ihre eigenen Obergrenzen gezaehlt.
                     key_source=key_source_for(openrouter_api_key),
+                    # Ein Herzschlag hat keinen Menschen am Bildschirm — aber
+                    # eine Verursacherin: die Besitzerin, die die Autonomie
+                    # eingeschaltet hat. Andere Frage als `key_source`.
+                    user_id=user_id,
                     metadata={"whisper_type": whisper_type, "attempt": attempt + 1},
                 )
 

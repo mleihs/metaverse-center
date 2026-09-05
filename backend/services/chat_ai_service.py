@@ -552,13 +552,25 @@ class ChatAIService:
         supabase: Client,
         simulation_id: UUID,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ):
         self._supabase = supabase
         self._simulation_id = simulation_id
+        #: Wer den Aufruf ausgeloest hat.
+        #:
+        #: `ai_usage_log.user_id` stand am 05.09.2026 in 1510 von 1510 Zeilen
+        #: auf NULL — die Achse „welche Person verbraucht wie viel" gab es
+        #: nicht, und die Nutzer-Sprosse von `get_budget_states` konnte nie
+        #: greifen, weil das Buch die Person nicht kannte.
+        #:
+        #: `_chat_budget` sagte es selbst in seinem Docstring: „`user_id` is
+        #: not threaded through the chat services today". Das ist die Stelle,
+        #: an der es jetzt durchgereicht wird.
+        self._user_id = user_id
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
-        self._digests = ConversationDigestService(supabase, simulation_id, openrouter_api_key)
+        self._digests = ConversationDigestService(supabase, simulation_id, openrouter_api_key, user_id=user_id)
         #: Stimmung je Agent, im Vorlauf eines Gruppenzugs gefuellt.
         #: Der Dienst lebt genau eine Anfrage lang; er kann darin nicht
         #: veralten. Derselbe Weg wie `_cached_locale`.
@@ -1146,6 +1158,7 @@ class ChatAIService:
             # der Plattform. `key_source_for()` saehe nur „nicht None" und
             # buchte `byok` — der Betrag fiele aus den Obergrenzen heraus.
             key_source="platform",
+            user_id=self._user_id,
             # Ohne diese Zeile kennt das Kostenbuch nur die WELT. Die
             # Verdichtung schreibt ihre `conversation_id` seit jeher mit, der
             # Zug selbst nicht — dabei steht sie hier ohnehin da. Erst damit

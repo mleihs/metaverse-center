@@ -100,9 +100,13 @@ class ConversationDigestService:
         supabase: Client,
         simulation_id: UUID,
         openrouter_api_key: str | None = None,
+        user_id: UUID | None = None,
     ) -> None:
         self._supabase = supabase
         self._simulation_id = simulation_id
+        #: Wer den Aufruf ausgeloest hat. Eine Verdichtung entsteht im Ruecken
+        #: eines Chatzugs, also gehoert sie derselben Person wie der Zug.
+        self._user_id = user_id
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
@@ -451,6 +455,7 @@ class ConversationDigestService:
             # Derselbe Schluessel wie der Chatzug — aus dem Resolver, also
             # immer das Geld der Plattform. Ausgesagt statt geerbt.
             key_source="platform",
+            user_id=self._user_id,
             metadata={"conversation_id": str(conversation_id), "segment_index": segment_index},
         )
 

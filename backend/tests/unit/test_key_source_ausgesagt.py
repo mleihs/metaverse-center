@@ -77,6 +77,47 @@ def test_das_tor_findet_ueberhaupt_buchungsstellen() -> None:
     assert len(stellen) >= 10, f"nur {len(stellen)} Buchungsstellen gefunden — sucht das Tor noch richtig?"
 
 
+def test_jede_buchung_sagt_ihre_verursacherin() -> None:
+    """Dieselbe Frage, andere Spalte — und sie war noch leerer.
+
+    Am 05.09.2026 gemessen: `ai_usage_log.user_id` stand in **1510 von 1510**
+    Zeilen auf NULL. Nur `run_ai` reichte eine Kennung durch; neun von zehn
+    Buchungsstellen nannten sie gar nicht.
+
+    Damit gab es die Achse „welche Person verbraucht wie viel" nicht — und die
+    Nutzer-Sprosse von `get_budget_states` konnte nie greifen, weil das Buch
+    die Person nicht kannte. `ChatAIService._chat_budget` sagte es selbst in
+    seinem Docstring: „`user_id` is not threaded through the chat services
+    today".
+
+    ⚠ **`user_id` und `key_source` sind NICHT dieselbe Frage.** `key_source`
+    sagt, WER BEZAHLT hat; `user_id`, WER ES AUSGELOEST hat. Bei einer
+    Admin-Ueberschreibung faellt beides auseinander: die Plattform zahlt, die
+    Besitzerin hat es veranlasst. Zwei Spalten, zwei Fragen, und beide muessen
+    dastehen.
+
+    Ein Herzschlag hat keinen Menschen am Bildschirm — aber eine
+    Verursacherin. `_resolve_autonomy_key` loest sie ohnehin auf, um an den
+    Schluessel zu kommen, und gibt sie seit diesem Tag mit zurueck.
+
+    Geprueft wird wie beim Geldweg nur die billigste Frage: steht ueberhaupt
+    ein `user_id` da? Ein `None` besteht — aber es ist dann ein AUSGESAGTES
+    None, kein vergessenes.
+    """
+    ohne: list[str] = []
+    for datei, aufruf in _buchungsstellen():
+        namen = {kw.arg for kw in aufruf.keywords if kw.arg}
+        if "user_id" not in namen:
+            ohne.append(f"{datei.relative_to(WURZEL.parent)}:{aufruf.lineno}")
+    assert not ohne, (
+        "Diese Buchungen nennen ihre Verursacherin nicht:\n  "
+        + "\n  ".join(ohne)
+        + "\n\nWer den Aufruf AUSLOEST, sagt es — bei einem Herzschlag ist das die "
+        "Besitzerin der Welt, bei einem Chatzug die Person am Bildschirm. Wo es "
+        "wirklich niemanden gibt, steht `user_id=None` ausdruecklich da."
+    )
+
+
 def test_jede_buchung_sagt_ihre_geldquelle() -> None:
     ohne: list[str] = []
     for datei, aufruf in _buchungsstellen():

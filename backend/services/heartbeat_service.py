@@ -823,7 +823,7 @@ class HeartbeatService(BaseSchedulerMixin):
             # activities, events) so whispers reflect current state.
             # _run_phase handles error isolation; key resolution is separate
             # so template whispers work even without a BYOK key.
-            bw_key, bw_has_key = await cls._resolve_autonomy_key(
+            bw_key, bw_has_key, bw_owner = await cls._resolve_autonomy_key(
                 admin,
                 sim_id,
                 autonomy_admin_override,
@@ -835,6 +835,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     sim_id,
                     llm_budget=int(overrides.get("bond_whisper_budget", 3)),
                     openrouter_api_key=bw_key if bw_has_key else None,
+                    user_id=bw_owner,
                 ),
                 **_ctx,
             )
@@ -960,6 +961,7 @@ class HeartbeatService(BaseSchedulerMixin):
                     sim_id,
                     budget=int(overrides.get("continuation_budget", 2)),
                     openrouter_api_key=bw_key if bw_has_key else None,
+                    user_id=bw_owner,
                 ),
                 **_ctx,
             )
@@ -1174,10 +1176,10 @@ class HeartbeatService(BaseSchedulerMixin):
         admin: Client,
         sim_id: UUID,
         admin_override: bool,
-    ) -> tuple[str | None, bool]:
-        """Resolve the API key for autonomy LLM calls.
+    ) -> tuple[str | None, bool, UUID | None]:
+        """Resolve the API key for autonomy LLM calls, and whose world it is.
 
-        Returns (api_key, has_key):
+        Returns (api_key, has_key, owner_id):
         - Scheduled AI spend disabled → (None, False) — der Riegel, zuerst
         - Admin override active → (None, True) — platform key handles cost
         - Owner has BYOK key → (decrypted_key, True)
@@ -1190,15 +1192,79 @@ class HeartbeatService(BaseSchedulerMixin):
         Schlüssel läuft beides über seinen Vorlagenpfad weiter: die Welt tickt,
         sie kostet nur nichts. Das ist der Unterschied zwischen „aus" und
         „still" — die Folgen (Zonendruck, Katharsis, Beziehungen) bleiben.
+
+        WARUM DIE BESITZERIN MITKOMMT
+          `ai_usage_log.user_id` stand am 05.09.2026 in 1510 von 1510 Zeilen
+          auf NULL. Ein Herzschlag hat keinen Menschen am Bildschirm — aber er
+          hat eine Person, die ihn ausgeloest hat: die Besitzerin, die die
+          Autonomie eingeschaltet und ihren Schluessel hinterlegt hat.
+
+          Das ist NICHT dieselbe Frage wie `key_source`. Dort steht, WER
+          BEZAHLT hat; hier steht, WER ES AUSGELOEST hat. Bei einer
+          Admin-Ueberschreibung faellt beides auseinander: die Plattform zahlt,
+          die Besitzerin hat es veranlasst. Zwei Spalten, zwei Fragen.
+
+          Die Kennung wird deshalb AUCH im Ueberschreibungsfall aufgeloest,
+          obwohl dort kein Schluessel gebraucht wird.
+
+        ⚠ DIE UEBERSCHREIBUNG HAENGT NICHT AN DIESER ABFRAGE
+          Der erste Anlauf zog die Besitzerabfrage VOR die
+          Ueberschreibungspruefung. Damit haette eine Welt ohne Besitzerzeile
+          — oder ein Datenbankschluckauf — die Admin-Ueberschreibung STILL
+          abgeschaltet: `has_key` waere False geworden, die Modellphasen
+          haetten uebersprungen, und niemand haette einen Fehler gesehen.
+
+          Die Besitzerin wird deshalb BESTMOEGLICH aufgeloest und darf None
+          bleiben. Die Ueberschreibung steht danach auf eigenen Fuessen. Eine
+          fehlende Kennung kostet eine Spalte im Kostenbuch, nicht die Phase.
         """
         if not await scheduled_ai_spend_allowed(admin):
-            return None, False
+            return None, False, None
+
+        owner_id = await cls._owner_of(admin, sim_id)
 
         if admin_override:
-            return None, True
+            return None, True, owner_id
+
+        if owner_id is None:
+            return None, False, None
 
         try:
-            owner_resp = await (
+            # Third and last copy of "select the ciphertext, decrypt it",
+            # folded into the one accessor (migration 333 moved the storage;
+            # a copy left behind here would have gone on reading a column that
+            # is on its way out).
+            or_key, _ = await ForgeDraftService.get_user_keys(owner_id)
+            if or_key:
+                return or_key, True, owner_id
+        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OSError):
+            logger.debug("BYOK key resolution failed for autonomy")
+
+        return None, False, owner_id
+
+    @staticmethod
+    async def _owner_of(admin: Client, sim_id: UUID) -> UUID | None:
+        """Wem die Welt gehoert — bestmoeglich, nie werfend.
+
+        Getrennt von `_resolve_autonomy_key`, damit dessen
+        Ueberschreibungszweig nicht an dieser Abfrage haengt. Schlaegt sie
+        fehl, fehlt eine Spalte im Kostenbuch; die Phase laeuft weiter.
+
+        ⚠ FAENGT ABSICHTLICH BREIT
+          Der erste Anlauf zaehlte sechs Ausnahmetypen auf — und ein siebter
+          haette die Ueberschreibung trotzdem mitgerissen. Das ist dasselbe
+          Loch eine Ebene tiefer: eine Funktion, deren ganzer Zweck „nie
+          werfen" ist, darf nicht an einem Typ scheitern, an den niemand
+          gedacht hat.
+
+          Der Preis einer breiten Klausel — ein echter Fehler koennte
+          untergehen — ist hier bezahlt, weil sie GEMELDET wird und der
+          Rueckgabewert `None` an der Aufrufstelle sichtbar ankommt: die
+          Buchung traegt dann keine Kennung, und das faellt im Kostenpanel
+          auf. Ein stiller `pass` waere etwas anderes.
+        """
+        try:
+            resp = await (
                 admin.table("simulation_members")
                 .select("user_id")
                 .eq("simulation_id", str(sim_id))
@@ -1206,20 +1272,11 @@ class HeartbeatService(BaseSchedulerMixin):
                 .limit(1)
                 .execute()
             )
-            if not owner_resp.data:
-                return None, False
-
-            # Third and last copy of "select the ciphertext, decrypt it",
-            # folded into the one accessor (migration 333 moved the storage;
-            # a copy left behind here would have gone on reading a column that
-            # is on its way out).
-            or_key, _ = await ForgeDraftService.get_user_keys(UUID(owner_resp.data[0]["user_id"]))
-            if or_key:
-                return or_key, True
-        except (PostgrestAPIError, httpx.HTTPError, KeyError, ValueError, OSError):
-            logger.debug("BYOK key resolution failed for autonomy")
-
-        return None, False
+            if resp.data:
+                return UUID(resp.data[0]["user_id"])
+        except Exception:  # noqa: BLE001 — siehe Docstring: darf nichts mitreissen
+            logger.warning("Besitzeraufloesung fehlgeschlagen fuer %s", sim_id, exc_info=True)
+        return None
 
     # ── Phase 1: Expire Zone Actions ───────────────────────────
 
@@ -1490,7 +1547,7 @@ class HeartbeatService(BaseSchedulerMixin):
         """
         structlog.contextvars.bind_contextvars(autonomy_phase="active")
 
-        byok_key, owner_has_key = await cls._resolve_autonomy_key(admin, sim_id, admin_override)
+        byok_key, owner_has_key, byok_owner = await cls._resolve_autonomy_key(admin, sim_id, admin_override)
 
         # 9a: Decay agent needs
         rate_mult = float(overrides.get("autonomy_needs_decay_rate", 1.0))
@@ -1619,6 +1676,7 @@ class HeartbeatService(BaseSchedulerMixin):
             tick_ctx,
             llm_budget=llm_budget,
             openrouter_api_key=byok_key if owner_has_key else None,
+            user_id=byok_owner,
         )
         stats["autonomous_events"] = len(auto_events)
         stats["byok_available"] = owner_has_key

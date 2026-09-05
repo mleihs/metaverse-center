@@ -56,6 +56,7 @@ class GenerationService:
         openrouter_api_key: str | None = None,
         world_context: str = "",
         key_source: str = "platform",
+        user_id: UUID | None = None,
     ):
         """``key_source`` muss GESAGT werden, nicht aus dem Schluessel geraten.
 
@@ -80,6 +81,10 @@ class GenerationService:
         self._simulation_id = simulation_id
         self._world_context = world_context
         self._key_source = key_source
+        #: Wer den Aufruf ausgeloest hat — eine ANDERE Frage als `key_source`.
+        #: Dort steht, wer bezahlt hat; hier, wer es veranlasst hat. Bei einer
+        #: Admin-Ueberschreibung faellt beides auseinander.
+        self._user_id = user_id
         self._prompt_resolver = PromptResolver(supabase, simulation_id)
         self._model_resolver = ModelResolver(supabase, simulation_id)
         self._openrouter = OpenRouterService(api_key=openrouter_api_key)
@@ -1406,6 +1411,7 @@ class GenerationService:
                     purpose=purpose,
                     usage=self._openrouter.last_usage,
                     key_source=self._key_source,
+                    user_id=self._user_id,
                 )
                 return result
             except RateLimitError:
@@ -1448,6 +1454,7 @@ class GenerationService:
                 purpose=purpose,
                 usage=self._openrouter.last_usage,
                 key_source=self._key_source,
+                user_id=self._user_id,
             )
             return result
         except OpenRouterError:
@@ -1473,6 +1480,7 @@ class GenerationService:
             purpose=purpose,
             usage=self._openrouter.last_usage,
             key_source=self._key_source,
+            user_id=self._user_id,
         )
         return result
 

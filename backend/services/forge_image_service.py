@@ -116,6 +116,7 @@ class ForgeImageService:
         openrouter_api_key: str | None = None,
         world_context: str = "",
         key_source: str = "platform",
+        user_id: UUID | None = None,
     ):
         """``key_source`` must be STATED, not inferred from the key being set.
 
@@ -134,6 +135,9 @@ class ForgeImageService:
         self._supabase = supabase
         self._simulation_id = simulation_id
         self._key_source = key_source
+        #: Wer den Aufruf ausgeloest hat — eine ANDERE Frage als `key_source`.
+        #: Dort steht, wer bezahlt hat; hier, wer es veranlasst hat.
+        self._user_id = user_id
         self._replicate = ReplicateService(api_key=replicate_api_key)
         self._generation = GenerationService(
             supabase,
@@ -182,6 +186,7 @@ class ForgeImageService:
             model=model,
             purpose=purpose,
             key_source=key_source_for(api_key) if api_key else self._key_source,
+            user_id=self._user_id,
         )
 
     @staticmethod
