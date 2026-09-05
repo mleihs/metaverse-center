@@ -177,6 +177,27 @@ _PURPOSES: Final[tuple[AIPurpose, ...]] = (
         ),
     ),
     _purpose(
+        "memory_supersede",
+        "chat",
+        200,
+        60,
+        reasoning="off",
+        why=(
+            "Ein Ja/Nein plus einen kurzen Grund, als JSON. 200 Token sind "
+            "reichlich: die Antwort ist `{\"supersedes\": true, \"reason\": "
+            "\"...\"}` und der Grund ist auf 300 Zeichen gekappt. Mehr Budget "
+            "hiesse nur, dass ein schwatzhaftes Modell laenger schwatzt. "
+            "60 s: der Lauf haengt am Herzschlag, nicht an einer Anfrage. "
+            "reasoning=off aus demselben Grund wie bei `agent_continuation` – "
+            "ein durchgesickerter `<think>`-Block macht das JSON unparsbar, "
+            "und die Fassade wertet unlesbar als NEIN. Ein Denkschritt waere "
+            "hier auch inhaltlich falsch: die Frage ist ein Vergleich zweier "
+            "Saetze, kein Schluss. "
+            "EIGENER Zweck und nicht `chat_response`, damit eine Aenderung an "
+            "der Chat-Vorgabe diese Pruefung nicht still verteuert."
+        ),
+    ),
+    _purpose(
         "agent_continuation",
         "chat",
         1200,

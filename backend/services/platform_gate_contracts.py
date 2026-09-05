@@ -194,6 +194,24 @@ PLATFORM_GATES: Final[tuple[PlatformGate, ...]] = (
         reader="backend/services/chat/continuation_service.py",
     ),
     PlatformGate(
+        key="memory_supersede_enabled",
+        group="narrative",
+        label="Überholte Erinnerungen erkennen",
+        turns_on="Phase 9.7b des Ticks: eine neue Beobachtung, die eine ältere aufhebt, "
+        "markiert sie als überholt (valid_until + superseded_by aus Migration 379). Der "
+        "Vektor sucht die Kandidaten, ein Modellaufruf entscheidet sie – gemessen bleiben "
+        "bei Abstand < 0,15 nur 28 von 496 Beobachtungen übrig, auf Prod 30 Paare über "
+        "11 Welten.",
+        absence_costs="Nichts – dieses Tor steht bei fehlender Zeile auf AUS, und dann "
+        "bleibt es beim heutigen Zustand: 0 von 504 Erinnerungen tragen ein "
+        "Gültigkeitsfenster. Widersprüchliche Erinnerungen stehen dann weiter "
+        "nebeneinander im selben Prompt, beide mit vollem Gewicht, und das Modell wählt. "
+        "⚠ Das Tor SCHREIBT ins Gedächtnis: ein Fehlurteil nimmt einer Figur etwas weg, "
+        "das sie wusste. Gelöscht wird nichts, die Zeile bleibt stehen.",
+        default_when_missing=False,
+        reader="backend/services/memory_supersede_service.py",
+    ),
+    PlatformGate(
         key="journal_enabled",
         group="narrative",
         label="Journal-Fragmente",

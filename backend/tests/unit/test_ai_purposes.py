@@ -179,10 +179,25 @@ def _direct_purpose_sites() -> set[str]:
         r"(?:resolve_text_model|get_platform_max_tokens|get_platform_reasoning|get_platform_model)"
         r"\(\s*([A-Z][A-Z0-9_]*)\s*[,)]"
     )
+    # DRITTE Fassung desselben blinden Flecks, gefunden am 05.09.2026.
+    #
+    # `GenerationService._generate(model_purpose="...")` ist der dritte Weg,
+    # einen Zweck zu benutzen — und der einzige, den die Fassaden dieses
+    # Dienstes gehen duerfen: `_generate` von aussen zu rufen ist per
+    # `lint-no-private-generate.sh` verboten, also IST der Schluesselwert die
+    # Aufrufstelle. Das Tor sah ihn nicht und verlangte, `memory_supersede`
+    # wieder zu loeschen.
+    #
+    # Dreimal dieselbe Lehre, die schon zweimal ueber diesem Muster steht:
+    # ein Tor, das zum Rueckbau einer richtigen Aenderung draengt, misst am
+    # falschen Ort.
+    ueber_generate = re.compile(r'model_purpose\s*=\s*"([a-z_]+)"')
+
     gefunden: set[str] = set()
     for datei in _source_files():
         text = datei.read_text(encoding="utf-8")
         gefunden.update(muster.findall(text))
+        gefunden.update(ueber_generate.findall(text))
         namen = set(ueber_konstante.findall(text))
         if not namen:
             continue

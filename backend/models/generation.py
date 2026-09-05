@@ -112,6 +112,18 @@ class MemoryObservationBatch(BaseModel):
     model_used: str
 
 
+class MemorySupersessionVerdict(BaseModel):
+    """Ob eine neuere Beobachtung eine aeltere aufhebt.
+
+    ``reason`` ist nicht Zierrat, sondern derselbe Grundsatz wie ``evidence``
+    beim Fokalisierungs-Befund: ein Urteil, das einer Figur etwas wegnimmt,
+    das sie wusste, muss beim Nachsehen begruendbar sein.
+    """
+
+    supersedes: bool = False
+    reason: str = ""
+
+
 class MemoryReflection(BaseModel):
     """A higher-level reflection synthesized from recent observations."""
 

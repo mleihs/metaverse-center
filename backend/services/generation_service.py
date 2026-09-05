@@ -21,6 +21,7 @@ from backend.models.generation import (
     MemoryObservationBatch,
     MemoryReflection,
     MemoryReflectionBatch,
+    MemorySupersessionVerdict,
     SentimentAnalysis,
     SocialTransformDraft,
 )
@@ -857,6 +858,53 @@ class GenerationService:
         return MemoryReflectionBatch(
             reflections=reflections,
             model_used=result.get("model_used", "unknown"),
+        )
+
+    async def judge_memory_supersession(
+        self,
+        *,
+        agent_name: str,
+        older_statement: str,
+        newer_statement: str,
+        locale: str = "en",
+    ) -> MemorySupersessionVerdict:
+        """Hebt die neuere Beobachtung die aeltere auf?
+
+        Der teure Teil einer zweistufigen Pruefung: der Vektor sucht die
+        Kandidaten (`fn_supersede_candidates`, Migration 383), dieses Urteil
+        entscheidet sie. Gemessen am 05.09.2026 filtert der Vektor bei
+        Abstand < 0,15 auf 28 von 496 Beobachtungen — 94 % kommen hier gar
+        nicht an.
+
+        ⚠ FAIL-CLOSED bei unbrauchbarer Antwort. Ein nicht lesbares JSON
+        heisst NEIN, nicht „vielleicht": eine faelschlich aufgehobene
+        Erinnerung nimmt einer Figur etwas weg, das sie wusste, eine
+        faelschlich behaltene kostet nur Platz. Dieselbe Richtung wie in der
+        Vorlage selbst, die „im Zweifel: nein" ausdruecklich sagt.
+
+        Eigener Modellzweck `memory_supersede` — nicht `chat_response`. Der
+        Zweck traegt das Budget und die Modellwahl, und eine Aenderung an der
+        Chat-Vorgabe darf diese Pruefung nicht still verteuern (dieselbe
+        Begruendung wie bei `agent_continuation`).
+        """
+        result = await self._generate(
+            template_type="memory_supersede",
+            model_purpose="memory_supersede",
+            variables={
+                "agent_name": agent_name,
+                "older_statement": older_statement,
+                "newer_statement": newer_statement,
+            },
+            locale=locale,
+        )
+        parsed = GenerationService._parse_json_object(
+            result.get("content", ""), source="judge_memory_supersession"
+        )
+        if not parsed:
+            return MemorySupersessionVerdict(supersedes=False, reason="unlesbare Antwort")
+        return MemorySupersessionVerdict(
+            supersedes=bool(parsed.get("supersedes") is True),
+            reason=str(parsed.get("reason") or "")[:300],
         )
 
     async def generate_chronicle_entry(

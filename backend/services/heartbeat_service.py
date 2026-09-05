@@ -41,6 +41,7 @@ from backend.services.chat.continuation_service import ContinuationService
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.game_mechanics_service import GameMechanicsService
 from backend.services.heartbeat_entry_builder import make_heartbeat_entry, state_word_de
+from backend.services.memory_supersede_service import MemorySupersedeService
 from backend.services.narrative_arc_service import NarrativeArcService
 from backend.services.platform_config_service import PlatformConfigService
 from backend.services.simulation_setting_contracts import (
@@ -873,6 +874,40 @@ class HeartbeatService(BaseSchedulerMixin):
             # Läuft NACH der Autonomie und den Flüstern, damit die
             # Beobachtungen dieses Ticks schon mitzählen. Budget wie dort: ein
             # Modellaufruf je Agent, höchstens zwei je Tick.
+            # Phase 9.7b: Ueberholtes als ueberholt markieren
+            #
+            # Migration 379 hat dem Gedaechtnis Gueltigkeit gegeben und
+            # niemand hat sie je gesetzt: 0 von 504 Erinnerungen trugen ein
+            # Fensterende (gemessen 05.09.2026). Es fehlte der Erkenner.
+            #
+            # Laeuft VOR der Verdichtung, damit eine Reflexion nicht ueber
+            # Beobachtungen nachdenkt, die im selben Takt ihre Gueltigkeit
+            # verlieren. Eigenes Tor, Vorgabe AUS — der Dienst SCHREIBT ins
+            # Gedaechtnis.
+            supersede_result = await _run_phase(
+                "memory_supersede",
+                MemorySupersedeService.run_for_simulation(
+                    admin,
+                    sim_id,
+                    budget=int(overrides.get("supersede_budget", 5)),
+                    api_key=bw_key if bw_has_key else None,
+                ),
+                **_ctx,
+            )
+            if supersede_result:
+                entries.append(
+                    make_heartbeat_entry(
+                        heartbeat_id,
+                        sim_id,
+                        tick_number,
+                        "memory_supersede",
+                        "A memory stopped being current",
+                        "Eine Erinnerung hat aufgehoert zu gelten",
+                        severity="info",
+                        metadata={"count": len(supersede_result), "details": supersede_result[:5]},
+                    )
+                )
+
             reflect_result = await _run_phase(
                 "memory_reflection",
                 AgentMemoryService.reflect_due_agents(

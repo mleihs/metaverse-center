@@ -563,6 +563,14 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
             required=frozenset({"agent_memories", "agent_mood"}),
         ),
         _contract(
+            "memory_supersede",
+            ("agent_name", "older_statement", "newer_statement"),
+            # Beide Aussagen sind PFLICHT. Fehlte eine, urteilte das Modell
+            # ueber ein Paar, von dem es nur eine Haelfte sieht — und die
+            # Antwort waere trotzdem ein sauberes JSON.
+            required=("older_statement", "newer_statement"),
+        ),
+        _contract(
             "chat_group_instruction",
             ("agent_name", "other_agent_names", "addressed_note", "focalization_note"),
             frame=_FRAME_GROUP,
