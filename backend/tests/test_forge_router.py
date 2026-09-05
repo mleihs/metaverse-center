@@ -365,7 +365,6 @@ class TestForgeBYOK:
         """
         client, user_sb, admin_sb = architect_client
         admin_sb.rpc_data["fn_user_byok_allowed"] = False
-        user_sb.rpc_data["fn_user_byok_allowed"] = False
         user_sb.rpc_data["fn_set_user_api_key"] = {"success": True}
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
@@ -379,8 +378,8 @@ class TestForgeBYOK:
         "no row"), which is what used to close the endpoint at 403 before the
         policy was ever consulted.
         """
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = True
         user_sb.rpc_data["fn_set_user_api_key"] = {"success": True}
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
@@ -397,8 +396,8 @@ class TestForgeBYOK:
     @pytest.mark.integration
     def test_update_keys_denied_when_policy_grants_nobody(self, regular_client_full, encryption_key):
         """PUT /forge/wallet/keys returns 403 when BYOK is not granted — and writes nothing."""
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = False
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = False
 
         resp = client.put("/api/v1/forge/wallet/keys", json={"openrouter_key": "sk-or-test-123"})
 
@@ -409,8 +408,8 @@ class TestForgeBYOK:
     @pytest.mark.integration
     def test_delete_key_goes_through_the_user_client(self, regular_client_full, encryption_key):
         """DELETE routes the same self-validating RPC the same way."""
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = True
         user_sb.rpc_data["fn_clear_user_api_key"] = {"success": True}
 
         resp = client.delete("/api/v1/forge/wallet/keys/openrouter")
@@ -424,8 +423,8 @@ class TestForgeBYOK:
     @pytest.mark.integration
     def test_key_test_endpoint_keeps_the_policy_gate(self, regular_client_full):
         """Testing a key is still gated — it spends a request against a provider."""
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = False
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = False
 
         resp = client.post(
             "/api/v1/forge/wallet/keys/test",
@@ -444,8 +443,8 @@ class TestForgeBYOK:
         This is the question "configured" could never answer: a key revoked at
         the provider three weeks ago looks identical to a working one here.
         """
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = True
         user_sb.rpc_data["fn_mark_user_api_key_verified"] = {"success": True}
 
         keys_client = _mock_supabase()
@@ -469,8 +468,8 @@ class TestForgeBYOK:
         self, mock_admin, mock_test, regular_client_full, encryption_key
     ):
         """Nothing on file is not a failure — and must not touch the stamp."""
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = True
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = True
 
         keys_client = _mock_supabase()
         keys_client.rpc_data["fn_get_user_api_keys"] = {}
@@ -493,8 +492,8 @@ class TestForgeBYOK:
         `per_user`, nobody granted — so a gate here would make the endpoint
         reachable only by people who no longer need it.
         """
-        client, user_sb, _ = regular_client_full
-        user_sb.rpc_data["fn_user_byok_allowed"] = False
+        client, user_sb, admin_sb = regular_client_full
+        admin_sb.rpc_data["fn_user_byok_allowed"] = False
         chain = user_sb.table.return_value
         result = MagicMock()
         result.data = [{

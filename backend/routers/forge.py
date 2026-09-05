@@ -95,7 +95,13 @@ async def _check_byok_access(supabase, admin_supabase, user: CurrentUser) -> Non
     """
     try:
         admin = await is_platform_admin(user, admin_supabase)
-        allowed = await ForgeDraftService.check_byok_allowed(supabase, user.id, is_admin=admin)
+        # admin_supabase und NICHT supabase: `fn_user_byok_allowed` ist
+        # SECURITY DEFINER und laeuft ohnehin als ihr Eigentuemer, der Wechsel
+        # ist also verhaltensneutral (CLAUDE.md, ADR-006). Er ist die
+        # Voraussetzung dafuer, dass Migration 387 das EXECUTE-Recht von
+        # `authenticated` nehmen kann — ohne ihn braeche die Pruefung fuer
+        # jeden nicht-administrativen Nutzer.
+        allowed = await ForgeDraftService.check_byok_allowed(admin_supabase, user.id, is_admin=admin)
         if not allowed:
             raise HTTPException(status_code=403, detail="BYOK access not granted.")
     except HTTPException:
@@ -352,7 +358,12 @@ async def get_wallet(
     """Get the current user's forge wallet."""
     try:
         data = await _draft_service.get_wallet(
-            supabase,
+            # admin_supabase, gleicher Grund wie in `_check_byok_access`:
+            # `fn_get_wallet_summary` ist SECURITY DEFINER. `get_wallet` nutzt
+            # den Klienten AUSSCHLIESSLICH fuer diese eine RPC (Zeilen 631-670);
+            # die `.table()`-Zugriffe der Nachbarmethoden bleiben unberuehrt auf
+            # dem RLS-durchgesetzten Klienten, wie CLAUDE.md es verlangt.
+            admin_supabase,
             user.id,
             is_admin=await is_platform_admin(user, admin_supabase),
         )
