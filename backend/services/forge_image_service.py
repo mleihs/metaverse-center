@@ -575,7 +575,15 @@ class ForgeImageService:
             .execute()
         )
 
-        await self._log_image_usage("replicate/image-model", "banner")
+        # `image_model.model`, nicht ein Literal. Hier stand
+        # "replicate/image-model" -- kein Modellname, sondern ein Platzhalter,
+        # obwohl `image_model` zwei Aufrufe weiter oben schon das echte Modell
+        # traegt. Auf Prod gemessen (05.09.2026): 22 Zeilen ueber fuenf Monate,
+        # $0.68 von $11.89, also 5,7 % der Gesamtsumme, gebucht unter einem
+        # Namen, den es nicht gibt -- und zum RUECKFALLPREIS, weil ein
+        # Platzhalter in keiner Preisliste steht. Die Modellachse des Panels
+        # zeigte diese Aufrufe als eigenes "Modell".
+        await self._log_image_usage(image_model.model, "banner")
         logger.info(
             "Banner uploaded",
             extra={"entity_type": "banner", "simulation_id": str(self._simulation_id), "path": url},

@@ -202,6 +202,38 @@ eine Fehlbenennung überlebt. Der Typprüfer kann zwei Wahrheiten nicht
 gegeneinander halten, wenn er beide glaubt. Behoben, der Parameter nimmt jetzt
 `AIUsageStats['daily_trend']`.
 
+### 3.11 · Eine Modellachse mit einem Modell, das es nicht gibt
+
+`ForgeImageService` bucht an sechs Stellen Bildnutzung. Fuenf uebergeben
+`image_model.model`, eine — das Banner — ein hartes
+`"replicate/image-model"`. Kein Modellname, ein Platzhalter; die Variable mit
+dem echten Modell stand zwei Aufrufe darueber im Gueltigkeitsbereich.
+
+Gegen Prod gemessen, ueber fuenf Monate:
+
+    replicate/image-model   0.031   22 Zeilen   $0.68   09.04. – 29.08.2026
+
+**$0.68 von $11.89 — 5,7 % der Gesamtsumme** — unter einem Namen, den es nicht
+gibt. Und zum **Rueckfallpreis**, denn ein Platzhalter steht in keiner
+Preisliste: die Zahl war nie eine Messung, sah in der Auswertung aber genauso
+aus wie eine. Die Modellachse des Panels zeigte den Platzhalter als eigenes
+Modell.
+
+**Behoben** (`image_model.model`), plus ein AST-Tor
+(`backend/tests/unit/test_bildbuchung_nennt_das_modell.py`): das erste Argument
+an `_log_image_usage` darf nie ein Zeichenkettenliteral sein. Die falsche
+Stelle war von den fuenf richtigen nicht zu unterscheiden, solange man sie
+nicht danebenlegt — und eine sechste kommt irgendwann dazu.
+
+**Die 22 historischen Zeilen bleiben stehen.** Welches Modell damals lief, ist
+nicht mehr feststellbar; sie rueckwirkend umzuschreiben hiesse, eine Zahl zu
+erfinden, die genauso aussieht wie eine Messung. Das ist derselbe Fehler noch
+einmal.
+
+Daneben, aus einer parallelen Sitzung: `proteus` und `juggernaut` fehlten in
+`IMAGE_COST_PER_CALL` und wurden zum damaligen Rueckfallwert (0,031, dem Preis
+von `flux-2-pro`) gebucht. 2 Zeilen, $0,053, behoben in `da6fe552`.
+
 ---
 
 ## 3a · Wo `velg-frontend-design` gegen den Entwurf steht
