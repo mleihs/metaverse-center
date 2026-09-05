@@ -145,6 +145,63 @@ Zaehlbasis `n = 512 von 640` ist keine Randnotiz, sondern die Aussage des
 Panels — sie steht auf `--_kontor-micro: 11px`, einem Tier-3-Token mit der
 Begruendung daneben, nicht auf dem Plattform-Token.
 
+### 3.8 · Der Mittelwert war in der Datenbank falsch, nicht nur im Entwurf
+
+`get_ai_usage_stats.avg_cost_per_call` teilte die Summe durch JEDEN
+beantworteten Aufruf. Gegen Prod gemessen (05.09.2026, vor der Reparatur):
+
+    ok gesamt                        1 644
+      davon mit Betrag               1 440
+      davon ohne Betrag                204   12,4 %
+
+    Ø angezeigt   11.888971 / 1644 = $0.007232
+    Ø richtig     11.888971 / 1440 = $0.008256
+    Abweichung                          14,2 %
+
+⚠ `MESSUNG-EIGENE-DATEN.md` sagt: *„Geprüft am 05.09.2026: Wir rechnen einen
+solchen Mittelwert noch nirgends — weder in SQL noch in Python."* **Das stimmt
+nicht.** Wir rechneten genau einen, in SQL, und der Admin zeigte ihn seit
+Migration 152 an. Der Satz im Messdokument ist die Prüfung, die ihre eigene
+Bedingung nicht hergestellt hat.
+
+**Behoben:** Migration 389, am 05.09.2026 auf Prod angewandt und verbucht.
+`avg_cost_per_call` teilt durch die Zeilen mit Betrag; `avg_cost_basis`,
+`avg_cost_of`, `unrecorded_calls` und `by_outcome` kommen dazu; alle vier
+Aufschlüsselungen tragen `billed`/`unrecorded`.
+
+### 3.9 · Warum die Zeilen keinen Betrag tragen — nicht, was das Paket sagt
+
+`MESSUNG-EIGENE-DATEN.md` nennt als Grund: *„Übersetzungen und Ankerläufe haben
+keine Preisliste."* Das ist nicht die Ursache — für Unbekanntes gibt es
+`_UNKNOWN_COST_PER_1M`. `_estimate_cost` rechnet aus **null Tokens** null: der
+Anbieter hat keine Tokenzahlen gemeldet. Gegenprobe auf Prod:
+
+    Betrag = 0 UND Token = 0      204     nicht erfasst
+    Betrag = 0 UND Token > 0        0     es gibt KEINE echte Null
+    Betrag > 0 UND Token = 0      316     Bilder, je Aufruf bepreist
+
+Zwei Folgen für den Bau:
+
+1. `estimated_cost_usd = 0` ist heute ein **verlässlicher** Marker für „nicht
+   erfasst" — aber nur, weil die mittlere Zeile null ist. Bucht ein Aufrufweg
+   einmal einen ECHTEN Nullbetrag mit Tokens (Treffer aus dem Cache), fällt die
+   Gleichsetzung, und die Tabelle braucht eine eigene Spalte. Die Spalte ist
+   `NOT NULL DEFAULT 0` (Migration 150) und kann den Unterschied nicht sagen.
+2. Der Zellzustand **echte Null** hat heute **keine einzige Instanz** — genau
+   wie BYOK. Das Panel muss ihn zeigen können, ohne dass er vorkommt.
+
+### 3.10 · Eine Datumsspalte, die immer leer war
+
+`AdminAIUsageTab._renderDailyTable` bildete den Zeilentyp **lokal noch einmal**
+nach: `{ date: string; … }`. Die RPC schreibt `day`
+(`date_trunc('day', created_at)::DATE AS day`). Die Zelle las `day.date` und
+stand leer, seit es die Tabelle gibt — ohne Fehler, ohne Warnung.
+
+**Die Regel dahinter:** eine lokale Nachbildung eines DTO ist der Ort, an dem
+eine Fehlbenennung überlebt. Der Typprüfer kann zwei Wahrheiten nicht
+gegeneinander halten, wenn er beide glaubt. Behoben, der Parameter nimmt jetzt
+`AIUsageStats['daily_trend']`.
+
 ---
 
 ## 3a · Wo `velg-frontend-design` gegen den Entwurf steht
@@ -175,9 +232,13 @@ vier Notationszeichen.
     Schritt 2  Zahlenformat, sechs Zustaende ✅  utils/kontor-format.ts, 29 Tests
     Schritt 3  Tabellen-Primitive            ✅  shared/kontor-table-styles.ts
                                                  + kontor-cell.ts, 11 Tests, Tor Teil 3
-    Schritt 4  Kopfkacheln als Selektor      ⬜
-    Schritt 5  Hauptdiagramm                 ⬜
-    Schritt 6  Aufschluesselungen            ⬜
+    Schritt 4  Kopfkacheln                   🟡  sechs Kacheln stehen, die
+                                                 Auswahlkopplung fehlt (braucht
+                                                 eine nach Anbieter gestapelte
+                                                 Zeitreihe, die die RPC nicht hat)
+    Schritt 5  Hauptdiagramm                 🟡  Tageskosten, eine Serie
+    Schritt 6  Aufschluesselungen            ✅  Modell · Zweck · Anbieter ·
+                                                 Ausgang, je mit Zaehlbasis
     Schritt 7  Achsenbruch/Matrix/Heatmap    ⬜
     Schritt 8  4K-Regeln                     ⬜
 
@@ -190,3 +251,33 @@ vier Notationszeichen.
 | `tests/kontor-format.test.ts` | die sechs Zustaende, die Rundungsleiter, U+2212, Locale-Unabhaengigkeit, die Zaehlbasis | ✅ fuenfmal (null als Null · kein below · null als $0.00 · Bindestrich · Intl) |
 | `scripts/lint-series-palette-grounds.mjs` Teil 3 | dass jede Regel, die die Schraffur setzt, in DERSELBEN Regel eine Tinte erklaert, die darauf traegt | ✅ viermal (die Wahl des Entwurfs · Zeichentinte · Paarung getrennt · Schraffur ganz weg) |
 | `tests/kontor-cell.test.ts` | dass Zustand, Klasse und CSS-Regel nicht auseinanderlaufen, und dass die drei Zeichenzustaende vorlesbar sind | ✅ viermal (Klasse ohne Regel · Regel ohne Zustand · zwei Zustaende auf einer Klasse · keine vorlesbare Fassung) |
+
+
+---
+
+## 5 · Ausgerollt am 05.09.2026
+
+    581ebc74  Tokens + Zahlenformat
+    d1c80328  Tabellen-Primitive
+    b0d7e850  Migration 389 + Verbraucher (und zwei fremde CI-Blocker)
+    06b31b92  Das Panel als Admin-Reiter
+
+**Migration 389** ist auf Prod angewandt (Management API, nicht `db push` —
+T17: `db push` wuerde 18 unverbuchte Migrationen erneut anwenden) und in
+`supabase_migrations.schema_migrations` verbucht, nachdem ihre Wirkung
+nachgemessen wurde.
+
+**Der Code** laeuft als `06b31b92`. Zwei Dinge dabei, die beim naechsten Deploy
+wieder auftreten werden:
+
+1. **Kein Auto-Deploy auf Push.** Coolify muss angestossen werden
+   (`POST /api/v1/deploy?uuid=…`, Token in `~/.config/metaspots/coolify-api.token`).
+2. **Waehrend des Rollouts laufen ZWEI Container**, alt und neu, und der Proxy
+   verteilt im Wechsel. Assets des neuen Builds antworten dabei an jedem
+   zweiten Abruf mit 404 — und Cloudflare faengt eine dieser 404 ein und haelt
+   sie fest. Erst als der alte Container weg war und der Zonen-Cache gespuelt
+   war, lieferte jeder Abruf 200. **Ein einzelner Abruf waehrend eines Rollouts
+   misst den Container, nicht die Anwendung.**
+
+Endprobe: dreimal HTTP 200, `velg-kontor-panel` zweimal im Bündel, 6 von 6
+Zellzustaenden vorhanden.
