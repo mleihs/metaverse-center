@@ -17,8 +17,8 @@ Migration 374/375: was man ausrechnen kann, gehoert nicht in eine Bitte.
 ── DIE REGEL ─────────────────────────────────────────────────────────────────
 
     1. Wen der Mensch beim Namen nennt, der antwortet — immer, und zuerst.
-    2. Nennt er NIEMANDEN, antworten alle. Eine kollektive Anrede
-       („erzaehlt mir, was hier geschieht") gilt allen; dort zu schweigen
+    2. Nennt er NIEMANDEN, antworten alle. Eine kollektive Anrede — eine
+       Zeile ohne einen einzigen Namen darin — gilt allen; dort zu schweigen
        waere keine Zurueckhaltung, sondern Ausfall.
     3. Wen er nicht nennt, der antwortet, wenn er einen Grund hat:
        · Anteilnahme — er hat eine ausgepraegte Meinung ueber eine der

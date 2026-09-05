@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from uuid import UUID
 
 from backend.config import settings
@@ -46,8 +47,21 @@ class AgentMemoryService:
         source_id: UUID | None = None,
         memory_type: str = "observation",
         api_key: str | None = None,
+        valid_until: datetime | None = None,
+        supersedes: UUID | None = None,
     ) -> dict:
-        """Store a memory with its embedding vector."""
+        """Store a memory with its embedding vector.
+
+        ``valid_until`` setzt das Ende des Gueltigkeitsfensters. Ohne Angabe
+        gilt die Erinnerung weiter — das ist der gewoehnliche Fall und der
+        einzige, den es bis Migration 379 gab.
+
+        ``supersedes`` benennt die Erinnerung, die diese hier ABLOEST. Sie
+        faellt danach aus dem Abruf, denn beide zugleich im Prompt hiessen,
+        dem Modell eine Tatsache und ihren Widerruf nebeneinander zu geben
+        und es waehlen zu lassen. Die Zeile bleibt stehen; geloescht wird
+        nichts.
+        """
         embedding = await EmbeddingService.embed(content, api_key=api_key)
 
         record = {
@@ -64,9 +78,19 @@ class AgentMemoryService:
             # zur Frage zu passen. Eine leere Spalte behandelt die
             # Bewertungsfunktion dagegen sauber (Wichtigkeit + Frische).
             "embedding": str(embedding) if embedding else None,
+            # NULL heisst „gilt weiter". Der gewoehnliche Fall, und der
+            # einzige, den es bis Migration 379 gab.
+            "valid_until": valid_until.isoformat() if valid_until else None,
         }
         resp = await supabase.table("agent_memories").insert(record).execute()
         saved = resp.data[0]
+
+        # Die Abloesung erst NACH dem Einfuegen: eine Vorgaengerin, die auf
+        # eine Nachfolgerin zeigt, die es nicht gibt, waere ein halb
+        # geschriebener Zustand — und der Fremdschluessel liesse sie ohnehin
+        # nicht zu.
+        if supersedes:
+            await cls.supersede(supabase, supersedes, UUID(str(saved["id"])))
 
         # Get simulation info for translation
         sim_resp = await (
@@ -151,6 +175,62 @@ class AgentMemoryService:
             saved.append(record)
 
         return saved
+
+    # ── Gueltigkeit und Ueberholung ──────────────────────────────────
+
+    @classmethod
+    async def supersede(
+        cls,
+        supabase: Client,
+        old_id: UUID,
+        new_id: UUID | None = None,
+        valid_until: datetime | None = None,
+    ) -> dict | None:
+        """Eine Erinnerung als ueberholt markieren, statt sie mitzuschleppen.
+
+        ── WARUM ES DIESEN WEG BRAUCHT ──────────────────────────────────
+
+        `agent_memories` hatte bis Migration 379 keine Spalte fuer
+        Gueltigkeit, Ueberholtsein oder Vergessen — nur `last_accessed_at`,
+        und die wird geschrieben, aber vom Abruf nie gelesen. Nichts liess je
+        etwas fallen. „X ist Archivarin" und „X ist nicht mehr Archivarin"
+        standen damit nebeneinander im selben Prompt, beide mit vollem
+        Gewicht, und das Modell waehlte.
+
+        Migration 373 hat geklaert, WESSEN Erinnerung es ist. Diese Methode
+        klaert, WIE LANGE sie gilt.
+
+        ── DIE ZWEI FAELLE SIND NICHT DERSELBE ──────────────────────────
+
+        `new_id` gesetzt   Eine ANDERE Erinnerung hat diese abgeloest. Sie
+                           faellt aus dem Abruf: beide zugleich hiessen,
+                           dem Modell eine Tatsache und ihren Widerruf
+                           nebeneinander zu geben.
+        nur `valid_until`  Das Fenster ist zu, die Erinnerung bleibt wahr —
+                           als Vergangenheit. Sie wird weiter abgerufen,
+                           halb gewichtet und als „galt bis" gerendert.
+
+        ── GELOESCHT WIRD NICHTS ────────────────────────────────────────
+
+        Vergessen heisst hier: nicht mehr als Gegenwart abgerufen werden.
+        Eine Zeile wegzuwerfen naehme dem Werk seine Geschichte, und ein
+        Gedaechtnis, das Vergangenes nicht mehr benennen kann, ist aermer als
+        eines, das zu viel behaelt.
+
+        Die Pruefungen (kein Selbstbezug, kein fremdes Gedaechtnis) und das
+        Setzen beider Spalten stehen in `fn_supersede_memory` — EINE
+        Anweisung statt lesen-rechnen-schreiben mit einem Fenster dazwischen
+        (ADR-007). Die Funktion ist SECURITY INVOKER: RLS entscheidet, und
+        sie kann nichts, was die Aufruferin nicht darf (ADR-006).
+        """
+        params: dict = {"p_old_id": str(old_id)}
+        if new_id:
+            params["p_new_id"] = str(new_id)
+        if valid_until:
+            params["p_valid_until"] = valid_until.isoformat()
+        response = await supabase.rpc("fn_supersede_memory", params).execute()
+        zeilen = extract_list(response)
+        return zeilen[0] if zeilen else None
 
     # ── Retrieve (Stanford formula) ──────────────────────────────────
 
@@ -410,7 +490,11 @@ class AgentMemoryService:
             supabase.table("agent_memories")
             .select(
                 "id, agent_id, simulation_id, memory_type, content, content_de, "
-                "importance, source_type, source_id, created_at, last_accessed_at",
+                "importance, source_type, source_id, created_at, last_accessed_at, "
+                # Ohne diese zwei sieht eine Verwaltungsoberflaeche einer
+                # ueberholten Erinnerung nicht an, dass sie ueberholt ist —
+                # und die Spalte waere gebaut und unsichtbar.
+                "valid_until, superseded_by",
                 count="exact",
             )
             .eq("agent_id", str(agent_id))
@@ -439,5 +523,13 @@ class AgentMemoryService:
             mtype = m.get("memory_type", "observation")
             importance = m.get("importance", 5)
             content = m.get("content", "")
-            lines.append(f"- [{importance}/10] {content} ({mtype})")
+            # Eine abgelaufene Erinnerung wird NICHT verschwiegen, sondern in
+            # die Vergangenheit gesetzt. „X war Archivarin" ist wahr und
+            # brauchbar; „X ist Archivarin" ist es nicht mehr. Ohne diese
+            # Marke saehen beide im Prompt gleich aus, und der Unterschied
+            # steht nirgends im Wortlaut (Migration 379).
+            if m.get("expired"):
+                lines.append(f"- [{importance}/10] {content} ({mtype}, no longer current)")
+            else:
+                lines.append(f"- [{importance}/10] {content} ({mtype})")
         return "\n".join(lines)

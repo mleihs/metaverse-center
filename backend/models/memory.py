@@ -23,6 +23,16 @@ class MemoryResponse(BaseModel):
     created_at: datetime
     last_accessed_at: datetime | None = None
     retrieval_score: float | None = None
+    #: Ende des Gueltigkeitsfensters. NULL heisst „gilt weiter" (Migration 379).
+    valid_until: datetime | None = None
+    #: Die Erinnerung, die diese abgeloest hat. Gesetzt heisst: nicht mehr im
+    #: Abruf — ihre Nachfolgerin beantwortet dieselbe Frage.
+    superseded_by: UUID | None = None
+    #: Ob das Fenster zu ist. Kommt aus `retrieve_agent_memories`, nicht aus
+    #: der Tabelle: `valid_until <= now()` ist eine Frage an die UHR, und die
+    #: gehoert dorthin, wo die Abfrage laeuft — nicht in eine Rechnung in
+    #: Python, die je nach Zeitzone der Anwendung anders ausfaellt.
+    expired: bool | None = None
 
 
 class ReflectionRequest(BaseModel):
