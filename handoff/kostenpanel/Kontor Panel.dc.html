@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{{const n=new URLSearchParams(location.search).get("theme");if(n==="light"||n==="dark"){document.documentElement.dataset.theme=n}}{if(new URLSearchParams(location.search).get("_omthumb")==="1"){const n=(f)=>{const g=f.focus;if(!g)return;f.focus=function(h){g.call(this,{...h,preventScroll:true})}};n(HTMLElement.prototype);n(SVGElement.prototype);if(typeof MathMLElement!=="undefined"){n(MathMLElement.prototype)}const d=(f)=>{f.removeAttribute("autofocus");f.inert=true;if(!(f instanceof HTMLElement))f.removeAttribute("tabindex")};const p=(f)=>{if(f.hasAttribute("autofocus"))d(f);for(const g of f.querySelectorAll("[autofocus]")){d(g)}};p(document.documentElement);new MutationObserver((f)=>{for(const g of f){for(const h of g.addedNodes){if(h.nodeType===1)p(h)}}}).observe(document,{childList:true,subtree:true})}}{const n=()=>{try{if(document.querySelector('meta[name="color-scheme"]'))return;const d=getComputedStyle(document.documentElement).getPropertyValue("color-scheme").trim();if(d&&d!=="normal")return;const p=(y)=>{if(!y)return null;const m=getComputedStyle(y).backgroundColor.match(/^rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+%?))?\s*\)$/);if(!m)return null;const w=m[4]==null?1:parseFloat(m[4])/(m[4].endsWith("%")?100:1);if(w<0.99)return null;return[+m[1],+m[2],+m[3]]};const f=p(document.body)||p(document.documentElement);if(!f)return;const g=(y)=>{const m=y/255;return m<=0.04045?m/12.92:((m+0.055)/1.055)**2.4};const h=0.2126*g(f[0])+0.7152*g(f[1])+0.0722*g(f[2]);document.documentElement.style.setProperty("color-scheme",h<0.4?"dark":"light")}catch{}};if(document.readyState==="complete")n();else window.addEventListener("load",n)}var I=[];var B=false;var K=false;var C=()=>{};if(K===true){try{const n=setTimeout.bind(window);const d=1e4;const p=15;const f=1e4;const g=120000;const h=200;const y=(o)=>{try{let r;if(typeof o==="string")r=o;else if(o instanceof URL)r=o.href;else if(typeof Request!=="undefined"&&o instanceof Request)r=o.url;else return null;if(!r)return null;const l=document.baseURI;const i=new URL(r,l);if(i.protocol!=="http:"&&i.protocol!=="https:")return null;if(i.origin!==new URL(l).origin)return null;return i.origin+i.pathname}catch{return null}};const m=new Map;const w=(o)=>{let r=m.get(o);if(!r){if(m.size>=h){const l=m.keys().next().value;if(l!==undefined)m.delete(l)}r={fails:[],until:0,cooldown:f,hard:false};m.set(o,r)}return r};const R=(o)=>{const r=m.get(o);return r!==undefined&&r.until>Date.now()};const O=(o,r)=>{const l=Date.now();const i=w(o);if(r)i.hard=true;if(i.until>l)return;i.fails.push(l);while(i.fails.length>0&&i.fails[0]<=l-d)i.fails.shift();if(i.fails.length>=p){i.until=l+i.cooldown;if(i.hard)i.cooldown=Math.min(i.cooldown*2,g);i.fails.length=0;try{n(()=>{try{S(true)}catch{}},i.until-l+100)}catch{}console.warn("[omelette] asset circuit breaker: pausing requests to "+o+" for "+Math.round((i.until-l)/1000)+"s after "+p+" failures in "+d/1000+"s")}};const e=(o)=>{m.delete(o)};const t=100;const a=new WeakMap;const u=new Set;let s=null;const S=(o)=>{for(const r of Array.from(u)){try{const l=a.get(r);if(l===undefined){u.delete(r);continue}if(o){const i=y(l);if(i!==null&&R(i))continue}a.delete(r);u.delete(r);if(s!==null)s.call(r,l)}catch{}}};C=()=>{try{m.clear();S(false)}catch{}};document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")C()});const _=window.fetch;if(typeof _==="function"){const o=function(...r){let l=null;try{l=y(r[0])}catch{}if(l!==null&&R(l)){let c;try{if(r[1]&&r[1].signal!==undefined){c=r[1].signal||undefined}else if(typeof Request!=="undefined"&&r[0]instanceof Request){c=r[0].signal||undefined}}catch{c=undefined}return new Promise((k,b)=>{const E=()=>{try{return c.reason!==undefined?c.reason:new DOMException("The operation was aborted.","AbortError")}catch{return new DOMException("The operation was aborted.","AbortError")}};try{if(c&&c.aborted){b(E());return}}catch{}let T=false;const j=()=>{if(T)return;T=true;b(E())};try{if(c)c.addEventListener("abort",j,{once:true})}catch{}n(()=>{if(T)return;T=true;try{if(c)c.removeEventListener("abort",j)}catch{}let L;try{L=new Response(null,{status:429,statusText:"Too Many Requests",headers:{"Retry-After":"10"}})}catch{L={ok:false,status:429}}k(L)},250)})}const i=_.apply(window,r);if(l!==null){const c=l;i.then((k)=>{try{if(k.ok)e(c);else if(k.status===401||k.status===403||k.status===404||k.status===429){O(c,k.status!==404)}}catch{}},()=>{})}return i};window.fetch=o}const v=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,"src");if(v!==undefined&&v.set!==undefined&&v.get!==undefined){const o=v.set;s=o;Object.defineProperty(HTMLImageElement.prototype,"src",{configurable:true,enumerable:v.enumerable,get:v.get,set(r){const l=`${r}`;try{const i=y(l);if(i!==null&&R(i)){a.set(this,l);if(u.size<t)u.add(this);return}}catch{}try{a.delete(this);u.delete(this)}catch{}o.call(this,l)}})}try{const o=HTMLImageElement.prototype.setAttribute;HTMLImageElement.prototype.setAttribute=function(r,l){if(arguments.length<2){o.apply(this,arguments);return}if(typeof r==="string"&&r.toLowerCase()==="src"){const i=`${l}`;try{const c=y(i);if(c!==null&&R(c)){a.set(this,i);if(u.size<t)u.add(this);return}a.delete(this);u.delete(this)}catch{}o.call(this,r,i);return}o.call(this,r,l)}}catch{}window.addEventListener("error",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)O(l,true)}}catch{}},true);window.addEventListener("load",(o)=>{try{const r=o.target;if(r instanceof HTMLImageElement){const l=y(r.currentSrc||r.src||"");if(l!==null)e(l);const i=a.get(r);if(i!==undefined){let c=false;try{c=new URL(i,document.baseURI).href===new URL(r.currentSrc||r.src||"",document.baseURI).href}catch{c=false}if(c){a.delete(r);u.delete(r)}}}}catch{}},true)}catch{}}var J=30000;var G=3000;document.addEventListener("DOMContentLoaded",()=>{const n=window.Babel;const d="om-src-id";if(n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[d])){n.registerPlugin(d,({types:h})=>({visitor:{JSXOpeningElement(y,m){const w=y.node;if(w.name&&w.name.type==="JSXMemberExpression")return;for(let t=0;t<w.attributes.length;t++){const a=w.attributes[t];if(a.type==="JSXAttribute"&&a.name&&a.name.name==="data-om-id")return}const R=m.file&&m.file.opts&&m.file.opts.filename||"?";const O=w.loc&&w.loc.start;const e=`jsx:${R}:${w.start??0}:${O?O.line:0}:${O?O.column+1:0}`;w.attributes.push(h.jsxAttribute(h.jsxIdentifier("data-om-id"),h.stringLiteral(e)))}}}))}const p="om-text-extract";let f=false;if(B&&n&&n.registerPlugin&&!(n.availablePlugins&&n.availablePlugins[p])){const h=window.React;if(h&&h.useSyncExternalStore&&h.createElement){f=true;const y={};const m=new Set;let w=0;window.__omTextO=y;window.__omTextSet=(e)=>{for(const t in e){const a=e[t];if(a==null)delete y[t];else y[t]=a}w++;m.forEach((t)=>t())};const R=(e)=>{m.add(e);return()=>m.delete(e)};const O=()=>w;window.__OmT=function e(t){h.useSyncExternalStore(R,O,O);return h.createElement("span",{"data-om-text":t.i,className:"__om-t"},t.i in y?y[t.i]:t.children)};n.registerPlugin(p,({types:e})=>{const t={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const a={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const u=(o,r)=>e.logicalExpression("??",e.memberExpression(e.logicalExpression("||",e.memberExpression(e.identifier("window"),e.identifier("__omTextO")),e.objectExpression([])),e.stringLiteral(o),true),r);const s=(o)=>o.file&&o.file.opts&&o.file.opts.filename||"?";const S=(o)=>o.file&&o.file.code||"";const _=(o,r)=>{const l=(c)=>c&&c.start!=null&&c.end!=null&&(c.type==="StringLiteral"||c.type==="TemplateLiteral"&&c.expressions.length===0)?[c.start,c.end]:null;const i=l(r);if(i)return i;if(r&&r.type==="Identifier"){const c=o.scope.getBinding(r.name);if(c&&c.constant&&c.path.node.type==="VariableDeclarator"){return l(c.path.node.init)}}return null};const v=(o,r,l)=>{const i=o.node;let c=false;const k=(E,T)=>{c=true;return e.jsxElement(e.jsxOpeningElement(e.jsxIdentifier("__OmT"),[e.jsxAttribute(e.jsxIdentifier("i"),e.stringLiteral(E))],false),e.jsxClosingElement(e.jsxIdentifier("__OmT")),[T],false)};const b=i.children.map((E)=>{if(E.type==="JSXText"){if(E.start==null||E.end==null)return E;const T=l.slice(E.start,E.end);const j=T.length-T.trimStart().length;const L=T.length-T.trimEnd().length;if(j+L>=T.length)return E;return k(`txt:${r}:${E.start+j}:${E.end-L}`,E)}if(E.type==="JSXExpressionContainer"){const T=_(o,E.expression);if(T)return k(`str:${r}:${T[0]}:${T[1]}`,E)}return E});if(c)i.children=b};return{visitor:{JSXOpeningElement(o,r){const l=o.node;const i=s(r);const c={};for(let k=0;k<l.attributes.length;k++){const b=l.attributes[k];if(b.type!=="JSXAttribute"||!b.name)continue;const E=b.name.name;if(!a[E])continue;if(!b.value||b.value.type!=="StringLiteral")continue;if(b.value.start==null||b.value.end==null)continue;const T=`txt:${i}:${b.value.start}:${b.value.end}`;c[E]=T;b.value=e.jsxExpressionContainer(u(T,e.stringLiteral(b.value.value)))}if(Object.keys(c).length){l.attributes.push(e.jsxAttribute(e.jsxIdentifier("data-om-text-attrs"),e.stringLiteral(JSON.stringify(c))))}},JSXElement(o,r){const l=o.node.openingElement;const i=l&&l.name&&l.name.name;if(i==="__OmT")return;if(typeof i==="string"&&t[i])return;v(o,s(r),S(r))},JSXFragment(o,r){v(o,s(r),S(r))}}}})}}const g=f?["transform-react-jsx-source",d,p]:["transform-react-jsx-source",d];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((h,y)=>{const m=h.getAttribute("data-plugins")||"";const w=g.filter((R)=>m.indexOf(R)<0);if(w.length){h.setAttribute("data-plugins",m?`${m},${w.join(",")}`:w.join(","))}if(!h.hasAttribute("data-filename")){h.setAttribute("data-filename",h.getAttribute("src")||`inline-${y}`)}})});var A=window.parent;var U="not editable here — open the project in the Claude Design editor to save";var W=()=>Promise.resolve({persisted:false,noHost:true,reason:U});var H=W;var M="data/storage.json";var z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.match(/\/projects\/([^/]+)\/serve\//);if(d)return d[1];return n.hostname.split(".")[0]||""}catch{return location.hostname.split(".")[0]||""}};var Z=()=>{try{const n=new URL(document.baseURI);const d=n.pathname.indexOf("/serve/");if(d>=0)return n.origin+n.pathname.slice(0,d+"/serve/".length)+M}catch{}return"./"+M};var x=null;var N=()=>{if(!x){x=fetch(Z(),{cache:"no-store"}).then((n)=>{if(n.ok)return n.text();return n.status===404?"":null}).catch(()=>null).then((n)=>{if(n===null){x=null;return null}const d=new Map;if(!n)return d;let p;try{p=JSON.parse(n)}catch{console.warn("[omelette.storage] "+M+" is not valid JSON; treating the store as unreadable so a save cannot overwrite the "+"hand-edited bytes. Fix the JSON (or delete the file) to re-enable persistence.");x=null;return null}if(p===null||typeof p!=="object"||Array.isArray(p)){console.warn("[omelette.storage] "+M+" doesn't hold a JSON object; treating the store as unreadable so a save cannot "+"overwrite the hand-edited bytes. Make the top level a JSON object to re-enable persistence.");x=null;return null}const f=p;if("data"in f){const g=f.data;if(g===null||typeof g!=="object"||Array.isArray(g)){console.warn("[omelette.storage] "+M+' has a "data" field that is not a JSON object; treating the store as unreadable so a '+'save cannot overwrite the hand-edited bytes. Make "data" a JSON object to re-enable persistence.');x=null;return null}const h=f._meta;const y=h!==null&&typeof h==="object"?h.project:undefined;if(typeof y==="string"&&y!==""&&y!==z())return d;for(const m of Object.keys(g))d.set(m,g[m]);return d}for(const g of Object.keys(f)){if(g!=="_meta")d.set(g,f[g])}return d})}return x};var F=(n)=>H(M,JSON.stringify({_meta:{project:z(),version:1},data:Object.fromEntries(n)},null,2));var D=Promise.resolve();var $=(n)=>{const d=D.then(n);D=d.then(()=>{return},()=>{return});return d};var V=/sk-(?:ant-)?[A-Za-z0-9_-]{16,}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|xox[a-z]-[A-Za-z0-9][A-Za-z0-9-]{9,}|AIza[0-9A-Za-z_-]{30,}|-----BEGIN [A-Z ]*PRIVATE KEY-----/;var Y=/password|passwd|secret|api[_-]?key|access[_-]?token|auth[_-]?token|credential/i;var Q=(n,d,p)=>{if(V.test(d)||Y.test(n)&&typeof p==="string"&&p.length>=8){console.warn('[omelette.storage] the value for "'+n+'" looks like a credential. The storage file is a plaintext project file — visible to '+"everyone with project access and copied when the project is duplicated. Do not store secrets here.")}};var q={persisted:false,reason:"could not load the existing store — not overwriting it"};var X={persisted:false,reason:"stored value changed since a failed read — re-read this key before saving"};var P=new Set;var ee={get:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.get: key must be a string"))}return $(N).then((d)=>{if(d===null){P.add(n);return null}P.delete(n);if(!d.has(n))return null;const p=d.get(n);return p==null?null:JSON.parse(JSON.stringify(p))})},set:(n,d)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.set: key must be a string"))}let p;try{p=JSON.stringify(d)}catch(g){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable ("+String(g)+")"))}if(p===undefined){return Promise.reject(new TypeError("storage.set: value must be JSON-serializable"))}Q(n,p,d);const f=JSON.parse(p);return $(()=>N().then((g)=>{if(g===null)return q;if(P.has(n)){if(g.has(n))return X;P.delete(n)}g.set(n,f);return F(g)}))},delete:(n)=>{if(typeof n!=="string"){return Promise.reject(new TypeError("storage.delete: key must be a string"))}return $(()=>N().then((d)=>{if(d===null)return q;if(P.has(n)){if(d.has(n))return X;P.delete(n)}d.delete(n);return F(d)}))},keys:()=>$(N).then((n)=>n===null?[]:Array.from(n.keys()))};window.omelette={writeFile:(n,d)=>H(n,d).then((p)=>{if(!p.persisted&&!p.noHost){throw new Error(p.reason||"write failed")}}),storage:ee};if(A&&A!==window){const n=(e,t)=>{try{A.postMessage({__omelette_log:true,type:e,data:t},"*")}catch{}};["log","warn","error"].forEach((e)=>{const t=console[e];console[e]=(...a)=>{const u=a.map((s)=>{try{return typeof s==="object"?JSON.stringify(s):String(s)}catch{try{return String(s)}catch{return"[unstringifiable]"}}}).join(" ");n(e,u);t.apply(console,a)}});window.addEventListener("error",(e)=>{const t=e.target;if(t&&t!==window&&t.tagName){const a=t.src||t.href||"";n("resource_error",`${t.tagName} failed to load: ${a}`)}else{n("error",`${e.message||"Unknown error"} at ${e.filename||"?"}:${e.lineno||0}:${e.colno||0}`)}},true);window.addEventListener("unhandledrejection",(e)=>{const t=e.reason;const a=t instanceof Error?`${t.message} ${t.stack}`:String(t);n("error",`Unhandled rejection: ${a}`)});window.addEventListener("click",(e)=>{if(e.defaultPrevented||e.button!==0)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;const t=e.composedPath?e.composedPath():[];const a=["button","input","select","textarea","summary","label"];let u=null;for(const v of t){if(!(v instanceof Element))continue;if(v.localName==="a"){if(!(v instanceof HTMLAnchorElement))return;u=v;break}if(a.indexOf(v.localName)!==-1)return}if(!u)return;if(u.isContentEditable)return;const s=u.closest("[contenteditable]");if(s&&s.getAttribute("contenteditable")!=="false")return;const S=(u.getAttribute("target")||"_self").toLowerCase();if(S!=="_self"&&S!=="_top"&&S!=="_parent")return;let _;try{_=new URL(u.href)}catch{return}if(_.protocol!=="http:"&&_.protocol!=="https:")return;if(location.origin==="null")return;if(_.origin===location.origin)return;e.preventDefault();window.open(_.href,"_blank","noopener,noreferrer")});const d=()=>{try{A.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(window.ResizeObserver)new ResizeObserver(d).observe(document.documentElement);const p=()=>{d();if(!document.querySelector('script[type="text/babel"],script[type="text/jsx"]'))return;const e=()=>document.getElementById("root")||document.querySelector("body > div[id]");const t=e()?.firstElementChild??null;let a=0;const u=()=>{const s=e();if(s&&s.firstElementChild!==t||++a>30){d();return}setTimeout(u,100)};setTimeout(u,100)};if(document.readyState==="complete")p();else window.addEventListener("load",p);const f={};let g=0;const h=(e)=>new Promise((t,a)=>{if(!I.length){a(new Error("claude.complete: no parent origin"));return}const u=`c${++g}`;const s=()=>setTimeout(()=>{delete f[u];a(new Error(`claude.complete: no data for ${J/1000}s`))},J);const S=s();f[u]={resolve:t,reject:a,text:"",t:S,arm:s};try{for(const _ of I){A.postMessage({__om_api:true,id:u,body:e},_)}}catch(_){clearTimeout(S);delete f[u];a(_)}});const y=8;const m=async(e,t)=>{if(!Array.isArray(e.messages)){throw new Error("claude.complete: tools require a messages array")}const a=e.messages.slice();const u={...e,tools:e.tools.map((_)=>{if(_===null||typeof _!=="object")return _;const v={};for(const o of Object.keys(_)){if(typeof _[o]!=="function")v[o]=_[o]}return v})};const s=u.tool_choice;const S=s!=null&&(s.type==="any"||s.type==="tool")?{...u,tool_choice:s.disable_parallel_tool_use!==undefined?{type:"auto",disable_parallel_tool_use:s.disable_parallel_tool_use}:{type:"auto"}}:u;for(let _=0;_<y;_++){const v=await h({..._===0?u:S,messages:a});const o=v.message;const r=o&&Array.isArray(o.content)?o.content:null;const l=r?r.filter((c)=>c?.type==="tool_use"):[];if(o?.stop_reason!=="tool_use"||l.length===0){return v.text}const i=[];for(const c of l){const k=t.get(c.name);if(!k){i.push({type:"tool_result",tool_use_id:c.id,content:`no handler for tool "${c.name}"`,is_error:true});continue}try{const b=await k(c.input);const E=typeof b==="string"?b:O(b)??"";i.push({type:"tool_result",tool_use_id:c.id,content:E})}catch(b){i.push({type:"tool_result",tool_use_id:c.id,content:String(b?.message??b??"tool handler failed"),is_error:true})}}a.push({role:"assistant",content:r},{role:"user",content:i})}throw new Error(`claude.complete: exceeded ${y} tool turns`)};window.claude={complete(e){const t=e;if(t!==null&&typeof t==="object"&&Array.isArray(t.tools)&&t.tools.some((a)=>a!==null&&typeof a==="object"&&typeof a.run==="function")){const a=new Map;for(const u of t.tools){if(u!==null&&typeof u==="object"&&typeof u.run==="function"){a.set(String(u.name),u.run)}}return m(t,a)}return h(e).then((a)=>a.text)}};const w={};let R=0;H=(e,t)=>new Promise((a)=>{if(!I.length){a({persisted:false,noHost:true,reason:U});return}const u=`f${++R}`;const s=setTimeout(()=>{delete w[u];a({persisted:false,noHost:true,reason:U})},G);w[u]={settle:a,t:s};try{for(const S of I){A.postMessage({__om_file:true,id:u,op:"write",path:e,content:t},S)}}catch{clearTimeout(s);delete w[u];a({persisted:false,noHost:true,reason:U})}});const O=(e)=>{try{return JSON.stringify(e)}catch{return JSON.stringify(String(e))}};window.addEventListener("message",(e)=>{if(I.indexOf(e.origin)<0)return;if(e.source!==A)return;const t=e.data;if(!t)return;if(t.type==="omelette-preview-refresh"){if(typeof t.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(t.token))return;const s=Math.max(1,Math.floor((t.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+t.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+s;C();return}if(t.__om_file_r){const s=w[t.id];if(!s)return;clearTimeout(s.t);delete w[t.id];s.settle(t.ok?{persisted:true}:{persisted:false,reason:t.error||"write failed"});return}if(t.__om_api_r){const s=f[t.id];if(!s)return;if(t.error!=null){clearTimeout(s.t);delete f[t.id];s.reject(new Error(t.error));return}if(t.chunk!=null){clearTimeout(s.t);s.t=s.arm();s.text+=t.chunk;return}if(t.done){clearTimeout(s.t);delete f[t.id];s.resolve({text:t.text!=null?t.text:s.text,message:t.message});return}return}if(!t.__om_eval)return;const a=t;const u=(s)=>{e.source.postMessage({...s,__om_eval_r:1,id:a.id},e.origin)};try{const s=(0,eval)(a.code);if(s&&typeof s.then==="function"){s.then((S)=>u({ok:1,v:O(S)}),(S)=>u({ok:0,e:String(S)}))}else{u({ok:1,v:O(s)})}}catch(s){u({ok:0,e:String(s)})}})}})();
+</script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_colors.css">
+<link rel="stylesheet" href="_ds/metaverse-center-c4e3445e-22d6-4f7a-a6a6-dda7e3272cd6/src/styles/tokens/_typography.css">
+<link rel="stylesheet" href="kontor-tokens.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,600&display=swap">
+<style>
+  * { box-sizing: border-box; }
+  table { border-collapse: separate; border-spacing: 0; }
+  th, td { font-weight: inherit; }
+</style>
+</helmet>
+<div style="background:var(--k-page);color:var(--k-ink);font-family:var(--k-font-sans);font-size:13px;line-height:1.3;padding:{{ rootPad }};display:flex;flex-direction:column;gap:8px;min-height:100%;container-type:inline-size">
+
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:{{ headGap }}">
+    <sc-if value="{{ isFull }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:24px;box-shadow:inset 0 -1px var(--k-rule);padding-bottom:10px">
+      <div style="display:flex;align-items:baseline;gap:14px">
+        <div style="font-family:var(--k-font-head);font-weight:var(--k-head-weight);text-transform:var(--k-head-transform);letter-spacing:var(--k-head-tracking);font-size:20px;color:var(--k-ink)">Kontor</div>
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3)">Kosten &amp; Telemetrie · Betreiberinnen-Ansicht</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;min-height:28px;border:1px solid var(--k-rule);background:var(--k-raised);font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-ink)">
+          <span>05.04.2026 – 05.09.2026</span>
+          <span style="color:var(--k-ink-4)">|</span>
+          <span style="color:var(--k-ink-2)">5 Monate</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;min-height:28px;border:1px solid var(--k-rule);background:var(--k-raised);font-family:var(--k-font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-carrier-ink)">seit Monatsbeginn bis jetzt</div>
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Auflösung Monat<br><span style="color:var(--k-ink-3)">abgeleitet, nicht gewählt</span></div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isKacheln }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:20px;box-shadow:inset 0 -1px var(--k-rule);padding-bottom:4px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-family:var(--k-font-head);font-weight:var(--k-head-weight);text-transform:var(--k-head-transform);letter-spacing:var(--k-head-tracking);font-size:14px;color:var(--k-ink)">Kontor · Kopfkacheln</span>
+        <span style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--k-ink-3)">Ist / Hochrechnung · ohne Delta, ohne Sparkline, ohne Pfeil</span>
+      </div>
+      <span style="font-family:var(--k-font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">05.04. – 05.09.2026 · Auflösung Monat</span>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isFull }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--k-sunken);border:1px solid var(--k-rule-soft);padding:6px 10px">
+      <span style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);padding-right:4px">Filter</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-rule);color:var(--k-ink)">Anbieter · alle (2)</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-rule);color:var(--k-ink)">Modell · alle (10)</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-rule);color:var(--k-ink)">Zweck · alle (21)</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-rule);color:var(--k-ink)">Welt · alle (21)</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-carrier);background:var(--k-carrier-tint);color:var(--k-carrier-ink)">Ausgang · 5 Kategorien</span>
+      <span style="font-family:var(--k-font-mono);font-size:12px;padding:4px 8px;min-height:28px;display:inline-flex;align-items:center;border:1px solid var(--k-rule);color:var(--k-ink-3)">Schlüsselquelle · platform (einziger Wert)</span>
+      <span style="flex:1"></span>
+      <span style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Top 9 + Sonstige</span>
+    </div>
+    </sc-if>
+
+    <div data-kontor-tiles style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+      <div onClick="{{ pickTotal }}" style="cursor:pointer;padding:8px 12px;border:1px solid {{ tTotal.bd }};background:{{ tTotal.bg }};display:flex;flex-direction:column;gap:8px" style-hover="border-color:var(--k-carrier)">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Gesamt</div>
+        <div style="display:flex;align-items:baseline;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$11.87</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Ist</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">$15.61</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Hochrechnung 30.09.</div>
+          </div>
+        </div>
+      </div>
+      <div onClick="{{ pickImg }}" style="cursor:pointer;padding:8px 12px;border:1px solid {{ tImg.bd }};background:{{ tImg.bg }};display:flex;flex-direction:column;gap:8px" style-hover="border-color:var(--k-carrier)">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Bild · Replicate</div>
+        <div style="display:flex;align-items:baseline;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$10.58</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Ist</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">$13.87</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Hochrechnung</div>
+          </div>
+        </div>
+      </div>
+      <div onClick="{{ pickTxt }}" style="cursor:pointer;padding:8px 12px;border:1px solid {{ tTxt.bd }};background:{{ tTxt.bg }};display:flex;flex-direction:column;gap:8px" style-hover="border-color:var(--k-carrier)">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Text · OpenRouter</div>
+        <div style="display:flex;align-items:baseline;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$1.29</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Ist</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">$1.74</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Hochrechnung</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:{{ extraTile }};flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Aufrufe</div>
+        <div style="display:flex;align-items:baseline;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">1,646</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Ist</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">2,150</div>
+            <div style="font-family:var(--k-font-mono);font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Hochrechnung</div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:{{ extraTile }};flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Ø je Aufruf</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$0.0082</div>
+          <div style="font-family:var(--k-font-mono);font-size:10px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">n = 1,440 von 1,646</div>
+          <div style="font-family:var(--k-font-mono);font-size:10px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">Median $0.00071 · zwei Populationen</div>
+        </div>
+      </div>
+      <div style="padding:10px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:{{ extraTile }};flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">░ ohne Betrag</div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">206</div>
+          <div style="font-family:var(--k-font-mono);font-size:10px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">von 1,646 · 12.5 % · keine Preisliste</div>
+        </div>
+        <div style="display:flex;height:6px;background:var(--k-sunken)">
+          <div style="width:87.5%;background:var(--k-series-txt)"></div>
+          <div style="width:12.5%;background:var(--k-hatch)"></div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ isKacheln }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3)">Variante mit Veränderung — Farbsemantik invertiert (steigende Kosten sind schlecht)</div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px">
+        <div style="padding:8px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Gesamt · August</div>
+          <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$2.99</div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-adverse-ink)">
+            <span style="font-size:11px">▲</span><span>+12 %</span><span style="color:var(--k-ink-3)">teurer als Juli</span>
+          </div>
+        </div>
+        <div style="padding:8px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Text · August</div>
+          <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">$0.27</div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-benign-ink)">
+            <span style="font-size:11px">▼</span><span>−18 %</span><span style="color:var(--k-ink-3)">billiger als Juli</span>
+          </div>
+        </div>
+        <div style="padding:8px 12px;border:1px solid var(--k-rule);background:var(--k-raised);display:flex;flex-direction:column;gap:4px">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Aufrufe · August</div>
+          <div style="font-family:var(--k-font-mono);font-size:20px;font-variant-numeric:tabular-nums;color:var(--k-ink)">381</div>
+          <div style="display:flex;align-items:center;gap:6px;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-ink-2)">
+            <span style="font-size:11px">▲</span><span>+9 %</span><span style="color:var(--k-ink-3)">Zähler, keine Wertung</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-family:var(--k-font-sans);font-size:11px;line-height:1.35;color:var(--k-ink-2)">
+        Zeichen = Richtung, Farbe = Bewertung, bei Kosten invertiert. Zähler bekommen kein Paar. Minuszeichen U+2212.
+      </div>
+    </div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isFull }}" hint-placeholder-val="{{ true }}">
+  <div data-kontor-zones style="display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start">
+
+    <div data-kontor-zone-a style="display:flex;flex-direction:column;gap:16px">
+
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Anteil am Gesamtbetrag</div>
+        <div style="font-family:var(--k-font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--k-ink-3)">1,646 Aufrufe · $11.87 · 206 Zeilen ohne Betrag stehen nicht im Balken</div>
+      </div>
+      <div style="display:flex;height:28px;border:1px solid var(--k-rule)">
+        <div style="width:89.1%;background:var(--k-series-img);display:flex;align-items:center;justify-content:space-between;padding:0 10px">
+          <span style="font-family:var(--k-font-mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-page)">Bild · Replicate</span>
+          <span style="font-family:var(--k-font-mono);font-size:13px;font-variant-numeric:tabular-nums;color:var(--k-page)">89.1 % · $10.58 · 316 Aufrufe</span>
+        </div>
+        <div style="width:10.9%;background:var(--k-series-txt);display:flex;align-items:center;padding:0 10px">
+          <span style="font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-page)">10.9 % · $1.29</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid var(--k-rule);background:var(--k-raised)">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;padding:8px 12px;box-shadow:inset 0 -1px var(--k-rule)">
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <div style="font-family:var(--k-font-head);font-weight:var(--k-head-weight);text-transform:var(--k-head-transform);letter-spacing:var(--k-head-tracking);font-size:14px;color:var(--k-ink)">Kosten über Zeit · gestapelt nach Anbieter</div>
+          <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3)">Quelle: Kachel <span style="color:var(--k-carrier-ink)">{{ srcLabel }}</span> · Auflösung Monat · September unvollständig (5 von 30 Tagen)</div>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px">
+          <span style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3)">Hochrechnung 30.09.</span>
+          <span style="font-family:var(--k-font-mono);font-size:18px;font-variant-numeric:tabular-nums;color:var(--k-ink)">{{ fcTotal }}</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;padding:12px 12px 8px">
+        <div style="display:flex;flex-direction:column;justify-content:space-between;height:176px;font-family:var(--k-font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--k-ink-3);text-align:right;width:42px">
+          <span>$5.00</span><span>$4.00</span><span>$3.00</span><span>$2.00</span><span>$1.00</span><span>$0</span>
+        </div>
+        <div style="flex:1;position:relative;height:176px">
+          <div style="position:absolute;left:0;right:0;top:0;height:1px;border-top:1px dashed var(--k-grid)"></div>
+          <div style="position:absolute;left:0;right:0;top:35px;height:1px;border-top:1px dashed var(--k-grid)"></div>
+          <div style="position:absolute;left:0;right:0;top:70px;height:1px;border-top:1px dashed var(--k-grid)"></div>
+          <div style="position:absolute;left:0;right:0;top:106px;height:1px;border-top:1px dashed var(--k-grid)"></div>
+          <div style="position:absolute;left:0;right:0;top:141px;height:1px;border-top:1px dashed var(--k-grid)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--k-rule)"></div>
+          <div style="position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));align-items:end;gap:26px;padding:0 8px">
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+              <div style="height:4px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:22px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+              <div style="height:7px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:51px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+              <div style="height:10px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:74px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+              <div style="height:12px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:108px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%">
+              <div style="height:10px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:96px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content:flex-end;height:100%;position:relative">
+              <div style="position:absolute;left:0;right:0;bottom:25px;height:132px;border:1px dashed var(--k-forecast);border-bottom:none;background:var(--k-forecast);opacity:.55"></div>
+              <div style="height:3px;background:var(--k-series-txt);opacity:{{ oTxt }}"></div>
+              <div style="height:25px;background:var(--k-series-img);opacity:{{ oImg }}"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;padding:0 12px 6px">
+        <div style="width:42px"></div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:26px;padding:0 8px;font-family:var(--k-font-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-3);text-align:center">
+          <span>Apr</span><span>Mai</span><span>Jun</span><span>Jul</span><span>Aug</span><span style="color:var(--k-ink-2)">Sep ⌐</span>
+        </div>
+      </div>
+      <div style="padding:0 12px 6px;font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3);display:flex;gap:18px">
+        <span><span style="display:inline-block;width:18px;height:0;border-top:1px dashed var(--k-forecast);vertical-align:middle"></span> gestrichelt = Zeitraum unvollständig · graue Fläche = Hochrechnung, Farbe entzogen, ohne Mittellinie</span>
+      </div>
+
+      <div style="padding:0 12px 12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:4px">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Aufrufe nach Modell — die Tabelle ist die Legende des Diagramms · 10 Werte, also keine Sammelzeile</div>
+          <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3);white-space:nowrap">Spaltenkante am längsten Wert · Anteile gerundet: 10 Zeilen = 99,8 %</div>
+        </div>
+        <table style="width:100%;font-family:var(--k-font-mono);font-size:13px;font-variant-numeric:tabular-nums;text-align:right;color:var(--k-ink)">
+          <thead>
+            <tr>
+              <th onClick="{{ sortModel }}" style="width:250px;cursor:pointer;text-align:left;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Modell {{ mkModel }}</th>
+              <th style="width:110px;text-align:left;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Anbieter</th>
+              <th onClick="{{ sortCalls }}" style="width:90px;cursor:pointer;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Aufrufe {{ mkCalls }}</th>
+              <th onClick="{{ sortAvg }}" style="width:150px;cursor:pointer;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Ø je Aufruf {{ mkAvg }}</th>
+              <th onClick="{{ sortCost }}" style="cursor:pointer;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule);min-width:280px">Kosten {{ mkCost }}</th>
+              <th style="width:80px;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Welten</th>
+              <th style="width:300px;text-align:left;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Ausgang</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="10">
+              <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+                <td style="text-align:left;padding:6px 10px;min-height:28px;color:{{ r.nameColor }}">{{ r.model }}<span style="color:var(--k-ink-3)"> {{ r.flag }}</span></td>
+                <td style="text-align:left;padding:6px 10px;font-size:12px;color:var(--k-ink-2)">{{ r.provider }}</td>
+                <td style="padding:6px 10px">{{ r.calls }}</td>
+                <td style="padding:6px 10px;white-space:nowrap;color:{{ r.avgColor }}">{{ r.avg }}<div style="font-size:10px;color:var(--k-ink-3)">{{ r.avgN }}</div></td>
+                <td style="padding:6px 10px">
+                  <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+                    <div style="flex:1;height:8px;background:var(--k-sunken);display:flex">
+                      <div style="width:{{ r.barPct }}%;background:{{ r.barColor }}"></div>
+                    </div>
+                    <span style="width:74px;text-align:right;color:{{ r.costColor }}">{{ r.cost }}</span>
+                    <span style="width:52px;text-align:right;font-size:12px;color:var(--k-ink-3)">{{ r.share }}</span>
+                  </div>
+                </td>
+                <td style="padding:6px 10px;color:{{ r.worldsColor }}">{{ r.worlds }}</td>
+                <td style="text-align:left;padding:6px 10px;font-size:12px;white-space:nowrap;color:{{ r.outColor }}">{{ r.outcome }}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    </div>
+
+    <div data-kontor-zone-b style="display:flex;flex-direction:column;gap:12px">
+
+    <div data-kontor-breakdowns style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Nach Zweck · 21</div>
+        <sc-for list="{{ purposes }}" as="p" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:4px 0;box-shadow:inset 0 1px var(--k-rule-soft)">
+            <span style="flex:1;font-family:var(--k-font-mono);font-size:12px;color:var(--k-ink)">{{ p.name }}</span>
+            <span style="width:70px;height:8px;background:var(--k-sunken);display:flex"><span style="width:{{ p.pct }}%;background:var(--k-series-img)"></span></span>
+            <span style="width:52px;text-align:right;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--k-ink)">{{ p.cost }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Nach Welt · 21</div>
+        <sc-for list="{{ worldsBrief }}" as="w" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:4px 0;box-shadow:inset 0 1px var(--k-rule-soft)">
+            <span style="flex:1;font-family:var(--k-font-mono);font-size:12px;color:{{ w.color }}">{{ w.name }}</span>
+            <span style="width:70px;height:8px;background:var(--k-sunken);display:flex"><span style="width:{{ w.pct }}%;background:{{ w.fill }}"></span></span>
+            <span style="width:52px;text-align:right;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:{{ w.color }}">{{ w.cost }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Nach Ausgang · 5 gleichrangig</div>
+        <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:8px;min-height:28px;padding:4px 0;box-shadow:inset 0 1px var(--k-rule-soft)">
+            <span style="flex:1;font-family:var(--k-font-mono);font-size:12px;color:{{ o.color }}">{{ o.name }}</span>
+            <span style="width:52px;text-align:right;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:{{ o.color }}">{{ o.n }}</span>
+            <span style="width:56px;text-align:right;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:{{ o.color }}">{{ o.cost }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Nach Nutzer</div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;background:repeating-linear-gradient(135deg,var(--k-hatch-bg) 0 1px,transparent 1px 7px);border:1px solid var(--k-rule-soft);padding:12px">
+          <div style="font-family:var(--k-font-mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--k-ink-2)">Achse nicht vorhanden</div>
+          <div style="font-family:var(--k-font-sans);font-size:12px;line-height:1.4;color:var(--k-ink-3)">Aufrufe werden nicht je Nutzer verbucht. 0 von 1,646 Zeilen tragen die Eigenschaft — nicht „niemand hat Kosten“, sondern „die Achse existiert nicht“.</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-kontor-matrixheat style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px">
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding-bottom:8px">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Welten × Modelle · Verlauf je Zelle</div>
+          <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3)">Sparkline 22 px · Nulllinie · Endpunkt · immer mit Zahl</div>
+        </div>
+        <table style="width:100%;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;text-align:right">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:6px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Welt</th>
+              <th style="padding:6px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">flux-2-pro</th>
+              <th style="padding:6px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">flux-2-max</th>
+              <th style="padding:6px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">image-model</th>
+              <th style="padding:6px 8px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">gpt-4o-mini</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 8px;color:var(--k-ink)">Die Chitinöse Mandatur</td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,18 12,14 23,9 34,11 46,4 58,6" fill="none" stroke="var(--k-series-img)" stroke-width="1.5"></polyline><circle cx="58" cy="6" r="2" fill="var(--k-series-img)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$1.62</span>
+                </div>
+              </td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,21 12,21 23,21 34,2 46,21 58,21" fill="none" stroke="var(--k-series-img)" stroke-width="1.5"></polyline><circle cx="58" cy="21" r="2" fill="var(--k-series-img)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$1.61</span>
+                </div>
+              </td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.062</span></td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,20 12,17 23,15 34,13 46,10 58,12" fill="none" stroke="var(--k-series-txt)" stroke-width="1.5"></polyline><circle cx="58" cy="12" r="2" fill="var(--k-series-txt)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$0.21</span>
+                </div>
+              </td>
+            </tr>
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 8px;color:var(--k-ink)">Velgarien</td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,12 12,8 23,13 34,7 46,9 58,5" fill="none" stroke="var(--k-series-img)" stroke-width="1.5"></polyline><circle cx="58" cy="5" r="2" fill="var(--k-series-img)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$1.44</span>
+                </div>
+              </td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-4)">—</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.093</span></td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,19 12,13 23,16 34,9 46,14 58,10" fill="none" stroke="var(--k-series-txt)" stroke-width="1.5"></polyline><circle cx="58" cy="10" r="2" fill="var(--k-series-txt)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$0.18</span>
+                </div>
+              </td>
+            </tr>
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 8px;color:var(--k-ink)">Hohler Zehnt</td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,21 12,17 23,12 34,14 46,15 58,16" fill="none" stroke="var(--k-series-img)" stroke-width="1.5"></polyline><circle cx="58" cy="16" r="2" fill="var(--k-series-img)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$1.11</span>
+                </div>
+              </td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-4)">—</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.041</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-4)">·</span></td>
+            </tr>
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 8px;color:var(--k-ink)">Salzmarsch</td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,21 12,21 23,18 34,12 46,10 58,8" fill="none" stroke="var(--k-series-img)" stroke-width="1.5"></polyline><circle cx="58" cy="8" r="2" fill="var(--k-series-img)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$0.97</span>
+                </div>
+              </td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-4)">—</span></td>
+              <td style="padding:4px 8px;background:repeating-linear-gradient(135deg,var(--k-hatch-bg) 0 1px,transparent 1px 6px)"><span style="color:var(--k-ink-3)">░</span></td>
+              <td style="padding:4px 8px">
+                <div style="display:flex;align-items:center;gap:8px;justify-content:flex-end">
+                  <svg width="58" height="22" viewBox="0 0 58 22" style="overflow:visible"><line x1="0" y1="21" x2="58" y2="21" stroke="var(--k-rule)" stroke-width="1"></line><polyline points="0,21 12,20 23,19 34,17 46,18 58,15" fill="none" stroke="var(--k-series-txt)" stroke-width="1.5"></polyline><circle cx="58" cy="15" r="2" fill="var(--k-series-txt)"></circle></svg>
+                  <span style="width:52px;color:var(--k-ink)">$0.13</span>
+                </div>
+              </td>
+            </tr>
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 8px;color:var(--k-ink-3)">ohne Angabe · 222 Zeilen</td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.31</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-4)">—</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.048</span></td>
+              <td style="padding:4px 8px"><span style="color:var(--k-ink-3)">$0.089</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="border:1px solid var(--k-rule);background:var(--k-raised);padding:10px 12px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Rhythmus · 154 Tage</div>
+          <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3)">zeigt Takt, nicht Betragshöhe</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <div style="display:flex;flex-direction:column;gap:2px;font-family:var(--k-font-mono);font-size:10px;color:var(--k-ink-3);padding-top:1px">
+            <span style="height:10px;line-height:10px">Mo</span><span style="height:10px"></span><span style="height:10px;line-height:10px">Mi</span><span style="height:10px"></span><span style="height:10px;line-height:10px">Fr</span><span style="height:10px"></span><span style="height:10px;line-height:10px">So</span>
+          </div>
+          <div style="display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,10px);gap:2px">
+            <sc-for list="{{ heat }}" as="d" hint-placeholder-count="154">
+              <div style="width:10px;height:10px;background:{{ d.bg }};box-shadow:{{ d.ring }}"></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;font-family:var(--k-font-mono);font-size:10px;color:var(--k-ink-3)">
+          <span>kein Aufruf</span>
+          <span style="display:flex;gap:2px">
+            <span style="width:10px;height:10px;background:var(--k-sunken);box-shadow:inset 0 0 0 1px var(--k-rule-soft)"></span>
+            <span style="width:10px;height:10px;background:color-mix(in srgb, var(--k-series-img) 25%, var(--k-sunken))"></span>
+            <span style="width:10px;height:10px;background:color-mix(in srgb, var(--k-series-img) 55%, var(--k-sunken))"></span>
+            <span style="width:10px;height:10px;background:color-mix(in srgb, var(--k-series-img) 80%, var(--k-sunken))"></span>
+            <span style="width:10px;height:10px;background:var(--k-series-img)"></span>
+          </span>
+          <span>&gt; $0.40</span>
+          <span style="flex:1"></span>
+          <span>Apr → Sep</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isTabelle }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-family:var(--k-font-head);font-weight:var(--k-head-weight);text-transform:var(--k-head-transform);letter-spacing:var(--k-head-tracking);font-size:15px;color:var(--k-ink)">Aufrufe nach Welt</div>
+        <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3)">1,646 Zeilen · Top 9 + zwei getrennte Sammelzeilen · genau eine Ebene tief · keine Zebrastreifen</div>
+      </div>
+      <div style="font-family:var(--k-font-mono);font-size:11px;font-variant-numeric:tabular-nums;color:var(--k-ink-3);text-align:right">
+        Sortierung: Kosten ▼<br>Balken ab Null · Spaltenkante am längsten Wert
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--k-sunken);border:1px solid var(--k-rule-soft);padding:7px 10px;font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-2)">
+      <span style="letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3)">Zellzustände</span>
+      <span><span style="color:var(--k-ink)">$0.0030</span> gemessen</span>
+      <span><span style="color:var(--k-ink)">~$0.0030</span> geschätzt</span>
+      <span><span style="color:var(--k-ink-4)">·</span> unter Anzeigegenauigkeit, &gt; 0</span>
+      <span><span style="color:var(--k-ink-4)">—</span> nicht anwendbar</span>
+      <span><span style="color:var(--k-ink-3)">░</span> kein Wert erfasst — 206 Zeilen, 12,5 %</span>
+      <span style="color:var(--k-ink-3)">Das Kürzel hängt an der Zelle, nicht an der Spalte.</span>
+    </div>
+
+    <table style="width:100%;font-family:var(--k-font-mono);font-size:13px;font-variant-numeric:tabular-nums;text-align:right;color:var(--k-ink)">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Welt</th>
+          <th style="padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Aufrufe</th>
+          <th style="width:200px;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Ø je Aufruf</th>
+          <th style="padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-carrier-ink);box-shadow:inset 0 -1px var(--k-carrier);width:340px">Kosten ▼</th>
+          <th style="padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Gespräch</th>
+          <th style="text-align:left;padding:6px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2);box-shadow:inset 0 -1px var(--k-rule)">Ausgang</th>
+        </tr>
+      </thead>
+      <tbody>
+        <sc-for list="{{ wrows }}" as="w" hint-placeholder-count="11">
+          <tr onClick="{{ w.toggle }}" style="box-shadow:inset 0 1px var(--k-rule-soft);cursor:pointer;background:{{ w.rowBg }}" style-hover="background:var(--k-hover)">
+            <td style="text-align:left;padding:6px 10px;min-height:28px;color:{{ w.nameColor }}"><span style="display:inline-block;width:14px;color:var(--k-ink-4)">{{ w.caret }}</span>{{ w.name }}</td>
+            <td style="padding:6px 10px">{{ w.calls }}</td>
+            <td style="padding:6px 10px;white-space:nowrap;color:{{ w.avgColor }}">{{ w.avg }}<div style="font-size:10px;color:var(--k-ink-3)">{{ w.avgN }}</div></td>
+            <td style="padding:6px 10px">
+              <div style="display:flex;align-items:center;gap:10px;justify-content:flex-end">
+                <div style="flex:1;height:8px;background:var(--k-sunken);display:flex">
+                  <div style="width:{{ w.barPct }}%;background:{{ w.barColor }}"></div>
+                </div>
+                <span style="width:74px;text-align:right;color:{{ w.costColor }}">{{ w.cost }}</span>
+                <span style="width:52px;text-align:right;font-size:12px;color:var(--k-ink-3)">{{ w.share }}</span>
+              </div>
+            </td>
+            <td style="padding:6px 10px;color:{{ w.convColor }}">{{ w.conv }}</td>
+            <td style="text-align:left;padding:6px 10px;font-size:12px;color:{{ w.outColor }}">{{ w.outcome }}</td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+
+    <div style="border:1px solid var(--k-rule);background:var(--k-sunken);padding:10px 12px;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div style="font-family:var(--k-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-2)">Aufgeklappt: {{ openName }} · Einzelaufrufe</div>
+        <div style="font-family:var(--k-font-mono);font-size:11px;color:var(--k-ink-3)">Ebene 5 · nur über Klick · eine Ebene tief, nicht zwei</div>
+      </div>
+      <table style="width:100%;font-family:var(--k-font-mono);font-size:12px;font-variant-numeric:tabular-nums;text-align:right;color:var(--k-ink)">
+        <thead>
+          <tr>
+            <th style="text-align:left;padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Zeitpunkt</th>
+            <th style="text-align:left;padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Modell</th>
+            <th style="text-align:left;padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Zweck</th>
+            <th style="padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Kosten</th>
+            <th style="text-align:left;padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Ausgang</th>
+            <th style="text-align:left;padding:5px 10px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--k-ink-3);box-shadow:inset 0 -1px var(--k-rule-soft)">Schlüsselquelle</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{ detail }}" as="d" hint-placeholder-count="4">
+            <tr style="box-shadow:inset 0 1px var(--k-rule-soft)" style-hover="background:var(--k-hover)">
+              <td style="text-align:left;padding:4px 10px;color:var(--k-ink-2)">{{ d.t }}</td>
+              <td style="text-align:left;padding:4px 10px">{{ d.model }}</td>
+              <td style="text-align:left;padding:4px 10px;color:var(--k-ink-2)">{{ d.purpose }}</td>
+              <td style="padding:4px 10px;color:{{ d.costColor }}">{{ d.cost }}</td>
+              <td style="text-align:left;padding:4px 10px;color:{{ d.outColor }}">{{ d.out }}</td>
+              <td style="text-align:left;padding:4px 10px;color:var(--k-ink-3)">platform</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="font-family:var(--k-font-sans);font-size:12px;line-height:1.5;color:var(--k-ink-2);max-width:1000px">
+      <strong style="font-weight:600;color:var(--k-ink)">Entscheidung zu den vier Größenordnungen:</strong>
+      Die Spaltenbreite ist am längsten Wert der Spalte reserviert, die Beträge sind rechtsbündig, die Präzision folgt der Größenordnung.
+      Die Dezimalpunkte stehen deshalb <em>nicht</em> untereinander — die rechte Spaltenkante dafür ruhig.
+      Der umgekehrte Weg (Dezimalpunkte ausgerichtet) hätte $0.00040 und $7.86 optisch gleich lang gemacht und die Spalte rechts ausfransen lassen.
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1600},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;full&quot;,&quot;kacheln&quot;,&quot;tabelle&quot;],&quot;default&quot;:&quot;full&quot;,&quot;tsType&quot;:&quot;'full' | 'kacheln' | 'tabelle'&quot;}}">
+const INK='var(--k-ink)', INK2='var(--k-ink-2)', INK3='var(--k-ink-3)', INK4='var(--k-ink-4)';
+const IMG='var(--k-series-img)', TXT='var(--k-series-txt)';
+
+const ROWS=[
+ {k:'p',model:'flux-2-pro',flag:'',provider:'Replicate',calls:254,callsD:'254',avgN:'n = 254 von 254',avgV:0.031,avgD:'$0.031',cost:7.86,costD:'$7.86',share:'66.2 %',worlds:'11',outcome:'254 durchgeführt',fill:IMG},
+ {k:'m',model:'flux-2-max',flag:'',provider:'Replicate',calls:22,callsD:'22',avgN:'n = 22 von 22',avgV:0.073,avgD:'$0.073',cost:1.61,costD:'$1.61',share:'13.6 %',worlds:'1',outcome:'22 durchgeführt · ein Tag',fill:IMG},
+ {k:'i',model:'image-model',flag:'⚑ Platzhaltername',provider:'Replicate',calls:22,callsD:'22',avgN:'n = 20 von 22 · 2 ░',avgV:0.031,avgD:'$0.031',cost:0.68,costD:'$0.68',share:'5.7 %',worlds:'13',outcome:'21 durchgeführt · 1 fehlgeschlagen',fill:IMG,out:'adverse'},
+ {k:'g',model:'gpt-4o-mini',flag:'',provider:'OpenRouter',calls:640,callsD:'640',avgN:'n = 512 von 640 · 128 ░',avgV:0.0012,avgD:'~$0.0012',cost:0.68,costD:'$0.68',share:'5.7 %',worlds:'19',outcome:'619 durchgeführt · 21 aus dem Cache',fill:TXT,avgEst:true},
+ {k:'d',model:'flux-dev',flag:'',provider:'Replicate',calls:14,callsD:'14',avgN:'n = 14 von 14',avgV:0.025,avgD:'$0.025',cost:0.35,costD:'$0.35',share:'2.9 %',worlds:'1',outcome:'14 durchgeführt',fill:IMG},
+ {k:'h',model:'claude-3.5-haiku',flag:'',provider:'OpenRouter',calls:452,callsD:'452',avgN:'n = 436 von 452 · 16 ░',avgV:0.0009,avgD:'$0.00090',cost:0.36,costD:'$0.36',share:'3.0 %',worlds:'17',outcome:'452 durchgeführt',fill:TXT},
+ {k:'f',model:'gemini-2.0-flash',flag:'',provider:'OpenRouter',calls:192,callsD:'192',avgN:'n = 132 von 192 · 60 ░',avgV:0.0015,avgD:'$0.0015',cost:0.25,costD:'$0.25',share:'2.1 %',worlds:'12',outcome:'182 durchgeführt · 10 gedrosselt',fill:TXT},
+ {k:'j',model:'juggernaut-xl',flag:'',provider:'Replicate',calls:2,callsD:'2',avgN:'n = 2 von 2',avgV:0.02,avgD:'$0.020',cost:0.04,costD:'$0.04',share:'0.3 %',worlds:'1',outcome:'2 durchgeführt',fill:IMG},
+ {k:'t',model:'proteus',flag:'',provider:'Replicate',calls:2,callsD:'2',avgN:'n = 2 von 2',avgV:0.02,avgD:'$0.020',cost:0.04,costD:'$0.04',share:'0.3 %',worlds:'1',outcome:'1 durchgeführt · 1 abgebrochen',fill:IMG},
+ {k:'s',model:'mistral-small',flag:'',provider:'OpenRouter',calls:46,callsD:'46',avgN:'n = 46 von 46',avgV:0.0000087,avgD:'·',cost:0.0004,costD:'$0.00040',share:'< 0,1 %',worlds:'3',outcome:'46 durchgeführt',fill:TXT,avgDim:true}
+];
+
+const WROWS=[
+ {k:'w1',name:'Die Chitinöse Mandatur',calls:'238',avg:'$0.0113',avgN:'n = 214/238 · 24 ░',cost:'$2.41',costV:2.41,share:'20.3 %',conv:'34',outcome:'214 durchgeführt'},
+ {k:'w2',name:'Velgarien',calls:'208',avg:'$0.0106',avgN:'n = 187/208 · 21 ░',cost:'$1.98',costV:1.98,share:'16.7 %',conv:'26',outcome:'186 durchgeführt'},
+ {k:'w3',name:'Hohler Zehnt',calls:'172',avg:'~$0.0095',avgN:'n = 136/172 · geschätzt',cost:'$1.44',costV:1.44,share:'12.1 %',conv:'░',convState:'unrec',outcome:'151 durchgeführt · 1 fehlgeschlagen',outAdverse:true,avgEst:true},
+ {k:'w4',name:'Salzmarsch',calls:'136',avg:'$0.0093',avgN:'n = 120/136 · 16 ░',cost:'$1.12',costV:1.12,share:'9.4 %',conv:'░',convState:'unrec',outcome:'118 durchgeführt · 3 gedrosselt'},
+ {k:'w5',name:'Neun Glocken',calls:'112',avg:'$0.0093',avgN:'n = 98/112 · 14 ░',cost:'$0.91',costV:0.91,share:'7.7 %',conv:'—',convState:'na',outcome:'98 durchgeführt'},
+ {k:'w6',name:'Aschenkontor',calls:'88',avg:'$0.0089',avgN:'n = 76/88 · 12 ░',cost:'$0.68',costV:0.68,share:'5.7 %',conv:'—',convState:'na',outcome:'74 durchgeführt · 2 aus dem Cache'},
+ {k:'w7',name:'Trockendock',calls:'70',avg:'$0.0085',avgN:'n = 61/70 · 9 ░',cost:'$0.52',costV:0.52,share:'4.4 %',conv:'—',convState:'na',outcome:'61 durchgeführt'},
+ {k:'w8',name:'Papierhafen',calls:'62',avg:'$0.0076',avgN:'n = 54/62 · 8 ░',cost:'$0.41',costV:0.41,share:'3.5 %',conv:'—',convState:'na',outcome:'54 durchgeführt'},
+ {k:'w9',name:'Glasmoor',calls:'50',avg:'$0.0077',avgN:'n = 43/50 · 7 ░',cost:'$0.33',costV:0.33,share:'2.8 %',conv:'—',convState:'na',outcome:'41 durchgeführt · 2 abgebrochen'},
+ {k:'wS',name:'Sonstige · 12 Welten',calls:'288',avg:'$0.0053',avgN:'n = 258/288 · 30 ░',cost:'$1.62',costV:1.62,share:'13.6 %',conv:'—',convState:'na',outcome:'abgeschnittener Rest der Achse',collector:true},
+ {k:'wU',name:'ohne Angabe',calls:'222',avg:'$0.0022',avgN:'n = 187/222 · 35 ░',cost:'$0.45',costV:0.45,share:'3.8 %',conv:'░',convState:'unrec',outcome:'Eigenschaft fehlt — nicht dasselbe wie Sonstige',collector:true,unknown:true}
+];
+
+const DETAIL={
+ w3:[
+  {t:'05.09.2026 09:14',model:'flux-2-pro',purpose:'agent_portrait',cost:'$0.031',out:'durchgeführt'},
+  {t:'04.09.2026 22:41',model:'gpt-4o-mini',purpose:'broadsheet_lede',cost:'~$0.0011',out:'durchgeführt',est:true},
+  {t:'04.09.2026 22:39',model:'gpt-4o-mini',purpose:'broadsheet_lede',cost:'·',out:'aus dem Cache',dim:true},
+  {t:'03.09.2026 17:02',model:'image-model',purpose:'building_plate',cost:'$0.031',out:'fehlgeschlagen',adverse:true}
+ ]
+};
+
+class Component extends DCLogic {
+  state = { src:'total', sortKey:'cost', sortDir:'desc', open:'w3' };
+
+  pick(k){ this.setState({src:k}); }
+  sort(k){ this.setState(s=>({sortKey:k, sortDir: s.sortKey===k && s.sortDir==='desc' ? 'asc':'desc'})); }
+
+  heatCells(){
+    const out=[]; let seed=7;
+    const rnd=()=>{ seed=(seed*1103515245+12345)%2147483648; return seed/2147483648; };
+    for(let i=0;i<154;i++){
+      const ramp=0.25+0.75*(i/153);
+      let v=rnd()<0.34?0:rnd()*0.42*ramp;
+      if(i===100) v=0.62;                     // 14.07. — der eine flux-2-max-Tag
+      const q = v===0?0 : v<0.06?1 : v<0.16?2 : v<0.3?3 : 4;
+      const bg = q===0 ? 'var(--k-sunken)' : 'color-mix(in srgb, var(--k-series-img) '+[0,25,45,70,100][q]+'%, var(--k-sunken))';
+      out.push({bg, ring: q===0 ? 'inset 0 0 0 1px var(--k-rule-soft)' : (i===100 ? '0 0 0 1px var(--k-carrier)' : 'none')});
+    }
+    return out;
+  }
+
+  renderVals(){
+    const mode = this.props.mode ?? 'full';
+    const S = this.state;
+    const tile = k => ({ bd: S.src===k ? 'var(--k-selected)' : 'var(--k-rule)', bg: S.src===k ? 'var(--k-carrier-tint)' : 'var(--k-raised)' });
+    const mk = k => S.sortKey===k ? (S.sortDir==='desc' ? '▼' : '▲') : '';
+
+    const dir = S.sortDir==='desc' ? -1 : 1;
+    const key = S.sortKey;
+    const rows = ROWS.slice().sort((a,b)=>{
+      if(a.collector) return 1; if(b.collector) return -1;
+      if(key==='model') return dir * a.model.localeCompare(b.model);
+      return dir * ((a[key==='calls'?'calls':key==='avg'?'avgV':'cost']) - (b[key==='calls'?'calls':key==='avg'?'avgV':'cost']));
+    }).map(r=>({
+      model:r.model, flag:r.flag, provider:r.provider, calls:r.callsD,
+      avg:r.avgD, avgN:r.avgN,
+      avgColor: r.avgDim ? INK4 : (r.avgEst ? INK2 : INK),
+      cost:r.costD, costColor: r.collector ? INK3 : INK,
+      share:r.share, worlds:r.worlds, worldsColor: r.collector ? INK3 : INK,
+      outcome:r.outcome, outColor: r.out==='adverse' ? 'var(--k-adverse-ink)' : INK2,
+      nameColor: r.collector ? INK3 : INK,
+      barPct: Math.max(0.6, r.cost/7.86*100), barColor: r.collector ? 'var(--k-hatch)' : r.fill
+    }));
+
+    const wrows = WROWS.map(w=>({
+      name:w.name, calls:w.calls, avg:w.avg, avgN:w.avgN,
+      avgColor: w.avgEst ? INK2 : INK,
+      cost:w.cost, costColor: w.collector ? INK3 : INK, share:w.share,
+      conv:w.conv, convColor: w.convState ? INK4 : INK,
+      outcome:w.outcome, outColor: w.outAdverse ? 'var(--k-adverse-ink)' : INK2,
+      nameColor: w.collector ? INK3 : INK,
+      barPct: Math.max(0.6, w.costV/2.41*100),
+      barColor: w.unknown ? 'var(--k-hatch)' : (w.collector ? TXT : IMG),
+      rowBg: S.open===w.k ? 'var(--k-carrier-tint)' : 'transparent',
+      caret: S.open===w.k ? '▾' : '▸',
+      toggle: () => this.setState(s=>({open: s.open===w.k ? null : w.k}))
+    }));
+
+    const openRow = WROWS.find(w=>w.k===S.open);
+    const detail = (DETAIL[S.open] || DETAIL.w3).map(d=>({
+      t:d.t, model:d.model, purpose:d.purpose, cost:d.cost,
+      costColor: d.dim ? INK4 : (d.est ? INK2 : INK),
+      out:d.out, outColor: d.adverse ? 'var(--k-adverse-ink)' : INK2
+    }));
+
+    return {
+      isFull: mode==='full', isKacheln: mode==='kacheln', isTabelle: mode==='tabelle',
+      extraTile: mode==='full' ? 'flex' : 'none',
+      rootPad: mode==='kacheln' ? '12px' : '20px',
+      headGap: mode==='kacheln' ? '8px' : '14px',
+      showHead: mode==='full' || mode==='kacheln',
+      tTotal:tile('total'), tImg:tile('img'), tTxt:tile('txt'),
+      pickTotal:()=>this.pick('total'), pickImg:()=>this.pick('img'), pickTxt:()=>this.pick('txt'),
+      oImg: S.src==='txt' ? 0.22 : 1, oTxt: S.src==='img' ? 0.22 : 1,
+      srcLabel: S.src==='img' ? 'Bild · Replicate' : S.src==='txt' ? 'Text · OpenRouter' : 'Gesamt',
+      fcTotal: S.src==='img' ? '$13.87' : S.src==='txt' ? '$1.74' : '$15.61',
+      mkModel:mk('model'), mkCalls:mk('calls'), mkAvg:mk('avg'), mkCost:mk('cost'),
+      sortModel:()=>this.sort('model'), sortCalls:()=>this.sort('calls'), sortAvg:()=>this.sort('avg'), sortCost:()=>this.sort('cost'),
+      rows, wrows, detail, openName: openRow ? openRow.name : 'Hohler Zehnt',
+      heat: this.heatCells(),
+      purposes:[
+        {name:'agent_portrait', pct:100, cost:'$4.12'},
+        {name:'building_plate', pct:63, cost:'$2.58'},
+        {name:'world_cover', pct:41, cost:'$1.69'},
+        {name:'item_art', pct:29, cost:'$1.18'},
+        {name:'broadsheet_lede', pct:11, cost:'$0.44'},
+        {name:'Sonstige · 16 Zwecke', pct:45, cost:'$1.86'}
+      ],
+      worldsBrief:[
+        {name:'Die Chitinöse Mandatur', pct:100, cost:'$2.41', color:INK, fill:IMG},
+        {name:'Velgarien', pct:82, cost:'$1.98', color:INK, fill:IMG},
+        {name:'Hohler Zehnt', pct:60, cost:'$1.44', color:INK, fill:IMG},
+        {name:'Salzmarsch', pct:46, cost:'$1.12', color:INK, fill:IMG},
+        {name:'Sonstige · 17 Welten', pct:79, cost:'$4.47', color:INK3, fill:TXT},
+        {name:'ohne Angabe · 222 Zeilen', pct:19, cost:'$0.45', color:INK3, fill:'var(--k-hatch)'}
+      ],
+      outcomes:[
+        {name:'durchgeführt', n:'1,588', cost:'$11.79', color:INK},
+        {name:'aus dem Cache', n:'34', cost:'$0.00', color:INK},
+        {name:'gedrosselt', n:'13', cost:'·', color:INK},
+        {name:'abgebrochen', n:'10', cost:'$0.05', color:INK},
+        {name:'fehlgeschlagen', n:'1', cost:'$0.03', color:'var(--k-adverse-ink)'}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
