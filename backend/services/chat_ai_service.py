@@ -1088,10 +1088,36 @@ class ChatAIService:
         user_message: str,
     ) -> dict[str, Any]:
         """Shared setup for single-agent generate/stream. Returns all context needed."""
-        conversation = await self._load_conversation(conversation_id)
-        agent_id = conversation.get("agent_id")
+        # ⚠ DIE BESETZUNG STEHT IN DER VERKNUEPFUNGSTABELLE, NICHT IN
+        # `chat_conversations.agent_id`.
+        #
+        # Die Spalte ist eine Altlast aus der Zeit vor den Gruppengespraechen
+        # und traegt die Figur, mit der der Faden ANGELEGT wurde. Sie wird
+        # beim Entfernen einer Figur nicht mitgepflegt.
+        #
+        # GEMESSEN am 05.09.2026 auf Produktion: nach dem Entfernen zweier
+        # Figuren blieb genau eine im Faden — und geantwortet hat trotzdem
+        # eine der ENTFERNTEN, weil sie in dieser Spalte stand. Sie merkte es
+        # selbst an, dass der angesprochene Name nicht der ihre sei.
+        #
+        # Der Verteiler (`ChatService.stream_ai_response`) liest die Besetzung
+        # bereits richtig und schickt bei genau einer Figur hierher; diese
+        # Funktion loeste sie dann ein zweites Mal auf, aus der falschen
+        # Quelle. Zwei Aufloesungen derselben Frage sind eine zu viel.
+        conversation, teilnehmer = await asyncio.gather(
+            self._load_conversation(conversation_id),
+            self._load_conversation_agents(conversation_id),
+        )
+        joined_at: str | None = None
+        if teilnehmer:
+            agent_id = str(teilnehmer[0]["id"])
+            joined_at = teilnehmer[0].get("_joined_at")
+        else:
+            # Kein Eintrag in der Verknuepfungstabelle: alte Faeden aus der
+            # Zeit vor ihr. Fuer die IST die Spalte die Wahrheit.
+            agent_id = conversation.get("agent_id")
         if not agent_id:
-            msg = f"Conversation {conversation_id} has no agent_id – use group methods for multi-agent conversations"
+            msg = f"Conversation {conversation_id} has no agent – use group methods for multi-agent conversations"
             raise ValueError(msg)
         # Drei Wellen, nach ABHAENGIGKEIT geschnitten — wie im Gruppenzug.
         # Neun Abrufe nacheinander waren eine Viertelsekunde reines Warten,
@@ -1131,6 +1157,13 @@ class ChatAIService:
             self._prompt_resolver.resolve("chat_system_prompt", locale),
             self._load_history(conversation_id, model.model_id),
         )
+        # Die Perspektivgrenze gilt AUCH hier. Bis zum 05.09.2026 stand sie
+        # nur im Gruppenpfad — eine Zusage, die davon abhing, wie viele
+        # Figuren gerade anwesend sind. Ein Faden, der auf eine Figur
+        # schrumpft, oder eine Figur, die einem bestehenden Zwiegespraech
+        # hinzugefuegt wird, verlor sie damit lautlos.
+        history, _ungesehen = self._bound_to_perspective(history, joined_at)
+
         memory_text = AgentMemoryService.format_for_prompt(memories)
         history_messages = self._build_history_messages(history, user_message)
 
