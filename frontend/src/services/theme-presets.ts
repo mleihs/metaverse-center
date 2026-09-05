@@ -412,6 +412,12 @@ export const PLATFORM_DARK_CONFIG: Record<string, string> = {
   color_background: '#0a0a0a',
   color_surface: '#111111',
   color_surface_sunken: '#060606',
+  // Die Zustandstoene der Huelle, unveraendert aus _colors.css uebernommen:
+  // der dunkle Satz sieht danach genauso aus wie vorher. Neu ist nur, dass
+  // sie jetzt GESCHRIEBEN werden statt still auf einem Vorgabewert zu
+  // stehen, den der zweite Satz nie anfasst.
+  color_surface_raised_critical: '#0d0808',
+  color_surface_raised_ascendant: '#0d0b08',
   color_surface_header: '#0a0a0a',
   color_text: '#e5e5e5',
   color_text_secondary: '#a0a0a0',
@@ -541,6 +547,28 @@ export const PLATFORM_ATLAS_CONFIG: Record<string, string> = {
   color_background: '#e9ede9', // map paper
   color_surface: '#dfe5e0', // raised: active rows, cells, sticky heads
   color_surface_sunken: '#d5dcd6',
+  /*
+   * Zustandstoene auf Papier: getoentes Blatt, nicht dunkles.
+   *
+   * Gerechnet als 10 % der jeweiligen Warnfarbe in die Papierauflage
+   * (#dfe5e0) und dann als Festwert eingetragen, damit die Zahl pruefbar
+   * dasteht. Gemessen gegen die Papiertinte #17201d und gegen die
+   * normale Auflage:
+   *
+   *     kritisch     #dbd2cd   Tinte 11,19 : 1   Abhebung 1,16 : 1
+   *     aufsteigend  #d5d7cb   Tinte 11,43 : 1   Abhebung 1,14 : 1
+   *
+   * Vorher fiel beides auf 1,19 : 1 GEGEN die Tinte -- die ganze Huelle
+   * wurde unlesbar, sobald eine Welt kritisch stand.
+   *
+   * Die Abhebung ist etwas staerker als im dunklen Satz (dort 1,05 bzw.
+   * 1,04), weil ein Ton auf hellem Grund weniger auffaellt als auf
+   * dunklem. Das ist eine Entscheidung nach Augenmass an gerechneten
+   * Zahlen, nicht am Bild -- wer sie zu kraeftig findet, senkt den
+   * Anteil; die Lesbarkeit haelt bis weit darueber.
+   */
+  color_surface_raised_critical: '#dbd2cd',
+  color_surface_raised_ascendant: '#d5d7cb',
   color_surface_header: '#e9ede9',
   color_text: '#17201d', // ink
   color_text_secondary: '#3a463f',

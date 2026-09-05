@@ -46,6 +46,12 @@ const COLOR_KEY_TO_TOKEN: Record<string, string> = {
   color_accent: '--color-warning',
   color_background: '--color-surface',
   color_surface: '--color-surface-raised',
+  // Zwei Zustandstoene der Huelle, seit 05.09.2026 von den Saetzen
+  // geschrieben statt still auf einem :root-Vorgabewert zu stehen. Genau
+  // deshalb gehoeren sie hierher: dieser Test ist die Bindung zwischen
+  // Konfiguration und :root, und die zwei waren vorher an nichts gebunden.
+  color_surface_raised_critical: '--color-surface-raised-critical',
+  color_surface_raised_ascendant: '--color-surface-raised-ascendant',
   color_surface_sunken: '--color-surface-sunken',
   color_surface_header: '--color-surface-header',
   color_text: '--color-text-primary',

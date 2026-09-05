@@ -96,6 +96,15 @@ const THEME_TOKEN_MAP: Record<string, string> = {
   color_accent: '--color-warning',
   color_background: '--color-surface',
   color_surface: '--color-surface-raised',
+  // Die zwei Zustandstoene der Huelle. Bis 05.09.2026 standen sie NUR in
+  // _colors.css auf festen dunklen Werten und wurden von keinem Satz
+  // geschrieben: auf dem Atlas fiel damit die gesamte Auflage der Huelle auf
+  // 1,19 : 1 gegen die Papiertinte, sobald eine Welt kritisch oder
+  // aufsteigend wurde. Dieselbe Bauart wie --color-surface-overlay, nur mit
+  // dem groesseren Einzugsgebiet: es haengt die ganze Huelle daran, nicht ein
+  // Fenster. Siehe SimulationShell :host(.shell--critical).
+  color_surface_raised_critical: '--color-surface-raised-critical',
+  color_surface_raised_ascendant: '--color-surface-raised-ascendant',
   color_surface_sunken: '--color-surface-sunken',
   color_surface_header: '--color-surface-header',
   color_text: '--color-text-primary',
