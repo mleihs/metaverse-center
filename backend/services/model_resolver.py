@@ -186,10 +186,17 @@ class ResolvedImageModel:
         if fam.size_field == "megapixels":
             params["megapixels"] = "1"
         elif fam.size_field == "resolution":
-            # Flux 2 rechnet in Megapixeln als ZAHL, nicht als Zeichenkette.
-            # Ohne dieses Feld nimmt das Modell seine eigene Vorgabe, und die
-            # ist nicht die guenstigste.
-            params["resolution"] = 1
+            # `"1 MP"`, nicht `1`. Das Feld ist ein Enum aus Zeichenketten
+            # (`match_input_image`, `0.5 MP`, `1 MP`, `2 MP`, `4 MP`), und hier
+            # stand die Zahl — mit einem Kommentar darueber, der ausdruecklich
+            # das Gegenteil behauptete.
+            #
+            # Das faellt NICHT still weg wie ein unbekanntes Feld: `resolution`
+            # ist bekannt und typisiert, also endete jeder Aufruf mit
+            # 422 `input.resolution: Invalid type. Expected: string`. Damit war
+            # die jugendfreie Szenenspur, deren Vorgabemodell flux-2-pro ist,
+            # ohne jedes Bild — gefunden an einem echten Aufruf, nicht am Code.
+            params["resolution"] = "1 MP"
         elif fam.size_field == "width_height":
             params["width"] = self.width
             params["height"] = self.height
@@ -561,12 +568,29 @@ class ModelResolver:
 
         Checks simulation setting `image_ref_model`, falls back to
         platform default img2img model.
+
+        Die Vorgabe war bis 05.09.2026 `bxclib2/flux_img2img` — und die konnte
+        nicht, wofuer sie hier steht. Gemessen an einem echten Portraet aus dem
+        Speicher nimmt dieses Modell nur QUADRATISCHE Eingaben:
+
+            512x512    ok
+            1024x1024  ok
+            768x1024   Error while processing rearrange-reduction pattern …
+
+        Portraets sind 3:4. Von 25 auf Produktion ist keines quadratisch, also
+        scheiterte der Stilreferenzpfad an jedem einzelnen. Die Zeile oben
+        stammt aus dem Inneren einer Tensorbibliothek und benennt das Mass
+        nirgends; als Hinweis auf ein nicht quadratisches Bild ist sie
+        praktisch unlesbar.
+
+        `black-forest-labs/flux-dev` steht jetzt dort: dieselbe Aufgabe ueber
+        `image` + `prompt_strength`, es nimmt 3:4 und es ist ohnehin schon das
+        Modell, mit dem die Plattform Portraets erzeugt. Am selben Portraet
+        gemessen: durchgelaufen. Eine Welt, die `image_ref_model` selbst
+        gesetzt hat, behaelt ihre Wahl.
         """
         ai_settings = await self._load_settings()
-        model_id = ai_settings.get(
-            "image_ref_model",
-            "bxclib2/flux_img2img:0ce45202d83c6bd379dfe58f4c0c41e6cadf93ebbd9d938cc63cc0f2fcb729a5",
-        )
+        model_id = ai_settings.get("image_ref_model", "black-forest-labs/flux-dev")
 
         is_portrait = "portrait" in purpose
         ar_key = "portrait" if is_portrait else "building"

@@ -222,15 +222,35 @@ class TestResolveImg2ImgModel:
         assert result.num_inference_steps == 32
 
     async def test_falls_back_to_default_model(self):
-        """Falls back to 'bxclib2/flux_img2img' when no setting configured."""
+        """Falls back to a model that can take a PORTRAIT-shaped reference.
+
+        The default was `bxclib2/flux_img2img` until 2026-09-05, and it could
+        not do the one job it was here for. Measured against a real stored
+        portrait, that model accepts only SQUARE input: 512x512 and 1024x1024
+        run, 768x1024 dies inside a tensor library with
+
+            Error while processing rearrange-reduction pattern …
+
+        Every portrait on production is 3:4 — none of 25 sampled was square —
+        so the style-reference path failed on all of them, with a message no
+        reader would recognise as "the image is not square".
+
+        The assertion is therefore on the SHAPE the default must handle, not
+        on a model name: whatever stands here has to accept a portrait.
+        """
         mock_sb = MagicMock()
         mock_sb.table.return_value = make_chain_mock(execute_data=[])
 
         resolver = ModelResolver(mock_sb, MOCK_SIM_ID)
         result = await resolver.resolve_img2img_model("agent_portrait")
 
-        assert "bxclib2/flux_img2img" in result.model
         assert result.source == "img2img"
+        assert result.model != "bxclib2/flux_img2img", "square-only, see docstring"
+        assert not result.model.startswith("bxclib2/flux_img2img:")
+        # Und es muss ein Referenzfeld haben, sonst ist es kein img2img-Modell.
+        result.reference_image_url = "https://example.invalid/marie.png"
+        felder = set(result.to_replicate_params())
+        assert felder & {"image", "input_images", "image_prompt"}
 
     async def test_portrait_purpose_gets_portrait_aspect_ratio(self):
         """Purpose containing 'portrait' resolves to portrait aspect ratio."""

@@ -5,6 +5,7 @@ import logging
 from typing import Annotated
 from uuid import UUID
 
+import sentry_sdk
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import EventSourceResponse
 
@@ -44,6 +45,7 @@ from backend.services.chat.scene_image_service import (
     SceneSpan,
 )
 from backend.services.chat_service import ChatService
+from backend.services.external.openrouter import OpenRouterError
 from backend.services.forge_draft_service import ForgeDraftService
 from backend.services.image_content_policy import ContentRating, SceneVantage
 from supabase import AsyncClient as Client
@@ -619,6 +621,28 @@ async def create_scene_image(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=str(abgelehnt),
         ) from abgelehnt
+    except OpenRouterError as aus:
+        # Der Weg zum Bild geht ueber EINEN Modellaufruf: die Szene wird erst
+        # in eine Bildbeschreibung uebersetzt. `OpenRouterError` ist dabei die
+        # Basisklasse fuer den API-Fehler, die gescheiterte Verbindung UND die
+        # erschoepften Wiederholungen — die drei Unterklassen decken keinen
+        # dieser Faelle ab, deshalb steht hier die Basis.
+        #
+        # 503 und nicht 500: es liegt nicht an der Anfrage, und der Nutzer
+        # soll es gleich noch einmal versuchen duerfen. Gleiche Behandlung wie
+        # in `echoes.py` und `admin.py`.
+        logger.warning(
+            "Scene image unavailable: model call failed",
+            extra={"conversation_id": str(conversation_id), "error": str(aus)},
+        )
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("service", "scene_image")
+            scope.set_tag("simulation_id", str(simulation_id))
+            sentry_sdk.capture_exception(aus)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="AI service unavailable. Please try again.",
+        ) from aus
 
     await AuditService.safe_log(
         supabase,

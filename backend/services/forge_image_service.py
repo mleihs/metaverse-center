@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import io
 import logging
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from backend.services.ai_usage_service import AIUsageService
@@ -12,14 +13,52 @@ from backend.services.ai_utils import key_source_for
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
 from backend.services.image_content_policy import ContentRating
-from backend.services.model_resolver import ModelResolver
+from backend.services.model_resolver import ModelResolver, ResolvedImageModel
 from backend.services.style_reference_service import StyleReferenceService
 from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
 from backend.utils.responses import extract_list
 from backend.utils.safe_fetch import safe_download
 from supabase import AsyncClient as Client
 
+if TYPE_CHECKING:
+    from PIL.Image import Image as PILImage
+
 logger = logging.getLogger(__name__)
+
+
+def _auf_vielfaches_von_16(img: PILImage) -> PILImage:
+    """Kantenlaengen auf ein Vielfaches von 16 bringen, nach unten.
+
+    Ein Latent-Diffusion-Modell zerlegt das Bild in Bloecke; passt die
+    Kantenlaenge nicht auf, bricht es ab. `bxclib2/flux_img2img` — das Modell
+    des Forge-Stilreferenzpfades — meldet dann keinen Massfehler, sondern
+
+        Error while processing rearrange-reduction pattern "b c (h ph) (w pw)"
+
+    also eine Zeile aus dem Inneren einer Bibliothek, die niemand als
+    „das Bild ist vier Pixel zu breit" liest.
+
+    Und es trifft nicht den Randfall, sondern den Normalfall: von 25
+    Portraeten auf Produktion (05.09.2026) sind 23 nicht durch 16 teilbar —
+    772x1024 sechzehnmal, 796x1024 siebenmal. Der Stilreferenzpfad scheiterte
+    damit an fast jedem Portraet, seit es ihn gibt.
+
+    Verkleinern und nicht zuschneiden: bei 772 -> 768 sind das 0,5 Prozent
+    Massstab, waehrend ein Schnitt vier Pixel Bildinhalt kostet. Bei einem
+    Gesicht als Vorlage wiegt der ganze Ausschnitt mehr als ein halbes Prozent
+    Seitenverhaeltnis. Nach unten — nach oben waeren es erfundene Pixel.
+
+    Die eine Ausnahme steht ausdruecklich da, statt sich aus `max()` zu
+    ergeben: unter 16 Pixel gibt es kein kleineres Vielfaches als 0, also
+    waere „nach unten" ein leeres Bild. Solche Kanten werden auf 16 gehoben.
+    Ein Bild dieser Groesse ist als Vorlage ohnehin wertlos — aber ein
+    hochskaliertes Nichts ist ein Bild, ein leeres ist ein Absturz.
+    """
+    from PIL import Image
+
+    b, h = img.size
+    neu = (max(16, b - b % 16), max(16, h - h % 16))
+    return img if neu == (b, h) else img.resize(neu, Image.LANCZOS)
 
 
 class ForgeImageService:
@@ -102,7 +141,7 @@ class ForgeImageService:
         )
 
     @staticmethod
-    async def _download_reference_image(url: str) -> io.BytesIO:
+    async def _download_reference_image(url: str, *, name: str = "reference.png") -> io.BytesIO:
         """Download a reference image with SSRF protection, convert to PNG.
 
         Uses ``safe_download`` (``backend/utils/safe_fetch``) to validate the
@@ -112,17 +151,61 @@ class ForgeImageService:
            (e.g. localhost Supabase storage), so we download the image.
         2. Storage uses AVIF for efficiency, but many Replicate models
            only support PNG/JPEG/WebP — convert to PNG for compatibility.
+        3. Die Kantenlaengen werden auf ein Vielfaches von 16 gebracht. Siehe
+           `_auf_vielfaches_von_16` — ohne das scheitert der Forge-Stilpfad an
+           fast jedem echten Portraet.
         """
         from PIL import Image
 
         allowed = {"image/png", "image/jpeg", "image/webp", "image/avif", "image/gif"}
         data, _ = await safe_download(url, allowed_content_types=allowed)
         img = Image.open(io.BytesIO(data))
+        img = _auf_vielfaches_von_16(img)
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)
-        buf.name = "reference.png"  # Replicate SDK uses .name for content-type
+        buf.name = name  # Replicate SDK uses .name for content-type
         return buf
+
+    async def _materialise_references(
+        self,
+        image_model: ResolvedImageModel,
+        params: dict,
+    ) -> dict:
+        """Referenz-URLs durch PNG-Puffer ersetzen, am Feld DIESER Familie.
+
+        Ohne diesen Schritt reicht der Aufrufer eine Speicher-URL durch, und
+        was dann passiert, haengt vom Modell ab — was heisst: es ist nicht
+        vorherzusehen, sondern nur zu messen. Am 05.09.2026 gegen ein echtes
+        Portraet aus dem Speicher (AVIF, wie jedes dort) gelaufen:
+
+            black-forest-labs/flux-dev      succeeded
+            bxclib2/flux_img2img            failed  cannot identify image file
+            datacte/proteus-v0.2            failed  cannot identify image file
+            asiryan/juggernaut-xl-v7        failed  cannot identify image file
+
+        Drei von vier scheitern, und zwar an der Bildbibliothek IM Modell, die
+        AVIF nicht liest. Unser Speicher ist durchgehend AVIF — die ganze
+        Erwachsenenspur haette also nie ein Bild geliefert, mit einer Meldung,
+        die von einem kaputten Bild spricht statt von einem Format.
+
+        Der Feldname kommt aus der Familie und nicht als Zeichenkette von hier:
+        er heisst `image` bei den SD-Abkoemmlingen, `input_images` bei Flux 2
+        und `image_prompt` bei Flux 1.1 Pro. Zwei bestehende Aufrufer setzten
+        `params["image"]` fest — richtig fuer das Modell, das sie heute
+        aufloesen, und still falsch, sobald jemand die Einstellung aendert.
+        """
+        feld = image_model.family.reference_field
+        if not feld or feld not in params:
+            return params
+        if image_model.family.reference == "list":
+            params[feld] = [
+                await self._download_reference_image(u, name=f"reference-{i}.png")
+                for i, u in enumerate(params[feld])
+            ]
+        else:
+            params[feld] = await self._download_reference_image(params[feld])
+        return params
 
     async def generate_entity_image(
         self,
@@ -230,11 +313,13 @@ class ForgeImageService:
                 "Using img2img with style reference",
                 extra={"entity_type": "agent", "entity_id": str(agent_id), "scope": ref["scope"]},
             )
-            # Download reference image so Replicate can access it
-            # (local Supabase URLs are not reachable from Replicate's servers)
-            ref_bytes = await self._download_reference_image(ref["url"])
-            params = image_model.to_replicate_params()
-            params["image"] = ref_bytes  # override URL with file-like object
+            # Die Referenz wird heruntergeladen und nach PNG gewandelt: die
+            # Modelle laufen entfernt und erreichen eine lokale Speicher-URL
+            # nicht, und AVIF liest die Mehrzahl von ihnen ohnehin nicht.
+            params = await self._materialise_references(
+                image_model,
+                image_model.to_replicate_params(),
+            )
             raw_bytes = await replicate_client.generate_image(
                 model=image_model.model,
                 prompt=description,
@@ -333,9 +418,13 @@ class ForgeImageService:
                 "Using img2img with style reference",
                 extra={"entity_type": "building", "entity_id": str(building_id), "scope": ref["scope"]},
             )
-            ref_bytes = await self._download_reference_image(ref["url"])
-            params = image_model.to_replicate_params()
-            params["image"] = ref_bytes
+            # Die Referenz wird heruntergeladen und nach PNG gewandelt: die
+            # Modelle laufen entfernt und erreichen eine lokale Speicher-URL
+            # nicht, und AVIF liest die Mehrzahl von ihnen ohnehin nicht.
+            params = await self._materialise_references(
+                image_model,
+                image_model.to_replicate_params(),
+            )
             raw_bytes = await replicate_client.generate_image(
                 model=image_model.model,
                 prompt=description,
@@ -552,7 +641,10 @@ class ForgeImageService:
         # sie komme aus `image_safety_tolerance_*`. Jetzt tut sie es wirklich,
         # und zwar fuer jeden Aufrufer und nicht nur fuer diesen.
 
-        params = image_model.to_replicate_params()
+        params = await self._materialise_references(
+            image_model,
+            image_model.to_replicate_params(),
+        )
         raw_bytes = await self._replicate.generate_image(
             model=image_model.model,
             prompt=description,
