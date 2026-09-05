@@ -294,9 +294,17 @@ export class VelgAdminAIUsageTab extends LitElement {
     `;
   }
 
-  private _renderDailyTable(
-    trend: { date: string; calls: number; tokens: number; cost: number }[],
-  ) {
+  /**
+   * ⚠ Der Parameter nimmt jetzt den TYP DES DTO, keine eigene Nachbildung.
+   *
+   * Hier stand `{ date: string; ... }` -- eine zweite, von Hand gepflegte
+   * Fassung derselben Form. Die RPC schreibt aber `day` (Migration 152), und
+   * so las die Zelle darunter `day.date`: leer, ohne Fehlermeldung, seit es
+   * die Tabelle gibt. Eine lokale Nachbildung eines DTO ist genau der Ort, an
+   * dem eine Fehlbenennung ueberlebt -- der Typpruefer kann zwei Wahrheiten
+   * nicht gegeneinander halten, wenn er beide glaubt.
+   */
+  private _renderDailyTable(trend: AIUsageStats['daily_trend']) {
     const recent = trend.slice(-14); // Last 14 days
     return html`
       <table class="breakdown-table">
@@ -312,7 +320,7 @@ export class VelgAdminAIUsageTab extends LitElement {
           ${recent.map(
             (day) => html`
             <tr>
-              <td>${day.date}</td>
+              <td>${day.day}</td>
               <td class="num">${formatCount(day.calls)}</td>
               <td class="num">${this._formatTokens(day.tokens)}</td>
               <td class="num">${formatAmount(day.cost).text}</td>

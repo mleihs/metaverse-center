@@ -725,6 +725,17 @@ export interface AIUsageBreakdown {
   calls: number;
   tokens: number;
   cost: number;
+  /**
+   * Zeilen dieser Gruppe MIT Betrag -- der Teiler ihres Mittelwerts.
+   *
+   * Optional, weil eine Datenbank vor Migration 389 das Feld nicht liefert.
+   * `undefined` heisst „Basis nicht ausgesagt" und NICHT „null Zeilen haben
+   * beigetragen": ein Mittelwert ohne bekannte Basis wird nicht geraten,
+   * sondern als nicht erfasst gezeigt.
+   */
+  billed?: number;
+  /** `calls - billed`. Bei `purpose = translation` sind das 201 von 318. */
+  unrecorded?: number;
 }
 
 export interface AIUsageStats {
@@ -754,7 +765,16 @@ export interface AIUsageStats {
   by_model: (AIUsageBreakdown & { model: string })[];
   by_purpose: (AIUsageBreakdown & { purpose: string })[];
   by_simulation: (AIUsageBreakdown & { simulation_id: string })[];
-  daily_trend: (AIUsageBreakdown & { date: string })[];
+  /**
+   * ⚠ Das Feld heisst `day`, nicht `date`.
+   *
+   * Die RPC schreibt `date_trunc('day', created_at)::DATE AS day` (Migration
+   * 152). Dieser Typ sagte bis zum 05.09.2026 `date`, und `AdminAIUsageTab`
+   * las folglich `day.date` -- die Datumsspalte der Tagesuebersicht stand
+   * leer, ohne Fehler und ohne dass es jemand sah. Gegen Prod nachgesehen:
+   * `{"day":"2026-08-29","cost":0.466663,"calls":28,"billed":28,...}`.
+   */
+  daily_trend: (AIUsageBreakdown & { day: string })[];
   key_sources: Record<string, AIUsageBreakdown>;
 }
 

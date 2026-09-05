@@ -10,6 +10,7 @@ import './AdminCleanupTab.js';
 import './AdminForgeTab.js';
 import './AdminResonancesTab.js';
 import './AdminScannerTab.js';
+import './kontor/KontorPanel.js';
 import '../intake/IntakeView.js';
 import './AdminSimulationsTab.js';
 import './AdminHeartbeatTab.js';
@@ -34,6 +35,7 @@ type AdminTab =
   | 'scanner'
   | 'intake'
   | 'forge'
+  | 'kontor'
   | 'ai_usage'
   | 'ops'
   | 'platform'
@@ -179,6 +181,7 @@ export class VelgAdminPanel extends LitElement {
         group: msg('AI & Gen'),
         badge: forgeCount > 0 ? forgeCount : undefined,
       },
+      { key: 'kontor', label: msg('Kontor'), group: msg('AI & Gen') },
       { key: 'ai_usage', label: msg('AI Usage'), group: msg('AI & Gen') },
       { key: 'scanner', label: msg('Scanner'), group: msg('AI & Gen') },
       /*
@@ -250,6 +253,8 @@ export class VelgAdminPanel extends LitElement {
         return html`<velg-intake-view></velg-intake-view>`;
       case 'forge':
         return html`<velg-admin-forge-tab></velg-admin-forge-tab>`;
+      case 'kontor':
+        return html`<velg-kontor-panel></velg-kontor-panel>`;
       case 'ai_usage':
         return html`<velg-admin-ai-usage-tab></velg-admin-ai-usage-tab>`;
       case 'ops':
