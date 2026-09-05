@@ -223,7 +223,25 @@ async def _record_attempt(
     output_tokens = 0
     if result is not None:
         try:
-            usage = result.usage()
+            # ⚠ `usage` ist in pydantic-ai 2.x eine PROPERTY, in 1.x war es eine
+            # METHODE. `result.usage()` ruft damit ein `RunUsage`-Objekt auf,
+            # das nicht aufrufbar ist — `TypeError`, vom `except` unten
+            # verschluckt, und beide Zaehler bleiben auf null.
+            #
+            # GEMESSEN am 05.09.2026 auf Produktion: 204 Zeilen aus `run_ai`
+            # (202 `translation`, 2 `anchors`) mit **0 Token und 0 USD**,
+            # waehrend jeder andere Zweck sauber buchte. Der Docstring dieser
+            # Funktion beschreibt genau diesen Fehler eine Ebene hoeher — dass
+            # die Forge-Textspur gegen eine Zahl geprueft wurde, die
+            # strukturell immer null war. Die ZEILE wurde am 02.09. ergaenzt,
+            # die ZAHL darin blieb null. Derselbe Fehler, eine Schicht tiefer,
+            # und die Zeile liess ihn behoben aussehen.
+            #
+            # Beide Formen werden bedient: eine Aenderung der Bibliothek in die
+            # eine oder andere Richtung darf das Buch nicht wieder stillegen.
+            usage = result.usage
+            if callable(usage):
+                usage = usage()
             input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
             output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
         except Exception:  # noqa: BLE001 — usage accounting must never fail a served call
