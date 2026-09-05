@@ -419,6 +419,23 @@ export class VelgKontorPanel extends LitElement {
       </section>`;
     }
 
+    /*
+     * Der Anbieter-Praefix faellt weg, WENN die Kurznamen eindeutig bleiben.
+     *
+     * Im Browser gesehen (05.09.2026): die zwei teuersten Zeilen standen beide
+     * als „black-forest-labs/flux-2-…" da -- der Auslassungspunkt kappte genau
+     * die Silbe, in der sie sich unterscheiden (pro gegen max). Die beiden
+     * groessten Posten der Tabelle waren nicht auseinanderzuhalten.
+     *
+     * Gekuerzt wird nur, wenn dabei keine NEUE Mehrdeutigkeit entsteht: gaebe
+     * es zwei Anbieter mit gleichem Modellnamen, blieben die vollen Namen
+     * stehen. Ein kuerzerer Name, der zwei Dinge meint, waere derselbe Fehler
+     * noch einmal. Der volle Slug steht in jedem Fall im title-Attribut.
+     */
+    const kurz = (voll: string): string => voll.split('/').pop() || voll;
+    const kurzeNamen = zeilen.map((z) => kurz(z[schluessel]));
+    const eindeutig = new Set(kurzeNamen).size === kurzeNamen.length;
+
     const aufbereitet = zeilen.map((z) => {
       const kosten = z.cost ?? 0;
       const aufrufe = z.calls ?? 0;
@@ -433,7 +450,10 @@ export class VelgKontorPanel extends LitElement {
       const basis = gebucht ?? 0;
       const ohne = basisBekannt ? (z.unrecorded ?? aufrufe - basis) : 0;
       return {
-        name: z[schluessel] || msg('unassigned'),
+        voll: z[schluessel] || msg('unassigned'),
+        name: eindeutig
+          ? kurz(z[schluessel] || '') || msg('unassigned')
+          : z[schluessel] || msg('unassigned'),
         aufrufe,
         basisBekannt,
         basis,
@@ -454,7 +474,7 @@ export class VelgKontorPanel extends LitElement {
     return html`
       <section class="kontor__section">
         <h3 class="kontor__section-title">${titel}</h3>
-        <div class="kontor__legend">
+        <div class="kontor__legend kontor-legend__probe">
           <span>${msg('Cell states:')}</span>
           <span>${renderCell(formatAmount(0.003))} ${msg('measured')}</span>
           <span>${renderCell(formatAmount(null), msg('not recorded'))} ${msg('not recorded')}</span>
@@ -488,7 +508,7 @@ export class VelgKontorPanel extends LitElement {
               ${aufbereitet.map(
                 (r) => html`
                   <tr>
-                    <td class="kontor-col--label" title=${r.name}>${r.name}</td>
+                    <td class="kontor-col--label" title=${r.voll}>${r.name}</td>
                     <td class="kontor-col--amount">${renderCell(r.kosten)}</td>
                     <td class="kontor-col--amount">
                       ${renderCell(r.mittel, msg('not recorded'))}

@@ -32317,6 +32317,110 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Put out of sight again</source>
         <target>Wieder wegräumen</target>
 </trans-unit>
+<trans-unit id="s0b5f0f2911530360">
+  <source>Could not load usage data.</source>
+        <target>Die Nutzungsdaten ließen sich nicht laden.</target>
+</trans-unit>
+<trans-unit id="s88fc84dff4da2cc1">
+  <source>Reading the ledger</source>
+        <target>Das Buch wird gelesen</target>
+</trans-unit>
+<trans-unit id="s0442c5d921b081b5">
+  <source>No usage recorded yet.</source>
+        <target>Noch keine Nutzung verbucht.</target>
+</trans-unit>
+<trans-unit id="s6f18ac261466ddf4">
+  <source>Kontor</source>
+        <target>Kontor</target>
+</trans-unit>
+<trans-unit id="s90d2e0b65cfa7348">
+  <source>Costs &amp; telemetry</source>
+        <target>Kosten &amp; Telemetrie</target>
+</trans-unit>
+<trans-unit id="sea2adb1f2047d144">
+  <source>Period</source>
+        <target>Zeitraum</target>
+</trans-unit>
+<trans-unit id="s9976b5befb314c64">
+  <source><x id="0" equiv-text="${d}"/> days</source>
+        <target><x id="0" equiv-text="${d}"/> Tage</target>
+</trans-unit>
+<trans-unit id="sbfd44bdbaf19b969">
+  <source>By model</source>
+        <target>Nach Modell</target>
+</trans-unit>
+<trans-unit id="s5627d4d400a076c2">
+  <source>By purpose</source>
+        <target>Nach Zweck</target>
+</trans-unit>
+<trans-unit id="s9e38503ae0ffe669">
+  <source>By provider</source>
+        <target>Nach Anbieter</target>
+</trans-unit>
+<trans-unit id="s96c47e4be1c88ef7">
+  <source>Actual</source>
+        <target>Ist</target>
+</trans-unit>
+<trans-unit id="sedc27d5bc3ab924c">
+  <source>Per call</source>
+        <target>Je Aufruf</target>
+</trans-unit>
+<trans-unit id="s3de1b3513421dd47">
+  <source>n = <x id="0" equiv-text="${formatCount(s.avg_cost_basis)}"/> of <x id="1" equiv-text="${formatCount(s.avg_cost_of)}"/></source>
+        <target>n = <x id="0" equiv-text="${formatCount(s.avg_cost_basis)}"/> von <x id="1" equiv-text="${formatCount(s.avg_cost_of)}"/></target>
+</trans-unit>
+<trans-unit id="s2ad8c5becff857cb">
+  <source>basis not stated</source>
+        <target>Basis nicht ausgesagt</target>
+</trans-unit>
+<trans-unit id="s46902a94dd110c35">
+  <source>Without amount</source>
+        <target>Ohne Betrag</target>
+</trans-unit>
+<trans-unit id="s602c82eee39a3af6">
+  <source><x id="0" equiv-text="${formatPercent(anteilOhne)}"/> of all rows</source>
+        <target><x id="0" equiv-text="${formatPercent(anteilOhne)}"/> aller Zeilen</target>
+</trans-unit>
+<trans-unit id="s32fd7cd159452819">
+  <source>No day carries a value in this period.</source>
+        <target>Kein Tag in diesem Zeitraum trägt einen Wert.</target>
+</trans-unit>
+<trans-unit id="sc33482c7b3725345">
+  <source>Cost per day</source>
+        <target>Kosten je Tag</target>
+</trans-unit>
+<trans-unit id="s8f6871b00532a6f6">
+  <source>One bar per day. Rows without an amount stand on no axis here.</source>
+        <target>Ein Balken je Tag. Zeilen ohne Betrag stehen auf dieser Achse nicht.</target>
+</trans-unit>
+<trans-unit id="s53d064000d14cbf5">
+  <source>This axis carries no rows.</source>
+        <target>Diese Achse trägt keine Zeilen.</target>
+</trans-unit>
+<trans-unit id="sf95ea1c2346dc742">
+  <source>unassigned</source>
+        <target>ohne Zuordnung</target>
+</trans-unit>
+<trans-unit id="s4aa0e496a721c3a9">
+  <source>Cell states:</source>
+        <target>Zellzustände:</target>
+</trans-unit>
+<trans-unit id="s37db9bddbd84fc81">
+  <source>measured</source>
+        <target>gemessen</target>
+</trans-unit>
+<trans-unit id="sca8e296fec2967aa">
+  <source>not recorded</source>
+        <target>nicht erfasst</target>
+</trans-unit>
+<trans-unit id="s638025ba2a2c0508">
+  <source>By outcome</source>
+        <target>Nach Ausgang</target>
+</trans-unit>
+<trans-unit id="se3cbff1ff6011ef7">
+  <source>The database has not recorded outcomes yet.</source>
+        <target>Die Datenbank verbucht noch keine Ausgänge.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

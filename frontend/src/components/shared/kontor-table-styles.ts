@@ -109,6 +109,21 @@ export const kontorTableTokens = css`
 export const kontorTableStyles = css`
   .kontor-table {
     width: 100%;
+    /*
+     * Feste Aufteilung, nicht inhaltsgetrieben.
+     *
+     * ⚠ Ohne sie summieren sich die festen Spaltenbreiten ueber die Breite der
+     * Tabelle hinaus, und die letzte Spalte wird abgeschnitten -- im Browser
+     * am 05.09.2026 gemessen: 200 + 3 x 110 = 530 px in einem Abschnitt von
+     * 470 px, die Spalte „ohne Betrag" stand halb ausserhalb.
+     *
+     * Und sie ist ohnehin die richtige Wahl: bei auto bestimmt der INHALT
+     * die Spaltenbreite, also springen die Spalten bei jedem Datenwechsel --
+     * genau das, was die Zellzustaende gleicher Breite verhindern sollen.
+     * Mit fixed bekommen die Betragsspalten ihre Breite und die Textspalte
+     * den Rest.
+     */
+    table-layout: fixed;
     /* separate + 0: Voraussetzung dafuer, dass box-shadow als Trenner
        ueberhaupt sichtbar ist. Mit collapse zeichnet der Browser die
        Zellraender zusammen und verschluckt den Schatten. */
@@ -181,9 +196,15 @@ export const kontorTableStyles = css`
   /* ── Die Spaltenrollen ──────────────────────────────────────────────────
      Genau eine waechst. Siehe Entscheidung 5. */
 
+  /*
+   * Die Textspalte ist die einzige mit auto: unter table-layout: fixed
+   * bekommt sie damit den Rest, den die Betragsspalten uebriglassen. Ein
+   * fester Wert hier war der Grund fuer die abgeschnittene letzte Spalte.
+   * --_kontor-label-w bleibt als MINDESTmass.
+   */
   .kontor-col--label {
-    width: var(--_kontor-label-w);
-    max-width: var(--_kontor-label-w);
+    width: auto;
+    min-width: var(--_kontor-label-w);
     text-align: left;
     /* Ein Modell-Slug ist laenger als die Spalte und darf sie nicht dehnen. */
     overflow: hidden;
@@ -246,6 +267,20 @@ export const kontorTableStyles = css`
       var(--color-hatch-bg) 0 1px,
       transparent 1px 6px
     );
+  }
+
+  /*
+   * Die Zellzustaende in der LEGENDE.
+   *
+   * Dort ist eine Zelle ein Zeichen, keine Spalte: die Mindestbreite der
+   * Betragsspalte macht aus der Schraffur sonst einen breiten Balken, und das
+   * Zeichen sitzt verloren an dessen rechtem Rand. Im Browser gesehen -- es
+   * las sich als Diagrammelement, nicht als Notation.
+   */
+  .kontor-legend__probe .kontor-cell {
+    display: inline-block;
+    min-width: 0;
+    padding: 0 var(--space-1);
   }
 
   /* ── Die Zaehlbasis ─────────────────────────────────────────────────────
