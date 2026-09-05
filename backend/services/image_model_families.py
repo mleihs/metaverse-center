@@ -115,6 +115,24 @@ class ImageModelFamily:
     supports_output_fields: bool = True
     #: Ob `aspect_ratio` angenommen wird.
     supports_aspect_ratio: bool = True
+    #: Welche Seitenverhaeltnisse die Familie WIRKLICH fuehrt.
+    #:
+    #: Leer heisst: nicht geprueft, unser Wert geht so raus. Steht etwas da,
+    #: wird der eigene Wert nur gesendet, wenn er darin vorkommt — sonst das
+    #: naechstliegende Verhaeltnis aus der Liste.
+    #:
+    #: Der Anlass ist `stability-ai/stable-diffusion-3.5-large`: sein Enum
+    #: fuehrt `2:3` und `4:5`, aber KEIN `3:4` — und `3:4` ist unser
+    #: Vorgabewert fuer Portraets. Das ist wieder die laute Sorte Fehler
+    #: (bekanntes Feld, unzulaessiger Enum-Wert, 422 auf den ganzen Aufruf),
+    #: also genau der Fall, den ein Schemavergleich ueber FELDNAMEN nicht
+    #: sieht.
+    #:
+    #: Naechstliegend und nicht weglassen: dieses Modell kennt weder Breite
+    #: noch Hoehe, ein fehlendes `aspect_ratio` gaebe also ein Quadrat, wo ein
+    #: Hochformat bestellt war. 3:4 ist 0,75; aus seiner Liste liegt 4:5 (0,8)
+    #: naeher als 2:3 (0,667).
+    aspect_ratio_choices: tuple[str, ...] = ()
     #: KEIN Scheduler-Feld — und das ist die einzige gemessene Antwort.
     #:
     #: Der alte Code schickte `image_scheduler` aus `PLATFORM_DEFAULT_PARAMS`
@@ -148,6 +166,10 @@ _FLUX2 = ImageModelFamily(
     # derselbe Reihenfolgefehler, der in `_CONTEXT_WINDOWS` schon einmal die
     # Fenstergroesse eines Modells auf ein Achtel gesetzt hat.
     markers=("flux-2", "flux.2"),
+    aspect_ratio_choices=(
+        "match_input_image", "custom", "1:1", "16:9", "3:2", "2:3", "4:5",
+        "5:4", "9:16", "3:4", "4:3",
+    ),
     guidance_field="",
     steps_field="",
     size_field="resolution",
@@ -164,6 +186,10 @@ _FLUX2 = ImageModelFamily(
 _FLUX1_PRO = ImageModelFamily(
     name="flux-1-pro",
     markers=("flux-1.1-pro", "flux-1.1", "flux-pro"),
+    aspect_ratio_choices=(
+        "custom", "1:1", "16:9", "3:2", "2:3", "4:5", "5:4", "9:16", "3:4",
+        "4:3",
+    ),
     guidance_field="",
     steps_field="",
     size_field="width_height",
@@ -177,6 +203,10 @@ _FLUX1_PRO = ImageModelFamily(
 _FLUX1 = ImageModelFamily(
     name="flux-1",
     markers=("flux-dev", "flux-schnell", "flux"),
+    aspect_ratio_choices=(
+        "1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3",
+        "9:16", "9:21",
+    ),
     guidance_field="guidance",
     steps_field="num_inference_steps",
     size_field="megapixels",
@@ -281,6 +311,11 @@ _SD3 = ImageModelFamily(
     # Scheduler — die Marke `stable-diffusion` in `_SDXL` haette ihm sechs
     # Felder geschickt, von denen KEINES ankommt. Steht deshalb davor.
     markers=("stable-diffusion-3", "sd3", "sd-3"),
+    # Gemessen 05.09.2026. `3:4` und `4:3` fehlen — als einziges der
+    # gemessenen Modelle.
+    aspect_ratio_choices=(
+        "16:9", "1:1", "21:9", "2:3", "3:2", "4:5", "5:4", "9:16", "9:21",
+    ),
     guidance_field="cfg",
     steps_field="",
     size_field="",

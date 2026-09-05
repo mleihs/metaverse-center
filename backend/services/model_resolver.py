@@ -92,6 +92,38 @@ class ResolvedModel:
     source: str = "platform_default"
 
 
+def _naechstes_verhaeltnis(gewuenscht: str, erlaubt: tuple[str, ...]) -> str:
+    """Das gewuenschte Seitenverhaeltnis, oder das naechstliegende erlaubte.
+
+    Leere Liste heisst: die Familie wurde nicht vermessen, der Wunsch geht so
+    raus. Sonst gilt er nur, wenn er in der Liste steht.
+
+    Weglassen waere hier die schlechtere Vorsicht: die betroffene Familie
+    (`stability-ai/stable-diffusion-3.5-large`) kennt weder Breite noch Hoehe,
+    ein fehlendes `aspect_ratio` gaebe also ein Quadrat, wo ein Hochformat
+    bestellt war. Ein um funf Prozent abweichendes Hochformat ist naeher an der
+    Absicht als ein Quadrat — und naeher als ein 422, der gar kein Bild liefert.
+    """
+    if not erlaubt or gewuenscht in erlaubt:
+        return gewuenscht
+
+    def als_zahl(v: str) -> float | None:
+        b, _, h = v.partition(":")
+        try:
+            return float(b) / float(h)
+        except (ValueError, ZeroDivisionError):
+            return None
+
+    ziel = als_zahl(gewuenscht)
+    kandidaten = [(als_zahl(v), v) for v in erlaubt]
+    kandidaten = [(z, v) for z, v in kandidaten if z is not None]
+    if ziel is None or not kandidaten:
+        # Nichts Vergleichbares — dann lieber das erste erlaubte als einen
+        # Wert, von dem wir wissen, dass er abgelehnt wird.
+        return erlaubt[0]
+    return min(kandidaten, key=lambda kv: abs(kv[0] - ziel))[1]
+
+
 @dataclass
 class ResolvedImageModel:
     """Resolved image model with generation parameters.
@@ -222,7 +254,13 @@ class ResolvedImageModel:
                     params[feld] = self.img2img_strength
 
         if self.aspect_ratio and fam.supports_aspect_ratio and fam.size_field != "width_height":
-            params["aspect_ratio"] = self.aspect_ratio
+            # Erst pruefen, ob die Familie dieses Verhaeltnis ueberhaupt kennt.
+            # `stable-diffusion-3.5-large` fuehrt kein `3:4`, und `3:4` ist
+            # unser Vorgabewert fuer Portraets — ein unzulaessiger Enum-Wert
+            # beendet den ganzen Aufruf mit 422.
+            params["aspect_ratio"] = _naechstes_verhaeltnis(
+                self.aspect_ratio, fam.aspect_ratio_choices
+            )
         if fam.supports_output_fields:
             params["output_format"] = self.output_format or "png"
             params["output_quality"] = self.output_quality

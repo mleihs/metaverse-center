@@ -98,6 +98,52 @@ SCHEMATA: dict[str, set[str]] = {
 }
 
 
+#: Die Enums der gemessenen Schemata, abgeschrieben am 05.09.2026.
+#:
+#: Das ist das zweite Bein neben `SCHEMATA`, und es prueft eine andere Frage:
+#: dort geht es um den NAMEN eines Feldes, hier um seinen WERT. Ein falscher
+#: Name faellt still weg, ein falscher Enum-Wert beendet den Aufruf mit 422 —
+#: laut also, aber nur fuer den, der hinsieht. `resolution=1` statt `"1 MP"`
+#: hat die jugendfreie Szenenspur einen Tag lang ohne jedes Bild gelassen, und
+#: ein Vergleich ueber Feldnamen allein haette das nie gefunden.
+#:
+#: Modelle ohne Enums (die SD-Abkoemmlinge, die A1111-Huellen) stehen hier
+#: nicht — bei ihnen gibt es an dieser Stelle nichts zu pruefen.
+ENUMS: dict[str, dict[str, set[str]]] = {
+    "black-forest-labs/flux-2-pro": {
+        "aspect_ratio": {
+            "match_input_image", "custom", "1:1", "16:9", "3:2", "2:3", "4:5",
+            "5:4", "9:16", "3:4", "4:3",
+        },
+        "resolution": {"match_input_image", "0.5 MP", "1 MP", "2 MP", "4 MP"},
+        "output_format": {"webp", "jpg", "png"},
+    },
+    "black-forest-labs/flux-1.1-pro": {
+        "aspect_ratio": {
+            "custom", "1:1", "16:9", "3:2", "2:3", "4:5", "5:4", "9:16", "3:4",
+            "4:3",
+        },
+        "output_format": {"webp", "jpg", "png"},
+    },
+    "black-forest-labs/flux-dev": {
+        "aspect_ratio": {
+            "1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3",
+            "9:16", "9:21",
+        },
+        "megapixels": {"1", "0.25"},
+        "output_format": {"webp", "jpg", "png"},
+    },
+    "stability-ai/stable-diffusion-3.5-large": {
+        # Kein `3:4` und kein `4:3` — als einziges der gemessenen Modelle,
+        # und `3:4` ist unser Vorgabewert fuer Portraets.
+        "aspect_ratio": {
+            "16:9", "1:1", "21:9", "2:3", "3:2", "4:5", "5:4", "9:16", "9:21",
+        },
+        "output_format": {"webp", "jpg", "png"},
+    },
+}
+
+
 #: Felder, die bewusst auch dorthin gehen, wo das Schema sie nicht fuehrt.
 #:
 #: Es sind genau die, bei denen das Weglassen teurer ist als das Streuen, und
@@ -146,6 +192,56 @@ class TestKeinFremdesFeld:
         # davon nicht. Ein echter Lauf gegen `charlesmccarthy/pony-sdxl` endete
         # damit auf 422, also mit gar keinem Bild.
         assert "scheduler" not in _params(model)
+
+
+class TestKeinUnzulaessigerWert:
+    """Die laute Sorte Fehler — die einzige, die den Aufruf ganz beendet."""
+
+    @pytest.mark.parametrize("model", sorted(ENUMS))
+    def test_jeder_gesendete_enum_wert_ist_zulaessig(self, model: str):
+        p = _params(model)
+        for feld, erlaubt in ENUMS[model].items():
+            if feld in p:
+                assert str(p[feld]) in erlaubt, (
+                    f"{model}: {feld}={p[feld]!r} steht nicht im Enum "
+                    f"{sorted(erlaubt)} — das ist ein 422 auf den ganzen Aufruf"
+                )
+
+    def test_die_aufloesung_ist_eine_zeichenkette(self):
+        # Der konkrete Fall. Hier stand `1`, das Enum kennt `"1 MP"`.
+        p = _params("black-forest-labs/flux-2-pro")
+        assert isinstance(p["resolution"], str)
+
+    def test_ein_unbekanntes_verhaeltnis_wird_ersetzt_und_nicht_weggelassen(self):
+        # `stable-diffusion-3.5-large` kennt weder Breite noch Hoehe. Ein
+        # weggelassenes `aspect_ratio` gaebe dort ein Quadrat, wo ein
+        # Hochformat bestellt war — also naechstliegendes statt keines.
+        from backend.services.model_resolver import ResolvedImageModel
+
+        m = ResolvedImageModel(
+            model="stability-ai/stable-diffusion-3.5-large", aspect_ratio="3:4"
+        )
+        gesendet = m.to_replicate_params()["aspect_ratio"]
+        assert gesendet != "3:4"
+        assert gesendet == "4:5", "0,80 liegt naeher an 0,75 als 2:3 mit 0,667"
+
+    def test_ein_bekanntes_verhaeltnis_bleibt_unangetastet(self):
+        from backend.services.model_resolver import ResolvedImageModel
+
+        m = ResolvedImageModel(model="black-forest-labs/flux-dev", aspect_ratio="3:4")
+        assert m.to_replicate_params()["aspect_ratio"] == "3:4"
+
+    def test_eine_unvermessene_familie_bekommt_den_wunsch_unveraendert(self):
+        # Leere Liste heisst „nicht geprueft", nicht „nichts erlaubt".
+        from backend.services.model_resolver import _naechstes_verhaeltnis
+
+        assert _naechstes_verhaeltnis("7:3", ()) == "7:3"
+
+    def test_ein_unlesbarer_wunsch_faellt_auf_das_erste_erlaubte(self):
+        from backend.services.model_resolver import _naechstes_verhaeltnis
+
+        assert _naechstes_verhaeltnis("quer", ("1:1", "16:9")) == "1:1"
+        assert _naechstes_verhaeltnis("1:0", ("1:1", "16:9")) == "1:1"
 
 
 class TestKeinVergessenesFeld:
