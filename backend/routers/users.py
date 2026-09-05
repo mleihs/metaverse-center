@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from backend.dependencies import get_admin_supabase, get_current_user, get_effective_supabase, is_platform_admin
+from backend.models.auth import ImagePreferencesResponse, ImagePreferencesUpdate
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.models.notification import NotificationPreferencesResponse, NotificationPreferencesUpdate
 from backend.models.user import DashboardData, MembershipInfo, UserWithMemberships
@@ -109,3 +110,44 @@ async def complete_onboarding(
         "user_profiles", user.id, "complete_onboarding",
     )
     return SuccessResponse(data={"onboarding_completed": True})
+
+
+@router.get("/me/image-preferences")
+async def get_image_preferences(
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ImagePreferencesResponse]:
+    """Was der Nutzer ueber die fuer ihn erzeugten Bilder entschieden hat."""
+    stand = await UserProfileService.get_image_preferences(supabase, user.id)
+    return SuccessResponse(data=ImagePreferencesResponse(**stand))
+
+
+@router.patch("/me/image-preferences")
+async def update_image_preferences(
+    body: ImagePreferencesUpdate,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[ImagePreferencesResponse]:
+    """Inhaltsstufe und Blick des Nutzers setzen.
+
+    DIE EINZIGE STELLE, AN DER DER WUNSCH GESCHRIEBEN WIRD — mit Absicht.
+
+    `image_content_policy` haelt fest, dass der Server den Nutzerwunsch aus
+    der Datenbank liest und nicht aus dem Bildaufruf: sonst koennte ein Klient
+    die Stufe im selben Aufruf anheben, in dem er das Bild bestellt. Die
+    Einstellungsflaeche ist deshalb der vorgesehene Schreibweg, und ein Test
+    (`TestDerKlientKannNichtsAnheben`) bindet die andere Haelfte.
+    """
+    stand = await UserProfileService.update_image_preferences(
+        supabase,
+        user.id,
+        image_content_preference=body.image_content_preference,
+        scene_image_vantage=body.scene_image_vantage,
+        vantage_folgt_der_welt=body.vantage_folgt_der_welt,
+    )
+    await AuditService.safe_log(
+        supabase, None, user.id,
+        "user_profiles", user.id, "update_image_preferences",
+        details={"fields": sorted(body.model_dump(exclude_none=True))},
+    )
+    return SuccessResponse(data=ImagePreferencesResponse(**stand))

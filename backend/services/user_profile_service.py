@@ -120,3 +120,67 @@ class UserProfileService:
             "Onboarding completed",
             extra={"user_id": str(user_id)},
         )
+
+    @classmethod
+    async def get_image_preferences(cls, supabase: Client, user_id: UUID) -> dict:
+        """Die Bildeinstellungen des Nutzers, mit den Vorgaben der Spalten.
+
+        Auf dem Klienten des Aufrufers, nicht auf dem Admin-Klienten:
+        `user_profiles` traegt „Users can read own profile" (`auth.uid() = id`),
+        und `complete_onboarding` nebenan schreibt aus demselben Grund ebenso.
+        """
+        zeile = await maybe_single_data(
+            supabase.table("user_profiles")
+            .select("image_content_preference, scene_image_vantage")
+            .eq("id", str(user_id))
+            .maybe_single()
+        )
+        zeile = zeile or {}
+        return {
+            # Die Spaltenvorgabe ist `general`; ein fehlendes Profil ist kein
+            # Grund, in die offenere Richtung zu irren.
+            "image_content_preference": zeile.get("image_content_preference") or "general",
+            # NULL ist hier ein Wert und keine Luecke: „die Welt entscheidet".
+            "scene_image_vantage": zeile.get("scene_image_vantage"),
+        }
+
+    @classmethod
+    async def update_image_preferences(
+        cls,
+        supabase: Client,
+        user_id: UUID,
+        *,
+        image_content_preference: str | None = None,
+        scene_image_vantage: str | None = None,
+        vantage_folgt_der_welt: bool = False,
+    ) -> dict:
+        """Die Bildeinstellungen schreiben — nur, was wirklich mitkam.
+
+        Ein nicht mitgeschicktes Feld bleibt unangetastet. Das ist der
+        Unterschied zwischen einem PATCH und einem PUT, und er ist hier
+        inhaltlich wichtig: die Oberflaeche hat zwei getrennte Bedienelemente,
+        und eines zu bedienen darf das andere nicht zuruecksetzen.
+
+        `vantage_folgt_der_welt` schreibt ausdruecklich `NULL`. Ohne diesen
+        Schalter gaebe es keinen Weg zurueck: ein `null` im Rumpf ist von
+        einem weggelassenen Feld nicht zu unterscheiden, sobald Pydantic
+        beiden denselben Vorgabewert gibt.
+        """
+        aenderung: dict[str, object] = {}
+        if image_content_preference is not None:
+            aenderung["image_content_preference"] = image_content_preference
+        if vantage_folgt_der_welt:
+            aenderung["scene_image_vantage"] = None
+        elif scene_image_vantage is not None:
+            aenderung["scene_image_vantage"] = scene_image_vantage
+
+        if aenderung:
+            await supabase.table("user_profiles").update(aenderung).eq("id", str(user_id)).execute()
+            logger.info(
+                "Image preferences updated",
+                extra={"user_id": str(user_id), "fields": sorted(aenderung)},
+            )
+
+        # Zurueckgelesen und nicht zusammengereimt: die Spalten tragen
+        # CHECK-Bedingungen, und was wirklich steht, sagt nur die Datenbank.
+        return await cls.get_image_preferences(supabase, user_id)

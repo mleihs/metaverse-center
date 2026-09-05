@@ -32229,6 +32229,74 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>Drawing this round</source>
   <target>Wird gemalt</target>
 </trans-unit>
+<trans-unit id="s618979cde14f1b7e">
+  <source>The picture and its stored files are removed for good. The conversation stays as it is.</source>
+        <target>Das Bild und seine abgelegten Dateien sind danach endgültig fort. Das Gespräch bleibt, wie es ist.</target>
+</trans-unit>
+<trans-unit id="se6ea60a5fe7d04f7">
+  <source>The picture could not be removed.</source>
+        <target>Das Bild konnte nicht entfernt werden.</target>
+</trans-unit>
+<trans-unit id="s3c2b4de600b600cd">
+  <source>as the world intends</source>
+        <target>wie die Welt es vorsieht</target>
+</trans-unit>
+<trans-unit id="sdb35e9d65757c85a">
+  <source>adult content</source>
+        <target>Inhalte für Erwachsene</target>
+</trans-unit>
+<trans-unit id="s235fd52281a79929">
+  <source>Remove this picture</source>
+        <target>Dieses Bild entfernen</target>
+</trans-unit>
+<trans-unit id="sf6e7c393dd4e1a2d">
+  <source>As the world intends</source>
+        <target>Wie die Welt es vorsieht</target>
+</trans-unit>
+<trans-unit id="s4a93444be135c745">
+  <source>Including adult content</source>
+        <target>Auch Inhalte für Erwachsene</target>
+</trans-unit>
+<trans-unit id="s2816d12d7b1e8d99">
+  <source>The world decides</source>
+        <target>Die Welt entscheidet</target>
+</trans-unit>
+<trans-unit id="s89ef2dcd571b23f5">
+  <source>Through your eyes</source>
+        <target>Aus deinen Augen</target>
+</trans-unit>
+<trans-unit id="s1604cc3c2a556b73">
+  <source>Through theirs</source>
+        <target>Aus ihren Augen</target>
+</trans-unit>
+<trans-unit id="s78cec2a2eccab23a">
+  <source>The whole room</source>
+        <target>Der ganze Raum</target>
+</trans-unit>
+<trans-unit id="s4102129e11bb61e7">
+  <source>Image desk</source>
+        <target>Bildstelle</target>
+</trans-unit>
+<trans-unit id="s8bffa62c86bca82b">
+  <source>What may be depicted</source>
+        <target>Was dargestellt werden darf</target>
+</trans-unit>
+<trans-unit id="s1de92e0da1254cb8">
+  <source>A wish, not a permission. Every world states what it intends, and the narrower of the two holds – asking for more here never widens what a world has set.</source>
+        <target>Ein Wunsch, keine Erlaubnis. Jede Welt sagt, was sie vorsieht, und es gilt das Engere von beidem – hier mehr zu verlangen weitet nichts, was eine Welt gesetzt hat.</target>
+</trans-unit>
+<trans-unit id="s64fd80bfd00e0c76">
+  <source>Where the picture stands</source>
+        <target>Wo das Bild steht</target>
+</trans-unit>
+<trans-unit id="saf66eb6f6ec6a2fc">
+  <source>This is not a ladder – the wide shot is no bolder than the reader’s eye, only further back. The most recent choice holds.</source>
+        <target>Das ist keine Stufenleiter – die Totale ist nicht freizügiger als der Leserblick, nur weiter weg. Es gilt die zuletzt getroffene Wahl.</target>
+</trans-unit>
+<trans-unit id="s34d189e4efb1335d">
+  <source>The image desk could not be reached.</source>
+        <target>Die Bildstelle war nicht erreichbar.</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

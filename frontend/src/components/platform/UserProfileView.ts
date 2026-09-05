@@ -38,7 +38,13 @@ import { notificationPreferencesApi } from '../../services/api/NotificationPrefe
 import { forgeStateManager } from '../../services/ForgeStateManager.js';
 import { captureError } from '../../services/SentryService.js';
 import { authService } from '../../services/supabase/SupabaseAuthService.js';
-import type { MembershipInfo, NotificationPreferences, UserAccount } from '../../types/index.js';
+import type {
+  ImagePreferences,
+  ImagePreferencesPatch,
+  MembershipInfo,
+  NotificationPreferences,
+  UserAccount,
+} from '../../types/index.js';
 import { formatDate } from '../../utils/date-format.js';
 import { memberRoleLabel } from '../../utils/enum-labels.js';
 import { icons } from '../../utils/icons.js';
@@ -54,12 +60,38 @@ import '../shared/VelgTabs.js';
 import '../shared/VelgToggle.js';
 
 /** Die fünf Blätter. Reihenfolge ist die Reihenfolge der Reiter. */
-const SHEET_KEYS = ['file', 'post', 'keys', 'postings', 'record'] as const;
+const SHEET_KEYS = ['file', 'post', 'plate', 'keys', 'postings', 'record'] as const;
 type SheetKey = (typeof SHEET_KEYS)[number];
 
 const CORRESPONDENCE_LOCALES = [
   { code: 'en', label: 'English' },
   { code: 'de', label: 'Deutsch' },
+] as const;
+
+/**
+ * Die Inhaltsstufe. Zwei Werte, also zwei Chips und keine Auswahlliste —
+ * dieselbe Begruendung wie bei der Sprache weiter unten.
+ *
+ * Die Beschriftungen sagen, was der Betreiber TUT, nicht was er ist: „Was die
+ * Welt vorgibt" gegen „Auch was fuer Erwachsene ist". Eine Stufe ist hier ein
+ * Wunsch und keine Erlaubnis — der Server rechnet ihn gegen die Anfrage und
+ * nimmt das Minimum.
+ */
+const IMAGE_RATINGS = [
+  { code: 'general', label: () => msg('As the world intends') },
+  { code: 'mature', label: () => msg('Including adult content') },
+] as const;
+
+/**
+ * Der Blick. Vier Chips fuer drei Werte: `null` ist ein eigener Zustand und
+ * heisst „die Welt entscheidet", nicht „nichts gewaehlt". Ohne diesen vierten
+ * Chip gaebe es keinen Weg zurueck, sobald einmal gewaehlt wurde.
+ */
+const SCENE_VANTAGES = [
+  { code: null, label: () => msg('The world decides') },
+  { code: 'human', label: () => msg('Through your eyes') },
+  { code: 'agent', label: () => msg('Through theirs') },
+  { code: 'wide', label: () => msg('The whole room') },
 ] as const;
 
 @localized()
@@ -667,6 +699,9 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
   @state() private _savingName = false;
   @state() private _sendingReset = false;
 
+  @state() private _imagePrefs: ImagePreferences | null = null;
+  @state() private _savingImagePrefs = false;
+
   @state() private _prefs: NotificationPreferences | null = null;
   @state() private _savedPrefs: NotificationPreferences | null = null;
   @state() private _savingPrefs = false;
@@ -726,10 +761,11 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
       // `loadWallet` füllt `forgeStateManager.byokStatus`, aus dem
       // `<velg-keyring>` liest. Es fängt seine Fehler selbst ab und gibt
       // null zurück — ein Ausfall der Geldbörse darf die Akte nicht kippen.
-      const [accountRes, prefsRes] = await Promise.all([
+      const [accountRes, prefsRes, , imageRes] = await Promise.all([
         usersApi.getMe(),
         notificationPreferencesApi.getPreferences(),
         forgeStateManager.loadWallet(),
+        usersApi.getImagePreferences(),
       ]);
 
       if (accountRes.success && accountRes.data) {
@@ -742,6 +778,13 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
         const prefs = { ...prefsRes.data, email_locale: prefsRes.data.email_locale || 'en' };
         this._prefs = prefs;
         this._savedPrefs = { ...prefs };
+      }
+
+      // Die Bildstelle darf die Akte nicht kippen: schlaegt sie fehl, bleibt
+      // das Blatt leer und der Rest steht. Dieselbe Abwaegung wie bei der
+      // Geldboerse eine Zeile darueber.
+      if (imageRes.success && imageRes.data) {
+        this._imagePrefs = imageRes.data;
       }
     } catch (err) {
       captureError(err, { source: 'VelgUserProfileView._load' });
@@ -880,6 +923,7 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     return [
       { key: 'file', label: msg('File') },
       { key: 'post', label: msg('Correspondence') },
+      { key: 'plate', label: msg('Image desk') },
       { key: 'keys', label: msg('Keyring'), badge: hasKey ? '●' : undefined },
       {
         key: 'postings',
@@ -894,6 +938,8 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
     switch (this._tab) {
       case 'post':
         return this._renderCorrespondence();
+      case 'plate':
+        return this._renderPlate();
       case 'keys':
         return this._renderKeyring();
       case 'postings':
@@ -1089,6 +1135,111 @@ export class VelgUserProfileView extends SignalWatcher(LitElement) {
         </button>
       </aside>
     `;
+  }
+
+  /**
+   * Die Bildstelle — was der Betreiber ueber die fuer ihn erzeugten Bilder sagt.
+   *
+   * ZWEI ENTSCHEIDUNGEN, DIE NICHT DASSELBE SIND
+   *
+   * Die Inhaltsstufe ist ein WUNSCH: der Server rechnet sie gegen die Anfrage
+   * und nimmt das Minimum. Sie kann also nichts anheben, was die Anfrage nicht
+   * ohnehin schon wollte — deshalb steht sie hier und nicht am einzelnen Bild.
+   *
+   * Der Blick ist keine Rangfolge, sondern eine Wahl: die Totale ist nicht
+   * freizuegiger als der Leserblick, nur anders. Dort gewinnt, wer zuletzt
+   * gewaehlt hat, und „die Welt entscheidet" ist ein eigener vierter Zustand.
+   *
+   * Beide werden SOFORT geschrieben und nicht ueber einen Speichern-Knopf: es
+   * sind zwei einzelne Wahlen ohne Zwischenzustand, anders als das Postblatt
+   * nebenan, wo vier Schalter zusammen eine Einstellung ergeben.
+   */
+  private _renderPlate() {
+    const prefs = this._imagePrefs;
+    const busy = this._savingImagePrefs;
+
+    return html`
+      <div class="single">
+        <div class="single__body">
+          <div class="field">
+            <span class="field__label">${msg('What may be depicted')}</span>
+            <div class="chips" role="radiogroup" aria-label=${msg('What may be depicted')}>
+              ${IMAGE_RATINGS.map((r) => {
+                const active = r.code === (prefs?.image_content_preference ?? 'general');
+                return html`
+                  <button
+                    class="chip"
+                    role="radio"
+                    aria-checked=${active ? 'true' : 'false'}
+                    ?data-active=${active}
+                    ?disabled=${!prefs || busy}
+                    @click=${() => this._setImagePref({ image_content_preference: r.code })}
+                  >
+                    ${r.label()}
+                  </button>
+                `;
+              })}
+            </div>
+            <span class="field__hint">
+              ${msg('A wish, not a permission. Every world states what it intends, and the narrower of the two holds – asking for more here never widens what a world has set.')}
+            </span>
+          </div>
+
+          <div class="field">
+            <span class="field__label">${msg('Where the picture stands')}</span>
+            <div class="chips" role="radiogroup" aria-label=${msg('Where the picture stands')}>
+              ${SCENE_VANTAGES.map((v) => {
+                const active = (prefs?.scene_image_vantage ?? null) === v.code;
+                return html`
+                  <button
+                    class="chip"
+                    role="radio"
+                    aria-checked=${active ? 'true' : 'false'}
+                    ?data-active=${active}
+                    ?disabled=${!prefs || busy}
+                    @click=${() =>
+                      this._setImagePref(
+                        v.code === null
+                          ? { vantage_folgt_der_welt: true }
+                          : { scene_image_vantage: v.code },
+                      )}
+                  >
+                    ${v.label()}
+                  </button>
+                `;
+              })}
+            </div>
+            <span class="field__hint">
+              ${msg('This is not a ladder – the wide shot is no bolder than the reader’s eye, only further back. The most recent choice holds.')}
+            </span>
+          </div>
+
+          ${prefs
+            ? nothing
+            : html`<span class="field__hint">${msg('The image desk could not be reached.')}</span>`}
+        </div>
+      </div>
+    `;
+  }
+
+  private async _setImagePref(patch: ImagePreferencesPatch): Promise<void> {
+    if (!this._imagePrefs || this._savingImagePrefs) return;
+    this._savingImagePrefs = true;
+    try {
+      const res = await usersApi.updateImagePreferences(patch);
+      if (res.success && res.data) {
+        // Der zurueckgelesene Stand und nicht der geschickte: die Spalten
+        // tragen CHECK-Bedingungen, und was wirklich steht, sagt der Server.
+        this._imagePrefs = res.data;
+      } else {
+        VelgToast.error(res.error?.message ?? msg('The preference could not be saved.'));
+      }
+    } catch (err) {
+      captureError(err, { source: 'VelgUserProfileView._setImagePref' });
+      VelgToast.error(msg('The preference could not be saved.'));
+    } finally {
+      this._savingImagePrefs = false;
+    }
   }
 
   private _renderCorrespondence() {

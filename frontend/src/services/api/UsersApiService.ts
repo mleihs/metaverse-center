@@ -1,4 +1,10 @@
-import type { ApiResponse, DashboardData, UserAccount } from '../../types/index.js';
+import type {
+  ApiResponse,
+  DashboardData,
+  ImagePreferences,
+  ImagePreferencesPatch,
+  UserAccount,
+} from '../../types/index.js';
 import { BaseApiService } from './BaseApiService.js';
 
 /**
@@ -24,6 +30,25 @@ export class UsersApiService extends BaseApiService {
 
   completeOnboarding(): Promise<ApiResponse<{ onboarding_completed: boolean }>> {
     return this.patch('/users/me/onboarding');
+  }
+
+  getImagePreferences(): Promise<ApiResponse<ImagePreferences>> {
+    return this.get('/users/me/image-preferences');
+  }
+
+  /**
+   * Inhaltsstufe und Blick setzen.
+   *
+   * PATCH und nicht PUT, und das ist inhaltlich wichtig: die Akte hat zwei
+   * getrennte Bedienelemente, und eines zu bedienen darf das andere nicht
+   * zuruecksetzen. Ein weggelassenes Feld bleibt, wie es war.
+   *
+   * `vantage_folgt_der_welt` ist der einzige Weg, den Blick auf „die Welt
+   * entscheidet" zurueckzustellen — ein `null` im Rumpf waere von einem
+   * weggelassenen Feld nicht zu unterscheiden.
+   */
+  updateImagePreferences(patch: ImagePreferencesPatch): Promise<ApiResponse<ImagePreferences>> {
+    return this.patch('/users/me/image-preferences', patch);
   }
 }
 

@@ -798,6 +798,31 @@ export interface ChatReactionSummary {
  * eine Nachricht bleibt eine Nachricht, und der Faden muss keine zweite
  * Tabelle zusammenfuehren, um sie anzuzeigen.
  */
+/**
+ * Was ein Nutzer ueber die fuer ihn erzeugten Bilder entschieden hat.
+ *
+ * Beide Felder sind von `SceneImageMeta` ABGELEITET und nicht abgeschrieben:
+ * es sind dieselben Wertebereiche, und zwei Listen, die dasselbe meinen,
+ * laufen frueher oder spaeter auseinander.
+ *
+ * `scene_image_vantage: null` ist ein WERT und keine Luecke — „die Vorgabe der
+ * Welt gilt". Wer nie gewaehlt hat und wer ausdruecklich der Welt folgen will,
+ * stehen gleich da, und das ist richtig so: aendert die Welt ihre Vorgabe,
+ * folgt beides mit.
+ */
+export interface ImagePreferences {
+  image_content_preference: SceneImageMeta['rating'];
+  scene_image_vantage: SceneImageMeta['vantage'] | null;
+}
+
+/** Was die Akte schickt: nur das Geaenderte. Siehe `updateImagePreferences`. */
+export interface ImagePreferencesPatch {
+  image_content_preference?: SceneImageMeta['rating'];
+  scene_image_vantage?: SceneImageMeta['vantage'];
+  /** Ausdruecklich auf „die Welt entscheidet" zuruecksetzen. */
+  vantage_folgt_der_welt?: boolean;
+}
+
 export interface SceneImageMeta {
   url: string;
   span: 'message' | 'round' | 'section';
