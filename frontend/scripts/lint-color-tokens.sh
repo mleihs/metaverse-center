@@ -49,13 +49,44 @@ RGBA_ENFORCED_DIRS=(
   # not in one jump — see handoff/RESUME-atlas-skin-2026-09-03.md.
   "$COMPONENTS_DIR/content"
   "$COMPONENTS_DIR/agents"
+  # Nachtrag 05.09.2026, nach dem Bernstein-Durchgang: 63 fest verdrahtete
+  # rgba(245,158,11,...) in 16 Dateien laufen jetzt ueber
+  # var(--color-accent-amber) und damit ueber die Polaritaetsregel in
+  # ThemeService.publishPlatformAccent. Danach gemessen: die folgenden
+  # Verzeichnisse tragen NULL rohe rgba().
+  #
+  # Das ist KEIN Sprung entgegen der Warnung darueber: die Warnung galt
+  # Verzeichnissen, in denen die Arbeit noch aussteht. Jedes hier ist
+  # nachgemessen leer, das Tor ist also ab der ersten Sekunde gruen und
+  # bewacht ab jetzt nur, dass es so bleibt.
+  "$COMPONENTS_DIR/alpha"
+  "$COMPONENTS_DIR/bonds"
+  "$COMPONENTS_DIR/broadsheet"
+  "$COMPONENTS_DIR/buildings"
+  "$COMPONENTS_DIR/bureau"
+  "$COMPONENTS_DIR/chronicle"
+  "$COMPONENTS_DIR/dashboard"
+  "$COMPONENTS_DIR/drift"
+  "$COMPONENTS_DIR/embassies"
+  "$COMPONENTS_DIR/intake"
+  "$COMPONENTS_DIR/journal"
+  "$COMPONENTS_DIR/landing"
+  "$COMPONENTS_DIR/locations"
+  "$COMPONENTS_DIR/simulation"
+  "$COMPONENTS_DIR/world-map"
 )
 for TARGET in "${RGBA_ENFORCED_DIRS[@]}"; do
+  # Kommentarzeilen fallen raus. Ein rgba() hinter // oder * ist Prosa und
+  # faerbt nichts; zwei Erklaertexte in landing/ haben das Tor beim Aufziehen
+  # der Liste am 05.09.2026 rot gemeldet, obwohl beide Dateien sauber sind.
+  # Ein Tor, das den Unterschied zwischen Code und Erklaerung nicht kennt,
+  # bestraft genau das Aufschreiben, das dieses Haus verlangt.
   RESULT=$(grep -rnE 'rgba?\(' \
     --include='*.ts' \
     "$TARGET" 2>/dev/null | \
     grep -v 'lint-color-ok' | \
-    grep -v 'color-mix' || true)
+    grep -v 'color-mix' | \
+    grep -vE '^[^:]+:[0-9]+: *(\*|//|/\*)' || true)
 
   if [ -n "$RESULT" ]; then
     echo "ERROR: Raw rgba()/rgb() found in tokenized component (use color-mix or lint-color-ok):"

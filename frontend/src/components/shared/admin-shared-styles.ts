@@ -371,7 +371,7 @@ export const adminForgeSectionStyles = [
     height: 1px;
     background: linear-gradient(
       90deg,
-      var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2)) 0%,
+      var(--color-accent-amber-dim, color-mix(in srgb, var(--color-accent-amber) 20%, transparent)) 0%,
       transparent 80%
     );
     margin-bottom: var(--space-4);

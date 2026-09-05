@@ -146,8 +146,8 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
         0deg,
         transparent,
         transparent 2px,
-        rgba(245, 158, 11, 0.02) 2px,
-        rgba(245, 158, 11, 0.02) 4px
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 2px,
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 4px
       );
       pointer-events: none;
       animation: scanline-scroll 60s linear infinite;
@@ -170,8 +170,8 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     @keyframes dispatch-glow {
-      0%, 100% { opacity: 0.15; box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.15); }
-      50% { opacity: 0.4; box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.25); }
+      0%, 100% { opacity: 0.15; box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 15%, transparent); }
+      50% { opacity: 0.4; box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 25%, transparent); }
     }
 
     /* ── Header Block ── */
@@ -424,7 +424,7 @@ export class VelgBureauDispatch extends SignalWatcher(LitElement) {
     }
 
     .dispatch__ack-btn:hover {
-      box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
       transform: translateY(-1px);
     }
 

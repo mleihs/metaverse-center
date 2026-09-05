@@ -340,7 +340,7 @@ export class VelgConversationList extends SignalWatcher(LitElement) {
       width: 8px;
       height: 8px;
       background: var(--color-primary);
-      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-primary-glow, rgba(245, 158, 11, 0.4));
+      box-shadow: 0 0 calc(6px * var(--glow-strength)) var(--color-primary-glow, color-mix(in srgb, var(--color-accent-amber) 40%, transparent));
       flex-shrink: 0;
     }
 

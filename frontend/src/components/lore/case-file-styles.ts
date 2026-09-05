@@ -21,8 +21,8 @@ export const caseFileStyles = css`
       0deg,
       transparent,
       transparent 2px,
-      rgba(245, 158, 11, 0.015) 2px,
-      rgba(245, 158, 11, 0.015) 4px
+      color-mix(in srgb, var(--color-accent-amber) 1.5%, transparent) 2px,
+      color-mix(in srgb, var(--color-accent-amber) 1.5%, transparent) 4px
     );
     pointer-events: none;
   }

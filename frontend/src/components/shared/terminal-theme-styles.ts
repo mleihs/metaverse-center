@@ -378,8 +378,8 @@ export const terminalFrameStyles = css`
       0deg,
       transparent,
       transparent 3px,
-      rgba(245, 158, 11, 0.012) 3px,
-      rgba(245, 158, 11, 0.012) 6px
+      color-mix(in srgb, var(--color-accent-amber) 1.2%, transparent) 3px,
+      color-mix(in srgb, var(--color-accent-amber) 1.2%, transparent) 6px
     );
     z-index: 1;
   }

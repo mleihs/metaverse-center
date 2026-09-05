@@ -93,7 +93,7 @@ export class VelgForgeAccessModal extends LitElement {
       padding: 16px 12px;
       line-height: 1.8;
       border: 1px dashed var(--color-border);
-      background: rgba(245, 158, 11, 0.02);
+      background: color-mix(in srgb, var(--color-accent-amber) 2%, transparent);
     }
 
     .classification::before {
@@ -120,8 +120,8 @@ export class VelgForgeAccessModal extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(245, 158, 11, 0.015) 3px,
-        rgba(245, 158, 11, 0.015) 4px
+        color-mix(in srgb, var(--color-accent-amber) 1.5%, transparent) 3px,
+        color-mix(in srgb, var(--color-accent-amber) 1.5%, transparent) 4px
       );
       pointer-events: none;
     }

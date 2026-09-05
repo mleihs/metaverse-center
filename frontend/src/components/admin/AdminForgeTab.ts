@@ -120,7 +120,7 @@ export class VelgAdminForgeTab extends LitElement {
       .byok-input:focus {
         outline: none;
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.1);
+        box-shadow: 0 0 0 1px var(--color-accent-amber), 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 10%, transparent);
       }
 
       /* ── Tables (shared) ── */
@@ -140,7 +140,7 @@ export class VelgAdminForgeTab extends LitElement {
         letter-spacing: 2px;
         color: var(--color-accent-amber);
         padding: var(--space-2) var(--space-3);
-        border-bottom: 2px solid var(--color-accent-amber-dim, rgba(245, 158, 11, 0.3));
+        border-bottom: 2px solid var(--color-accent-amber-dim, color-mix(in srgb, var(--color-accent-amber) 30%, transparent));
         opacity: 0.8;
       }
 
@@ -152,7 +152,7 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .forge-table tbody tr:hover td {
-        background: rgba(245, 158, 11, 0.03);
+        background: color-mix(in srgb, var(--color-accent-amber) 3%, transparent);
       }
 
       .forge-table tbody tr:nth-child(even) td {
@@ -160,7 +160,7 @@ export class VelgAdminForgeTab extends LitElement {
       }
 
       .forge-table tbody tr:nth-child(even):hover td {
-        background: rgba(245, 158, 11, 0.04);
+        background: color-mix(in srgb, var(--color-accent-amber) 4%, transparent);
       }
 
       .bundle-row--inactive td {
@@ -180,7 +180,7 @@ export class VelgAdminForgeTab extends LitElement {
         align-items: center;
         padding: var(--space-4);
         background: var(--color-surface);
-        border: 1px solid var(--color-accent-amber-dim, rgba(245, 158, 11, 0.2));
+        border: 1px solid var(--color-accent-amber-dim, color-mix(in srgb, var(--color-accent-amber) 20%, transparent));
         margin: var(--space-2) 0;
       }
 
@@ -243,14 +243,14 @@ export class VelgAdminForgeTab extends LitElement {
       .filter-chip:hover {
         color: var(--color-accent-amber);
         border-color: var(--color-accent-amber);
-        background: rgba(245, 158, 11, 0.05);
+        background: color-mix(in srgb, var(--color-accent-amber) 5%, transparent);
       }
 
       .filter-chip--active {
         background: var(--color-accent-amber);
         color: var(--color-surface-sunken);
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
       }
 
       /* ── Pagination ── */

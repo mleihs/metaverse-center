@@ -34,7 +34,7 @@ export class VelgBureauNotice extends LitElement {
     }
 
     @keyframes cta-glow {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.15); }
+      0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent-amber) 15%, transparent); }
       50%      { box-shadow: 0 0 calc(12px * var(--glow-strength)) calc(2px * var(--glow-strength)) var(--color-accent-amber-glow); }
     }
 
@@ -61,9 +61,9 @@ export class VelgBureauNotice extends LitElement {
       background: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(245, 158, 11, 0.4) 30%,
-        rgba(245, 158, 11, 0.6) 50%,
-        rgba(245, 158, 11, 0.4) 70%,
+        color-mix(in srgb, var(--color-accent-amber) 40%, transparent) 30%,
+        color-mix(in srgb, var(--color-accent-amber) 60%, transparent) 50%,
+        color-mix(in srgb, var(--color-accent-amber) 40%, transparent) 70%,
         transparent 100%
       );
     }

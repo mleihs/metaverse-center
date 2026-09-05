@@ -43,8 +43,8 @@ export class VelgDossierPreview extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(245, 158, 11, 0.02) 2px,
-        rgba(245, 158, 11, 0.02) 4px
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 2px,
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 4px
       );
       pointer-events: none;
     }

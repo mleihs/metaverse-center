@@ -167,7 +167,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .bundle--selected {
         border-color: var(--color-accent-amber);
-        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.2), inset 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.05);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 20%, transparent), inset 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 5%, transparent);
       }
 
       .bundle__tokens {
@@ -251,7 +251,7 @@ export class VelgForgeMint extends SignalWatcher(LitElement) {
 
       .btn--purchase:hover:not(:disabled) {
         background: var(--color-accent-amber-hover);
-        box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
         transform: translateY(-1px);
       }
 

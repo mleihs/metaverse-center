@@ -22,8 +22,8 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
       align-items: center;
       gap: var(--space-1-5, 6px);
       padding: var(--space-1, 4px) var(--space-2-5, 10px);
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: color-mix(in srgb, var(--color-accent-amber) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
       color: var(--color-accent-amber);
       font-family: var(--font-brutalist, system-ui);
       font-weight: 900;
@@ -37,9 +37,9 @@ export class VelgForgeWalletBadge extends SignalWatcher(LitElement) {
     }
 
     .wallet-badge:hover {
-      background: rgba(245, 158, 11, 0.14);
+      background: color-mix(in srgb, var(--color-accent-amber) 14%, transparent);
       border-color: var(--color-accent-amber);
-      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 15%, transparent);
     }
 
     .wallet-badge:focus-visible {

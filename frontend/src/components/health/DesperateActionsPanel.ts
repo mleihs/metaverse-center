@@ -14,7 +14,6 @@ interface PanelAction {
   label: string;
   icon: ReturnType<typeof icons.scorchedEarth>;
   color: string;
-  accentRgb: string;
   description: string;
   estimate: string;
   requiresTarget: boolean;
@@ -423,7 +422,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Scorched Earth'),
         icon: icons.scorchedEarth(28),
         color: 'var(--color-danger)',
-        accentRgb: '239, 68, 68',
         description: msg('Permanently destroy a building to stabilize zone'),
         estimate: msg('+0.15 STAB · 1 BLDG'),
         requiresTarget: true,
@@ -433,7 +431,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Emergency Draft'),
         icon: icons.emergencyDraft(28),
         color: 'var(--color-warning)',
-        accentRgb: '245, 158, 11',
         description: msg('Draft emergency personnel from reserves'),
         estimate: msg('+1 AGENT · 15 RP'),
         requiresTarget: false,
@@ -443,7 +440,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Reality Anchor'),
         icon: icons.anchor(28),
         color: 'var(--color-info)',
-        accentRgb: '59, 130, 246',
         description: msg('Temporary stability boost, all zones, 3 cycles'),
         estimate: msg('+0.10 STAB · ALL · 3 CYC'),
         requiresTarget: false,
@@ -468,7 +464,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Staff Buildings'),
         icon: icons.building(28),
         color: 'var(--color-info)',
-        accentRgb: '59, 130, 246',
         description: msg('Assign agents to understaffed buildings'),
         estimate: `${buildingCount} ${msg('BLDG')} · ${readinessPct}% ${msg('READY')}`,
         requiresTarget: false,
@@ -479,7 +474,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Create Agents'),
         icon: icons.emergencyDraft(28),
         color: 'var(--color-success)',
-        accentRgb: '34, 197, 94',
         description: msg('Add new agents and assign them to buildings'),
         estimate: `${agentCount} ${msg('AGENTS')}`,
         requiresTarget: false,
@@ -490,7 +484,6 @@ export class DesperateActionsPanel extends SignalWatcher(LitElement) {
         label: msg('Establish Diplomacy'),
         icon: icons.handshake(28),
         color: 'var(--color-epoch-influence)',
-        accentRgb: '167, 139, 250',
         description: msg('Open building details to establish embassies'),
         estimate: `${embassyCount} ${msg('EMBASSIES')} · ${reach.toFixed(2)} ${msg('REACH')}`,
         requiresTarget: false,

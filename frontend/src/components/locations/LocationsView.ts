@@ -113,7 +113,7 @@ export class VelgLocationsView extends LitElement {
 
     .view__mode-btn--active {
       color: var(--color-primary);
-      background: rgba(245, 158, 11, 0.08);
+      background: color-mix(in srgb, var(--color-accent-amber) 8%, transparent);
     }
   `,
   ];

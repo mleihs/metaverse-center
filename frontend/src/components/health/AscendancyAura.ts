@@ -39,10 +39,10 @@ export class AscendancyAura extends LitElement {
       position: absolute;
       inset: 0;
       box-shadow:
-        inset 0 0 calc(120px * var(--glow-strength)) rgba(245, 158, 11, 0.04),
-        inset 0 0 calc(40px * var(--glow-strength)) rgba(245, 158, 11, 0.02);
+        inset 0 0 calc(120px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 4%, transparent),
+        inset 0 0 calc(40px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 2%, transparent);
       border-top: 2px solid var(--color-accent-amber);
-      border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+      border-bottom: 1px solid color-mix(in srgb, var(--color-accent-amber) 15%, transparent);
     }
 
     /* Warm golden corner vignette */
@@ -50,8 +50,8 @@ export class AscendancyAura extends LitElement {
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.03) 0%, transparent 60%),
-        radial-gradient(ellipse at 50% 100%, rgba(245, 158, 11, 0.02) 0%, transparent 50%);
+      background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, var(--color-accent-amber) 3%, transparent) 0%, transparent 60%),
+        radial-gradient(ellipse at 50% 100%, color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 0%, transparent 50%);
     }
 
     @keyframes aura-in {
@@ -77,7 +77,7 @@ export class AscendancyAura extends LitElement {
       bottom: -20%;
       width: 2px;
       height: 140%;
-      background: linear-gradient(to top, rgba(245, 158, 11, 0.06), rgba(245, 158, 11, 0.01), transparent);
+      background: linear-gradient(to top, color-mix(in srgb, var(--color-accent-amber) 6%, transparent), color-mix(in srgb, var(--color-accent-amber) 1%, transparent), transparent);
       transform-origin: bottom center;
       animation: ray-sway 8s ease-in-out infinite;
     }
@@ -152,7 +152,7 @@ export class AscendancyAura extends LitElement {
       color: var(--color-accent-amber);
       background: linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(20, 15, 5, 0.95));
       border: 1px solid var(--color-accent-amber);
-      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.25), inset 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.05);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 25%, transparent), inset 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 5%, transparent);
       animation: badge-breathe 4s ease-in-out infinite;
       transform: translateY(-4px);
       opacity: 0;
@@ -166,7 +166,7 @@ export class AscendancyAura extends LitElement {
       height: 14px;
       border-radius: 50%;
       background: var(--color-accent-amber);
-      box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 50%, transparent);
       animation: core-pulse 3s ease-in-out infinite;
     }
 
@@ -180,10 +180,10 @@ export class AscendancyAura extends LitElement {
     @keyframes badge-breathe {
       0%,
       100% {
-        box-shadow: 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.2), inset 0 0 calc(8px * var(--glow-strength)) rgba(245, 158, 11, 0.03);
+        box-shadow: 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 20%, transparent), inset 0 0 calc(8px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 3%, transparent);
       }
       50% {
-        box-shadow: 0 0 calc(20px * var(--glow-strength)) rgba(245, 158, 11, 0.35), inset 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.06);
+        box-shadow: 0 0 calc(20px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 35%, transparent), inset 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 6%, transparent);
       }
     }
 
@@ -225,7 +225,7 @@ export class AscendancyAura extends LitElement {
         opacity: 1;
         transform: translateY(0);
         animation: none;
-        box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 30%, transparent);
       }
 
       .badge__icon {

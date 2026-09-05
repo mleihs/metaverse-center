@@ -55,8 +55,8 @@ export class VelgDossierRequest extends LitElement {
         0deg,
         transparent,
         transparent 2px,
-        rgba(245, 158, 11, 0.03) 2px,
-        rgba(245, 158, 11, 0.03) 4px
+        color-mix(in srgb, var(--color-accent-amber) 3%, transparent) 2px,
+        color-mix(in srgb, var(--color-accent-amber) 3%, transparent) 4px
       );
       pointer-events: none;
       animation: scanline-scroll 60s linear infinite;
@@ -79,8 +79,8 @@ export class VelgDossierRequest extends LitElement {
     }
 
     @keyframes glow-pulse {
-      0%, 100% { opacity: 0.2; box-shadow: 0 0 calc(4px * var(--glow-strength)) rgba(245, 158, 11, 0.2); }
-      50% { opacity: 0.6; box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.3); }
+      0%, 100% { opacity: 0.2; box-shadow: 0 0 calc(4px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 20%, transparent); }
+      50% { opacity: 0.6; box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 30%, transparent); }
     }
 
     .stamp {
@@ -154,7 +154,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .cta__btn:hover:not(:disabled) {
-      box-shadow: 0 0 calc(16px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(16px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
       transform: translateY(-1px);
     }
 
@@ -309,7 +309,7 @@ export class VelgDossierRequest extends LitElement {
     }
 
     .confirm__btn-authorize:hover:not(:disabled) {
-      box-shadow: 0 0 calc(12px * var(--glow-strength)) rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 calc(12px * var(--glow-strength)) color-mix(in srgb, var(--color-accent-amber) 40%, transparent);
     }
 
     .confirm__btn-authorize:disabled {

@@ -1059,8 +1059,8 @@ export class VelgLoreScroll extends LitElement {
         0deg,
         transparent,
         transparent 3px,
-        rgba(245, 158, 11, 0.02) 3px,
-        rgba(245, 158, 11, 0.02) 6px
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 3px,
+        color-mix(in srgb, var(--color-accent-amber) 2%, transparent) 6px
       );
       pointer-events: none;
     }
