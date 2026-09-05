@@ -42,8 +42,8 @@ Gemessen wirksam, aus dem Handmessprotokoll:
   3. nach den Gedanken der anderen fragen
   4. kollektiv adressieren („erzaehlt mir, was die drei tun")
 
-Warum gerade die dritte Person: ein Mensch schreibt „waehrend ich A die Akte
-reiche" — darin steht kein „du". Fuer B und C enthaelt die Nachricht nichts,
+Warum gerade die dritte Person: eine Zeile in der Form ``waehrend ich A die
+Akte reiche`` traegt kein Anredewort. Fuer B und C enthaelt sie damit nichts,
 woraus sie schliessen koennten, dass sie NICHT gemeint sind. Gemessen an 330
 Zuegen war die Selbstbuendelung genau dann am hoechsten: 22 % statt 10 % auf
 Position zwei, 37 % statt 22 % auf Position drei.
@@ -79,6 +79,7 @@ VORLAGE_GRUPPE = (
     "Du bist {agent_name}. Du schreibst als {agent_name} und fuer niemanden sonst.\n\n"
     "Du bist in einer Szene mit: {other_agent_names}.\n\n"
     "{addressed_note}\n\n"
+    "{focalization_note}\n\n"
     "Antworte jetzt als {agent_name}."
 )
 
@@ -129,7 +130,9 @@ class _Kette:
         return lambda *_a, **_k: self
 
 
-async def _schlussanweisung(nachricht: str, idx: int, besetzung=BESETZUNG) -> str:
+async def _schlussanweisung(
+    nachricht: str, idx: int, besetzung=BESETZUNG, *, bilanz: dict | None = None
+) -> str:
     """Die Schlussanweisung, die GENAU DIESE Figur bekommt.
 
     Ueber den echten Aufrufpfad (`_build_group_turn_context`), nicht ueber
@@ -144,7 +147,7 @@ async def _schlussanweisung(nachricht: str, idx: int, besetzung=BESETZUNG) -> st
             return _resolved(
                 template_type,
                 VORLAGE_GRUPPE,
-                ["agent_name", "other_agent_names", "addressed_note"],
+                ["agent_name", "other_agent_names", "addressed_note", "focalization_note"],
             )
         return _resolved(template_type, "x", [])
 
@@ -159,6 +162,7 @@ async def _schlussanweisung(nachricht: str, idx: int, besetzung=BESETZUNG) -> st
             user_message=nachricht,
             saved_messages=[],
             history=[],
+            focalization_row=bilanz,
         )
     return schluss
 
@@ -413,3 +417,77 @@ class TestDerVertragUndDieVerdrahtungPassenZusammen:
                 history=[],
             )
         assert "{" not in schluss, f"ungefuellter Platzhalter in {schluss!r}"
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# Die zurueckgespielte Messung
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class TestDieMessungKommtBeiDerFigurAn:
+    """Seit Migration 368 wird die Fokalisierung auf JEDEM Zug gemessen. Der
+    Wert lag bis zum 05.09.2026 ungelesen in der Datenbank — gemessen, aber
+    an niemanden gerichtet.
+
+    Er kostet keinen Modellaufruf: die Bilanz kommt fertig aus der View
+    (Migration 376), und was hier entschieden wird, ist nur, ob sie ein Wort
+    wert ist.
+    """
+
+    def test_ohne_bilanz_bleibt_der_satz_leer(self):
+        """Ein Satz, der immer dasteht, wird Tapete — dieselbe Regel wie bei
+        der Lage-Ansage."""
+        assert ChatAIService._focalization_note(None, locale="de") == ""
+
+    def test_ein_einzelner_treffer_reicht_nicht(self):
+        """Die Heuristik ist billig und hat Fehlalarme. Eins von fuenf ist ein
+        Ausrutscher oder ein Fehlurteil, zwei von fuenf ist ein Muster."""
+        assert ChatAIService._focalization_note({"gemessen": 5, "allwissend": 1}, locale="de") == ""
+
+    def test_eine_saubere_bilanz_sagt_nichts(self):
+        assert ChatAIService._focalization_note({"gemessen": 5, "allwissend": 0}, locale="de") == ""
+
+    @pytest.mark.parametrize("sprache", ["de", "en"])
+    def test_ab_der_schwelle_steht_ein_satz(self, sprache):
+        satz = ChatAIService._focalization_note({"gemessen": 5, "allwissend": 2}, locale=sprache)
+        assert satz
+        assert "5" in satz and "2" in satz
+
+    def test_der_satz_ist_kein_verbot(self):
+        """Migration 374 hat gemessen, was ein Verbot wert ist: 3 von 3 Zuegen
+        schrieben die verbotene Marke weiter. Gewirkt hat ein Wort statt eines
+        Verbots (375) und ein Wahrnehmungshorizont statt einer Regel (367).
+        Dieser Satz benennt die Beobachtung und die FORM."""
+        satz = ChatAIService._focalization_note({"gemessen": 5, "allwissend": 3}, locale="de")
+        for verbot in ("niemals", "nicht erlaubt", "verboten", "du darfst nicht"):
+            assert verbot not in satz.lower()
+        assert "Bleib bei dem, was du" in satz
+
+    def test_eine_unlesbare_bilanz_kostet_nichts(self):
+        """Ein fehlender Hinweis ist eine verpasste Gelegenheit, kein Ausfall
+        im Gespraech — dieselbe Haltung wie beim Schreiben des Messwerts."""
+        assert ChatAIService._focalization_note({"gemessen": "viele"}, locale="de") == ""
+        assert ChatAIService._focalization_note({}, locale="de") == ""
+
+    async def test_der_satz_steht_in_der_schlussanweisung(self):
+        schluss = await _schlussanweisung(
+            "Was geschieht hier?", 0, bilanz={"gemessen": 5, "allwissend": 3}
+        )
+        assert "aus deinem Blickwinkel herausgetreten" in schluss
+
+    async def test_er_steht_zuletzt_vor_der_antwortzeile(self):
+        """Das Letzte vor der Antwort gewinnt (367/371/372), und dieser Satz
+        ist der seltenste von allen — er erscheint nur, wenn die Messung
+        wirklich etwas gefunden hat. Was selten dasteht, gehoert an die
+        staerkste Stelle."""
+        schluss = await _schlussanweisung(
+            "Marie, was siehst du?", 1, bilanz={"gemessen": 5, "allwissend": 3}
+        )
+        assert schluss.index("spricht in seiner letzten Zeile") < schluss.index("Blickwinkel")
+
+    async def test_ohne_bilanz_bleibt_die_anweisung_ohne_luecke(self):
+        """Die Gegenprobe. Ohne sie pruefte der Test oben nur, dass ein Satz
+        eingesetzt wird, den man auch immer einsetzen koennte."""
+        schluss = await _schlussanweisung("Was geschieht hier?", 0)
+        assert "Blickwinkel" not in schluss
+        assert "{" not in schluss

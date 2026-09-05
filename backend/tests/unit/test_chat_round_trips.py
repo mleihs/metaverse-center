@@ -267,3 +267,92 @@ class TestBeziehungenUndStimmungJeSprecherAberEineAbfrage:
         quelle = inspect.getsource(ChatAIService._build_relationship_contexts)
         assert ".limit(" not in quelle, "die Kappung ist zurueck ins SQL gerutscht"
         assert "len(je_agent[wer]) < 6" in quelle
+
+
+class TestDieFokalisierungsBilanzWaechstNichtMit:
+    """Der Messwert wird seit Migration 368 auf jedem Zug geschrieben und war
+    bis zum 05.09.2026 ungelesen. Ihn zurueckzuspielen kostet keinen
+    Modellaufruf — aber es koennte eine Rundreise JE SPRECHER kosten, und
+    genau die ist hier zugesagt.
+
+    Die Bilanz je Figur kommt deshalb aus einer View
+    (`agent_recent_focalization`, Migration 376) und wird EINMAL im Vorlauf
+    gelesen, nicht je Agent. Wer das umbaut, macht die Obergrenze oben rot —
+    zu Recht.
+    """
+
+    async def test_die_bilanz_wird_einmal_gelesen(self, besetzung):
+        zaehler = _Zaehler({"chat_conversation_agents": [{"agents": a} for a in besetzung]})
+        svc = ChatAIService(zaehler, uuid4(), openrouter_api_key="x")
+        with (
+            patch.object(svc._prompt_resolver, "resolve", AsyncMock(return_value=_vorlage())),
+            patch.object(
+                svc._model_resolver,
+                "resolve_text_model",
+                AsyncMock(return_value=MagicMock(model_id="deepseek/deepseek-v4-flash")),
+            ),
+        ):
+            await svc._prepare_group_turn(uuid4())
+        assert zaehler.zaehler["table:agent_recent_focalization"] == 1
+
+    async def test_sie_wird_im_kontextaufbau_nicht_noch_einmal_gefragt(self, besetzung):
+        """Die eigentliche Zusage. `je_agent` faengt es ohnehin ab; hier steht
+        der Grund daneben, damit die naechste Sitzung ihn liest."""
+        zaehler = _Zaehler({"chat_conversation_agents": [{"agents": a} for a in besetzung]})
+        svc = ChatAIService(zaehler, uuid4(), openrouter_api_key="x")
+        conv = uuid4()
+        with (
+            patch.object(svc._prompt_resolver, "resolve", AsyncMock(return_value=_vorlage())),
+            patch.object(
+                svc._model_resolver,
+                "resolve_text_model",
+                AsyncMock(return_value=MagicMock(model_id="deepseek/deepseek-v4-flash")),
+            ),
+        ):
+            setup = await svc._prepare_group_turn(conv)
+            zaehler.zaehler.clear()
+            for idx, agent in enumerate(setup.agents):
+                await svc._build_group_turn_context(
+                    conversation_id=conv,
+                    agents=setup.agents,
+                    agent_names=setup.agent_names,
+                    idx=idx,
+                    event_context="",
+                    locale=setup.locale,
+                    user_message="x",
+                    saved_messages=[],
+                    model_id=setup.model.model_id,
+                    history=setup.history,
+                    relationship_context=setup.relationships.get(str(agent["id"]), ""),
+                    focalization_row=setup.focalization.get(str(agent["id"])),
+                )
+        assert zaehler.zaehler["table:agent_recent_focalization"] == 0
+
+    async def test_ein_vierter_agent_kostet_keine_weitere_bilanz(self):
+        """Die Gegenprobe. Sie beweist, dass die EINS oben an der Bauform
+        haengt und nicht daran, dass zufaellig drei Agenten dastehen."""
+        for anzahl in (3, 4):
+            besetzung = [{"id": str(uuid4()), "name": f"A{i}"} for i in range(anzahl)]
+            zaehler = _Zaehler({"chat_conversation_agents": [{"agents": a} for a in besetzung]})
+            svc = ChatAIService(zaehler, uuid4(), openrouter_api_key="x")
+            with (
+                patch.object(svc._prompt_resolver, "resolve", AsyncMock(return_value=_vorlage())),
+                patch.object(
+                    svc._model_resolver,
+                    "resolve_text_model",
+                    AsyncMock(return_value=MagicMock(model_id="deepseek/deepseek-v4-flash")),
+                ),
+            ):
+                await svc._prepare_group_turn(uuid4())
+            assert zaehler.zaehler["table:agent_recent_focalization"] == 1, f"{anzahl} Agenten"
+
+    async def test_die_bilanz_kommt_nicht_aus_python(self):
+        """Das Fenster von fuenf Zuegen steht in der View und nur dort. Eine
+        Zahl, die in SQL und in Python stuende, driftet — und der Dienst
+        haette dann eine zweite Wahrheit neben der Datenbank (ADR-007)."""
+        import inspect
+
+        quelle = inspect.getsource(ChatAIService._load_recent_focalization)
+        assert "agent_recent_focalization" in quelle
+        for verboten in ("sort(", "sorted(", "[:5]", "row_number", "Counter("):
+            assert verboten not in quelle

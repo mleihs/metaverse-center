@@ -394,6 +394,14 @@ class _GroupTurnSetup:
     #: verschieden liegt: wer spaeter dazukam, hat frueheren Abschnitten nicht
     #: beigewohnt. Gerendert wird je Agent, und das kostet kein Netz.
     digest_rows: list[dict] = field(default_factory=list)
+    #: Die Fokalisierungs-Bilanz JE AGENT, in EINER Abfrage geholt.
+    #:
+    #: Gemessen wird seit Migration 368 auf jedem Zug; gelesen hat den Wert
+    #: bis zum 05.09.2026 niemand ausser einer Auswertung, die ein Mensch
+    #: aufruft. Er steht jetzt im Vorlauf, nicht je Agent — die Zusage aus
+    #: `test_chat_round_trips.py` ist EINE Rundreise je Agent, und die gehoert
+    #: dem Erinnerungsabruf.
+    focalization: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass
@@ -1420,12 +1428,21 @@ class ChatAIService:
         # ist die Erinnerung an DIESEN Faden, nicht an eine Person. Einmal
         # geladen, nicht je Agent. Dasselbe fuer den Verlauf, die Beziehungen
         # und die Stimmung.
-        prompt_template, reactions, digest_rows, history, relationships, _ = await asyncio.gather(
+        (
+            prompt_template,
+            reactions,
+            digest_rows,
+            history,
+            relationships,
+            focalization,
+            _,
+        ) = await asyncio.gather(
             self._prompt_resolver.resolve("chat_system_prompt", locale),
             self._load_event_reactions(event_ids, agent_ids),
             self._digests.load_digest_rows(conversation_id),
             self._load_history(conversation_id, model.model_id),
             self._build_relationship_contexts(agent_ids, locale),
+            self._load_recent_focalization(conversation_id),
             self._prime_mood_contexts(agent_ids, locale),
         )
 
@@ -1442,7 +1459,33 @@ class ChatAIService:
             digest_rows=digest_rows,
             history=history,
             relationships=relationships,
+            focalization=focalization,
         )
+
+    async def _load_recent_focalization(self, conversation_id: UUID) -> dict[str, dict]:
+        """Die Fokalisierungs-Bilanz der letzten Zuege, je Figur dieses Fadens.
+
+        EINE Rundreise fuer alle Sprecher. Die Bilanz selbst wird nicht hier
+        gerechnet, sondern in der View `agent_recent_focalization` (Migration
+        376, ADR-007) — samt dem Fenster von fuenf Zuegen. Eine Zahl, die in
+        SQL und in Python stuende, driftet.
+
+        Ein Fehler kostet nichts: ohne Bilanz bleibt der Satz leer, und ein
+        fehlender Hinweis ist eine verpasste Gelegenheit, kein Ausfall im
+        Gespraech. Genau wie beim Schreiben des Messwerts (368).
+        """
+        try:
+            response = await (
+                self._supabase.table("agent_recent_focalization")
+                .select("agent_id, gemessen, allwissend")
+                .eq("conversation_id", str(conversation_id))
+                .eq("method", "heuristic")
+                .execute()
+            )
+        except Exception:
+            logger.exception("Fokalisierungs-Bilanz fuer %s nicht gelesen", conversation_id)
+            return {}
+        return {str(row["agent_id"]): row for row in extract_list(response) if row.get("agent_id")}
 
     async def generate_group_response(
         self,
@@ -1483,6 +1526,7 @@ class ChatAIService:
                 ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
+                focalization_row=setup.focalization.get(str(agent["id"])),
             )
 
             _, saved = await self._generate_single_response(
@@ -1578,6 +1622,7 @@ class ChatAIService:
                 ),
                 history=setup.history,
                 relationship_context=setup.relationships.get(str(agent["id"]), ""),
+                focalization_row=setup.focalization.get(str(agent["id"])),
             )
 
             async for sse_event in self.stream_single_response(
@@ -1635,6 +1680,7 @@ class ChatAIService:
         digest_text: str = "",
         history: list[dict] | None = None,
         relationship_context: str = "",
+        focalization_row: dict | None = None,
     ) -> tuple[list[str], list[dict[str, str]], str]:
         """Build extra_parts and history_messages for a single agent's turn
         in a group conversation. Shared by streaming and non-streaming paths.
@@ -1701,6 +1747,7 @@ class ChatAIService:
                         idx=idx,
                         locale=locale,
                     ),
+                    "focalization_note": self._focalization_note(focalization_row, locale=locale),
                 },
             )
 
@@ -1866,6 +1913,73 @@ class ChatAIService:
             )
 
         return " ".join(teile)
+
+    #: Ab wie vielen auffaelligen Zuegen der Satz erscheint.
+    #:
+    #: ZWEI, nicht einer. Die Heuristik ist billig und hat Fehlalarme; ein
+    #: einzelner Treffer sagt zu wenig, und ein Satz, der zu oft dasteht, wird
+    #: Tapete — dieselbe Regel wie bei `_addressed_note`. Zwei von fuenf ist
+    #: ein Muster, eins von fuenf ist ein Ausrutscher oder ein Fehlurteil.
+    #:
+    #: Das Fenster (fuenf) steht NICHT hier, sondern in der View
+    #: `agent_recent_focalization` (Migration 376). Hier steht nur, ab wann
+    #: die Bilanz etwas bedeutet.
+    _FOKUS_SCHWELLE = 2
+
+    @staticmethod
+    def _focalization_note(row: dict | None, *, locale: str) -> str:
+        """Was die Messung der letzten Zuege dieser Figur zu sagen hat.
+
+        Der Wert wird seit Migration 368 auf JEDEM Zug gemessen und lag
+        seither ungelesen in der Datenbank. Er kostet keinen Modellaufruf, und
+        die Bilanz kommt fertig aus der View — hier wird nur entschieden, ob
+        sie ein Wort wert ist.
+
+        ── WARUM EIN WORT UND KEINE SPERRE ──────────────────────────────────
+
+        Eine Antwort zu verwerfen und neu zu erzeugen kostet etwa 15 % mehr
+        Aufrufe und macht aus einem Messgeraet ein Tor: beim ersten Fehlurteil
+        ein Ausfall statt einer falschen Zahl (368).
+
+        Und es ist kein VERBOT. Migration 374 hat gemessen, was ein Verbot
+        wert ist: 3 von 3 Zuegen schrieben die verbotene Marke weiter. Was
+        gewirkt hat, war ein Wort statt eines Verbots (375) und ein
+        Wahrnehmungshorizont statt einer Regel (367). Dieser Satz benennt
+        deshalb die Beobachtung und die FORM, nicht das Verbotene.
+
+        ⚠ Vor dem 05.09.2026 waere dieses Zurueckspielen SCHAEDLICH gewesen.
+        Der Detektor las die woertliche Rede mit und bestrafte eine Figur
+        dafuer, ihr Gegenueber beim Namen anzusprechen; zurueckgespielt haette
+        man dem Modell beigebracht, im Gruppengespraech keine Namen mehr zu
+        benutzen. Erst seit `_ohne_rede` alle Redeformen kennt, ist es
+        gefahrlos — und deshalb steht der Detektor jetzt unter Fallen
+        (`test_focalization.py`).
+
+        Leer, wenn nichts zu sagen ist.
+        """
+        if not row:
+            return ""
+        try:
+            allwissend = int(row.get("allwissend") or 0)
+            gemessen = int(row.get("gemessen") or 0)
+        except (TypeError, ValueError):
+            logger.warning("Fokalisierungs-Bilanz unlesbar: %r", row)
+            return ""
+        if gemessen < ChatAIService._FOKUS_SCHWELLE or allwissend < ChatAIService._FOKUS_SCHWELLE:
+            return ""
+
+        if locale == "de":
+            return (
+                f"Von deinen letzten {gemessen} Zuegen hier sind {allwissend} aus deinem "
+                f"Blickwinkel herausgetreten: sie haben die Runde von aussen beschrieben "
+                f"oder gesagt, was eine andere fuehlt oder weiss. Bleib bei dem, was du "
+                f"von deinem Platz aus siehst, hoerst und tust."
+            )
+        return (
+            f"Of your last {gemessen} turns here, {allwissend} stepped outside your own "
+            f"vantage point: they described the group from without, or stated what someone "
+            f"else feels or knows. Stay with what you see, hear and do from where you are."
+        )
 
     def _as_turn(
         self,

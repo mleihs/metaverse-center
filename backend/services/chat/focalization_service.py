@@ -524,9 +524,19 @@ class FocalizationService:
         Verwaltungsoberfläche, ein Test und ein Mensch mit psql — es gibt keine
         zweite Rechnung, die davon abweichen könnte (ADR-007).
         """
+        # ⚠ `allwissend_prozent` stand hier bis zum 05.09.2026 und war seit
+        # Migration 369 keine Spalte mehr — die View traegt seither ZWEI
+        # Quoten, weil eine Zahl die beiden Fragen nicht beantwortet. Der
+        # Abruf haette auf Produktion 400 gemeldet; gefunden hat ihn niemand,
+        # weil der einzige Aufrufer ein Test mit einem Doppelgaenger ist, der
+        # jede Spaltenliste widerspruchslos annimmt. Noch eine Pruefung, die
+        # bestand, ohne ihre Bedingung herzustellen.
         response = await (
             supabase.table("conversation_focalization")
-            .select("gemessen, allwissend, im_horizont, unklar, allwissend_prozent, zuletzt")
+            .select(
+                "gemessen, allwissend, im_horizont, unklar, "
+                "unter_entschiedenen_prozent, von_allen_prozent, zuletzt"
+            )
             .eq("conversation_id", str(conversation_id))
             .eq("method", method)
             .limit(1)

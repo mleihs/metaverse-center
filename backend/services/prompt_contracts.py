@@ -537,7 +537,7 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
         ),
         _contract(
             "chat_group_instruction",
-            ("agent_name", "other_agent_names", "addressed_note"),
+            ("agent_name", "other_agent_names", "addressed_note", "focalization_note"),
             frame=_FRAME_GROUP,
             # Der eigene Name ist PFLICHT, nicht Schmuck. Die Anweisung steht
             # als letzte Zeile vor der Antwort; nennt sie nur die anderen,
