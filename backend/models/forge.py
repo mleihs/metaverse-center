@@ -394,7 +394,7 @@ class ForgeThemeOutput(BaseModel):
         description="Card holographic foil style"
     )
 
-    # Image style prompts (4) — appended to Replicate prompts for world-consistent imagery
+    # Image style prompts (5) — appended to Replicate prompts for world-consistent imagery
     image_style_prompt_portrait: str = Field(
         description="Visual style suffix for agent portrait generation. "
         "Describe the photographic/artistic style, lighting, mood, and medium "
@@ -418,6 +418,14 @@ class ForgeThemeOutput(BaseModel):
         "Describe the illustration style for atmospheric narrative scenes. "
         "E.g. 'engraving illustration, cross-hatching, sepia tones' "
         "or 'concept art, moody palette, environmental storytelling'.",
+    )
+    image_style_prompt_scene: str = Field(
+        default="",
+        description="Visual style suffix for images made from a live conversation. "
+        "MUST STAY UNDER 12 WORDS — it is the only style prompt that rides on models "
+        "with a 77-token CLIP window, where every word it takes is a word the scene "
+        "itself loses. Light and film stock, nothing more. "
+        "E.g. 'cold fluorescent light, desaturated, documentary photography, film grain'.",
     )
 
 

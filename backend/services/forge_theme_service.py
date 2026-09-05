@@ -61,7 +61,7 @@ THEME_ARCHITECT_PROMPT = (
     "- animation_speed: '0.7' (fast) to '2.0' (slow). Match the world's tempo.\n"
     "- animation_easing: valid CSS easing (ease, ease-in-out, cubic-bezier(...), steps(...)).\n\n"
     "IMAGE STYLE PROMPTS:\n"
-    "You must also generate 4 image style prompts that will be appended to AI image generation "
+    "You must also generate 5 image style prompts that will be appended to AI image generation "
     "prompts (Replicate Flux). These control the visual style of all generated images for this world.\n"
     "- image_style_prompt_portrait: Style for character portraits. Describe lighting, medium, mood, "
     "color grading. E.g. 'daguerreotype photograph, sepia toned, formal Victorian studio lighting' "
@@ -75,9 +75,15 @@ THEME_ARCHITECT_PROMPT = (
     "- image_style_prompt_lore: Style for narrative/story illustrations. Describe illustration "
     "technique. E.g. 'etching, cross-hatched, parchment texture, archival' or "
     "'concept art, moody environmental, desaturated palette'.\n"
+    "- image_style_prompt_scene: Style for images made from a live conversation, where several "
+    "characters share one moment. MUST BE AT MOST 12 WORDS — far shorter than the others. "
+    "This one is the only style prompt that rides on models with a 77-token text window "
+    "(CLIP); every word it takes is a word the scene itself loses, and the scene is the "
+    "picture. Name the light and the film stock, nothing more. E.g. 'cold fluorescent light, "
+    "desaturated, documentary photography, film grain'.\n"
     "These prompts should be consistent with the color palette and mood you designed above. "
     "They should evoke the same world.\n"
-    "HARD RULES for all four, because these strings are appended verbatim to EVERY image this "
+    "HARD RULES for all five, because these strings are appended verbatim to EVERY image this "
     "world ever generates and are the last thing the image model reads:\n"
     "- A STYLE, not a picture. Medium, process, light, palette, grain, surface. Nothing else.\n"
     "- Never name or describe a SUBJECT. No person, no named building, no scene, no pose, no "
@@ -86,8 +92,8 @@ THEME_ARCHITECT_PROMPT = (
     "- No numerals, no percentages, no measurements, no readable text, no labels, no signage, "
     "no captions. A number here becomes a number rendered ON the image, and it will look like a "
     "value the platform computed.\n"
-    "- At most 45 words each. If it reads like a description of one finished picture, it is "
-    "wrong.\n\n"
+    "- At most 45 words each — EXCEPT image_style_prompt_scene, which must stay under 12. "
+    "If it reads like a description of one finished picture, it is wrong.\n\n"
     "- Create something UNIQUE. Do not copy existing presets. Be bold and distinctive.\n"
     "- The theme should feel like it belongs to this specific world and no other."
 )
@@ -330,6 +336,7 @@ class ForgeThemeService:
             "image_style_prompt_building",
             "image_style_prompt_banner",
             "image_style_prompt_lore",
+            "image_style_prompt_scene",
         }
 
         rows = [
@@ -425,8 +432,9 @@ class ForgeThemeService:
             f"- Portrait: {current_styles.get('image_style_prompt_portrait', '')}\n"
             f"- Building: {current_styles.get('image_style_prompt_building', '')}\n"
             f"- Lore: {current_styles.get('image_style_prompt_lore', '')}\n"
-            f"- Banner: {current_styles.get('image_style_prompt_banner', '')}\n\n"
-            f"TASK: Rewrite these 4 style prompts to be MUCH more distinctive and specific "
+            f"- Banner: {current_styles.get('image_style_prompt_banner', '')}\n"
+            f"- Scene: {current_styles.get('image_style_prompt_scene', '')}\n\n"
+            f"TASK: Rewrite these 5 style prompts to be MUCH more distinctive and specific "
             f"to this world's unique identity. The prompts are appended to AI image generation "
             f"requests (Replicate Flux). They should:\n"
             f"- Evoke a specific visual medium or technique (NOT generic photography)\n"
@@ -436,11 +444,15 @@ class ForgeThemeService:
             f"BANNER is the world's establishing shot – a single wide 16:9 landscape, no "
             f"characters, no text. Keep it a place seen whole, in the same visual language "
             f"as the other three.\n\n"
-            f"Respond with ONLY the four prompts, one per line, in this format:\n"
+            f"SCENE is the exception and must stay UNDER 12 WORDS. It is the only one that "
+            f"rides on a model with a 77-token text window, so every word it takes is a word "
+            f"the scene description loses. Light and film stock, nothing else.\n\n"
+            f"Respond with ONLY the five prompts, one per line, in this format:\n"
             f"PORTRAIT: [prompt]\n"
             f"BUILDING: [prompt]\n"
             f"LORE: [prompt]\n"
-            f"BANNER: [prompt]"
+            f"BANNER: [prompt]\n"
+            f"SCENE: [prompt]"
         )
 
         try:
@@ -475,6 +487,8 @@ class ForgeThemeService:
                     updates["image_style_prompt_lore"] = line.split(":", 1)[1].strip().strip('"')
                 elif line.upper().startswith("BANNER:"):
                     updates["image_style_prompt_banner"] = line.split(":", 1)[1].strip().strip('"')
+                elif line.upper().startswith("SCENE:"):
+                    updates["image_style_prompt_scene"] = line.split(":", 1)[1].strip().strip('"')
 
             if not updates:
                 logger.warning("Style refinement produced no parseable output")

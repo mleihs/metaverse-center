@@ -152,3 +152,70 @@ async def test_an_unparseable_reply_writes_nothing():
     saved = await _refine("I have rewritten your prompts as requested.")
 
     assert saved == {}
+
+
+class TestJedeBildspurHatEinenStil:
+    """Die Stilprompts muessen an DREI Stellen gleichzeitig stehen.
+
+    Am 05.09.2026 stand `image_style_prompt_scene` an keiner davon, waehrend
+    die Szenenspur laengst Bilder erzeugte. Gemessen auf Produktion:
+
+        scene      0 Zeichen
+        portrait   538 Zeichen
+        lore       499
+        banner     489
+        building   629
+
+    Eine Migration hat es fuer die 41 bestehenden Welten nachgetragen — aber
+    eine NEUE Welt bekommt ihre Stilprompts von `ForgeThemeService`, und der
+    kannte nur vier. Ohne diesen Test faellt die naechste Spur genauso durch:
+    das Fehlen eines Stilprompts ist kein Fehler, sondern eine leere
+    Zeichenkette, die niemand sieht.
+    """
+
+    #: Die Spuren, die einen eigenen Stil fuehren. Waechst diese Menge, muss
+    #: sie an allen drei Stellen wachsen — genau das prueft diese Klasse.
+    SPUREN = {"portrait", "building", "banner", "lore", "scene"}
+
+    def test_das_modell_fuehrt_jede_spur(self):
+        from backend.models.forge import ForgeThemeOutput
+
+        felder = {f[len("image_style_prompt_") :] for f in ForgeThemeOutput.model_fields if f.startswith("image_style_prompt_")}
+        assert felder == self.SPUREN
+
+    def test_der_dienst_legt_jede_spur_unter_ai_ab(self):
+        # `ai_keys` entscheidet, ob ein Schluessel in `category='ai'` landet.
+        # Ein Stilprompt unter `design` wuerde vom Aufloeser nie gefunden.
+        import inspect
+
+        from backend.services.forge_theme_service import ForgeThemeService
+
+        quelle = inspect.getsource(ForgeThemeService)
+        for spur in self.SPUREN:
+            assert f'"image_style_prompt_{spur}"' in quelle, f"{spur} fehlt in forge_theme_service"
+
+    def test_die_verfeinerung_liest_jede_spur_zurueck(self):
+        # Der Parser der A.6-Verfeinerung erkennt Zeilen an ihrem Praefix.
+        # Fehlt eines, wird diese Spur bei jeder Verfeinerung stillschweigend
+        # auf ihren alten Wert zurueckgelassen.
+        import inspect
+
+        from backend.services.forge_theme_service import ForgeThemeService
+
+        quelle = inspect.getsource(ForgeThemeService)
+        for spur in self.SPUREN:
+            assert f'startswith("{spur.upper()}:")' in quelle, f"{spur.upper()}: fehlt im Parser"
+
+    def test_die_szene_ist_ausdruecklich_kuerzer_verlangt(self):
+        # Der Szenenstil faehrt als einziger auf einem 77-Token-Fenster (CLIP).
+        # Ein Stilprompt in der Laenge der anderen (489-629 Zeichen) fraesse
+        # das ganze Fenster, und die Bildbeschreibung — also das Bild — bliebe
+        # draussen. Die Anweisung an das Modell muss das sagen.
+        import inspect
+
+        from backend.services import forge_theme_service
+
+        quelle = inspect.getsource(forge_theme_service)
+        assert "12 WORDS" in quelle or "12 words" in quelle, (
+            "die Laengengrenze fuer den Szenenstil steht nicht im Erzeugungsprompt"
+        )
