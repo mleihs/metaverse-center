@@ -178,8 +178,8 @@ class ResolvedImageModel:
         fam = self.family
         params: dict = {}
 
-        if fam.supports_guidance:
-            params["guidance"] = self.guidance_scale
+        if fam.guidance_field:
+            params[fam.guidance_field] = self.guidance_scale
         if fam.steps_field:
             params[fam.steps_field] = self.num_inference_steps
 
@@ -211,8 +211,8 @@ class ResolvedImageModel:
                 params[fam.reference_field] = refs
             else:
                 params[fam.reference_field] = refs[0]
-                if fam.strength_field:
-                    params[fam.strength_field] = self.img2img_strength
+                for feld in fam.strength_fields:
+                    params[feld] = self.img2img_strength
 
         if self.aspect_ratio and fam.supports_aspect_ratio and fam.size_field != "width_height":
             params["aspect_ratio"] = self.aspect_ratio

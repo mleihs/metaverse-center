@@ -111,17 +111,34 @@ class TestToReplicateParamsImg2Img:
         assert "guidance" not in params
         assert "aspect_ratio" not in params
 
-    def test_generic_img2img_includes_aspect_ratio_when_set(self):
-        """Generic (non-flux_img2img) model includes aspect_ratio."""
+    def test_generic_img2img_sends_a_size_not_an_aspect_ratio(self):
+        """An unknown model gets width/height, not aspect_ratio.
+
+        This assertion was inverted on 2026-09-05, and the reason is a
+        measurement rather than a preference. Five foreign models were read
+        from their live Replicate schemas (`proteus-v0.2`, `reliberate-v3`,
+        `juggernaut-xl-v7`, `pony-sdxl`, `nsfw-flux-dev`): none of them
+        declares `aspect_ratio`, all five declare `width` and `height`.
+
+        Sending `aspect_ratio` to a model that does not take it is not merely
+        wasted — Replicate drops an unknown field in silence, so the image
+        arrives in the model's own default format with nothing to indicate
+        that the requested shape was ignored. Beside a width and a height it
+        would also be contradictory. Only the Flux families take it, and they
+        have their own rows in the table.
+        """
         model = ResolvedImageModel(
             model="other/img2img-model",
             reference_image_url="https://example.com/ref.avif",
             aspect_ratio="3:4",
+            width=768,
+            height=1024,
         )
         params = model.to_replicate_params()
 
-        assert params["aspect_ratio"] == "3:4"
-        assert params["prompt_strength"] == 0.75  # generic uses prompt_strength
+        assert "aspect_ratio" not in params
+        assert (params["width"], params["height"]) == (768, 1024)
+        assert params["prompt_strength"] == 0.75  # generic keeps prompt_strength
 
     def test_generic_img2img_omits_aspect_ratio_when_empty(self):
         model = ResolvedImageModel(
@@ -133,8 +150,14 @@ class TestToReplicateParamsImg2Img:
 
         assert "aspect_ratio" not in params
 
-    def test_generic_img2img_default_output_format_fallback(self):
-        """When output_format is empty, generic img2img falls back to 'png'."""
+    def test_generic_img2img_sends_no_output_format(self):
+        """An unknown model gets no `output_format`/`output_quality`.
+
+        Same measurement as above: none of the five foreign schemas declares
+        either field. The format of what we store is decided by our own upload
+        step, not by the model, so nothing is lost by leaving them out — while
+        a field the model does not know buys a silent discard.
+        """
         model = ResolvedImageModel(
             model="other/img2img-model",
             reference_image_url="https://example.com/ref.avif",
@@ -142,7 +165,8 @@ class TestToReplicateParamsImg2Img:
         )
         params = model.to_replicate_params()
 
-        assert params["output_format"] == "png"
+        assert "output_format" not in params
+        assert "output_quality" not in params
 
 
 # ---------------------------------------------------------------------------
