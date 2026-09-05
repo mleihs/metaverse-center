@@ -22,6 +22,22 @@ _GENERATION_TIMEOUT_S = 300
 # Strategy: strip physical descriptors and reframe as art historical reference.
 _E005_MAX_RETRIES = 2
 
+#: Anbieter, deren Modelle Replicate ohne Fassungsangabe aufrufbar macht.
+#: Alles andere ist ein Gemeinschaftsmodell und braucht `owner/name:fassung`.
+#: Die Liste ist bewusst kurz und nicht geraten: sie enthaelt nur, was gemessen
+#: ohne Fassung laeuft. Ein Anbieter zu viel darin kostet einen 404, einer zu
+#: wenig nur eine ueberfluessige Abfrage.
+_OFFIZIELLE_ANBIETER = (
+    "black-forest-labs/",
+    "stability-ai/",
+    "openai/",
+    "google/",
+    "ideogram-ai/",
+    "recraft-ai/",
+    "luma/",
+    "minimax/",
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -82,6 +98,61 @@ class ReplicateService:
                 "Set REPLICATE_API_TOKEN env var or provide a BYOK key via Forge Wallet."
             )
         self._client = replicate.Client(api_token=token)
+        #: Aufgeloeste Modellfassungen, einmal je Dienstinstanz. Siehe
+        #: `_aufrufbar` — ein Gemeinschaftsmodell ohne Fassung endet auf 404.
+        self._fassungen: dict[str, str] = {}
+
+    async def _aufrufbar(self, model: str) -> str:
+        """Der Modellname in der Form, die `async_run` wirklich annimmt.
+
+        Replicate kennt zwei Arten von Modellen, und nur eine laesst sich ohne
+        Fassung aufrufen:
+
+            black-forest-labs/flux-dev          offiziell  -> laeuft so
+            datacte/proteus-v0.2                Gemeinschaft -> 404
+
+        Ein Gemeinschaftsmodell braucht `owner/name:fassung`. Ohne die Fassung
+        antwortet die API mit
+
+            status: 404 — The requested resource could not be found.
+
+        also mit einer Meldung, die nach einem Tippfehler im Namen aussieht und
+        nicht nach einer fehlenden Angabe. Gemessen am 05.09.2026: die gesamte
+        Erwachsenenspur (`datacte/proteus-v0.2`, `asiryan/juggernaut-xl-v7`)
+        haette so nie ein Bild geliefert, waehrend die jugendfreie Spur
+        (`black-forest-labs/*`) unauffaellig weiterlief.
+
+        Aufgeloest wird NUR im Bedarfsfall und einmal je Prozess:
+
+        * Steht schon ein `:` im Namen, hat der Betreiber die Fassung selbst
+          gewaehlt. Die bleibt, wie sie ist.
+        * Sonst wird die neueste Fassung geholt und gemerkt.
+
+        Warum nicht einfach immer aufloesen: ein offizielles Modell auf eine
+        Fassung festzunageln hiesse, seine Aktualisierungen zu verpassen — und
+        die Modellkarte von `flux-2-pro` ist bei uns die Vorgabe, nicht eine
+        eingefrorene Kopie davon. Warum nicht erst probieren und beim 404
+        nachfassen: dann kostet jedes Bild eines Gemeinschaftsmodells einen
+        vergeblichen Aufruf, und der Fehlerpfad waere der Normalfall.
+        """
+        if ":" in model:
+            return model
+        if model in self._fassungen:
+            return self._fassungen[model]
+        if model.startswith(_OFFIZIELLE_ANBIETER):
+            self._fassungen[model] = model
+            return model
+        beschreibung = await self._client.models.async_get(model)
+        fassung = getattr(beschreibung, "latest_version", None)
+        kennung = getattr(fassung, "id", None)
+        # Kein Rueckfall auf `model`: der fuehrt zum 404 von oben, und ein
+        # sprechender Fehler hier ist besser als ein raetselhafter dort.
+        if not kennung:
+            raise ReplicateError(
+                f"Replicate model {model!r} has no published version to call."
+            )
+        self._fassungen[model] = f"{model}:{kennung}"
+        return self._fassungen[model]
 
     async def generate_image(
         self,
@@ -123,7 +194,7 @@ class ReplicateService:
 
                 output = await asyncio.wait_for(
                     self._client.async_run(
-                        model,
+                        await self._aufrufbar(model),
                         input={prompt_key: current_prompt, **params},
                     ),
                     timeout=_GENERATION_TIMEOUT_S,
