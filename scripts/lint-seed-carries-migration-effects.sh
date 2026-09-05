@@ -95,6 +95,50 @@ import sys
 out = pathlib.Path(sys.argv[1])
 migrations = sorted(pathlib.Path("supabase/migrations").glob("*.sql"))
 
+
+def _ohne_kommentarzeilen(chunk: str) -> str:
+    """Kommentarzeilen weg — aber nur AUSSERHALB einer Zeichenkette.
+
+    Ein Prompt-Text darf Zeilen fuehren, die mit `--` beginnen, und einer tut
+    es: `chat_conversation_digest` setzt die Mitschrift zwischen Marken, die in
+    eigenen Zeilen stehen (`--- MITSCHRIFT ---`, `--- ENDE MITSCHRIFT ---`).
+
+    Der erste Entwurf entfernte jede Zeile, die mit `--` beginnt, ohne zu
+    wissen, ob sie in einer Zeichenkette steht. Damit schickte er einen
+    VERSTUEMMELTEN Text in den Vergleich — zwei Zeilen kuerzer als der echte —
+    und meldete anschliessend die Abweichung, die er selbst erzeugt hatte.
+    Gemeldet wurden `chat_conversation_digest/de` und `/en`, und im Seed war
+    nichts falsch. Ein Tor, das bei richtiger Eingabe anschlaegt, wird
+    abgeschaltet, und dann faengt es den echten Fall auch nicht mehr — das
+    steht im Kopf dieser Datei und ist hier eingetreten.
+
+    Verfolgt wird deshalb der Zustand ueber die Zeilengrenze hinweg: ein
+    einfaches Anfuehrungszeichen oeffnet und schliesst, `''` innerhalb einer
+    Zeichenkette ist ein Zeichen und kein Ende, und ein `--` ausserhalb einer
+    Zeichenkette beendet die Zeile fuer die Zustandsverfolgung.
+    """
+    zeilen: list[str] = []
+    in_literal = False
+    for zeile in chunk.splitlines():
+        if not in_literal and zeile.lstrip().startswith("--"):
+            continue
+        zeilen.append(zeile)
+        i = 0
+        while i < len(zeile):
+            zeichen = zeile[i]
+            if in_literal:
+                if zeichen == "'":
+                    if i + 1 < len(zeile) and zeile[i + 1] == "'":
+                        i += 2
+                        continue
+                    in_literal = False
+            elif zeichen == "'":
+                in_literal = True
+            elif zeichen == "-" and i + 1 < len(zeile) and zeile[i + 1] == "-":
+                break
+            i += 1
+    return "\n".join(zeilen)
+
 COLUMNS = ("prompt_content", "system_prompt", "max_tokens", "temperature")
 
 lines = [
@@ -107,10 +151,7 @@ found = 0
 for path in migrations:
     body = path.read_text()
     for chunk in body.split(";\n"):
-        # Drop leading comment lines so the statement keyword is the first token.
-        statement = "\n".join(
-            line for line in chunk.splitlines() if not line.lstrip().startswith("--")
-        ).strip()
+        statement = _ohne_kommentarzeilen(chunk).strip()
         if not statement.upper().startswith("UPDATE"):
             continue
         if "prompt_templates" not in statement:
