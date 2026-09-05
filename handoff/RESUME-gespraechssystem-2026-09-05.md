@@ -411,3 +411,53 @@ heute als `zero` gewertet.
 **Und in den Docstring schreiben, WELCHE Formen der Schnitt kennt.** Sonst
 liest die nächste Sitzung „Rede ausgeschlossen" als vollständig — und die
 Zahlen tragen einen Rest des alten Fehlers weiter, kleiner, aber derselbe.
+
+### Nachtrag 2: die Anführungszeichen sind eine KLASSE, kein Einzelfall
+
+Vom Peer nachgereicht, von mir selbst nachgemessen — die vollständige
+Kreuztabelle von `_ohne_rede`. **5 von 9 Kombinationen fallen durch:**
+
+```
+                 schliessend
+  oeffnend     “        ”        "
+  --------------------------------------------
+  „ deutsch    ja       ja       NEIN
+  “ typo      NEIN      ja       NEIN
+  " gerade    NEIN     NEIN      ja
+```
+
+Was hält, sind genau die drei sauberen Konventionen plus `„…”`. **Alles
+Gemischte fällt durch.** Und das Argument dafür, warum das häufiger auftritt
+als die Guillemets, gilt für alle fünf: es ist kein Stil, sondern ein
+Ausrutscher — und ein Modell rutscht öfter aus, als es sich entscheidet. Zwei
+Zeilen sind wahrscheinlicher, als sie aussehen: `“…“` und `“…"` beginnen beide
+mit dem typografischen Öffner, den Modelle gern setzen, wenn sie „schön"
+formatieren wollen, ohne den passenden Schließer zu treffen.
+
+**Nebenbefund, gleiche Wurzel — Zitat im Zitat:**
+
+```
+„Er sagte "ja" dazu“, murmelte sie.        BLEIBT STEHEN
+```
+
+Das Zeichen `"` ist aus der Innenklasse `[^“”"]` ausgeschlossen, also findet
+der deutsche Zweig sein Ende nicht mehr. In Rollenspielprosa nicht selten.
+
+Beide Guillemet-Richtungen (`»…«` und `«…»`) bleiben ebenfalls stehen.
+
+**Die Reparatur ist deshalb NICHT, fünf Muster nachzutragen**, sondern die
+Zeichen zu KLASSIFIZIEREN statt zu paaren: ein Öffner aus `[„“"«»]`, ein
+Schließer aus `[“”"«»]`, dazwischen alles außer einem Übermaß. Damit fallen
+die gemischten Paare, die Guillemets und das Zitat im Zitat in einem Griff,
+und die Regel wird kürzer statt länger.
+
+⚠ **Der Preis:** ein unpaariges Zeichen frisst mehr. Deshalb eine
+Obergrenze — lieber konservativ (etwa 400 Zeichen) als gar keine. Ohne sie
+frisst ein einzelnes Anführungszeichen den Rest des Zuges, und der Zug gälte
+als reine Rede, also als `internal`. Das wäre ein Fehler in der GEGENrichtung
+und schlimmer als der jetzige, weil er unsichtbar ist.
+
+**Die Lehre, dreimal an einem Tag in drei Kleidern:** der Nebenläufigkeitstest
+des Peers, mein Fokalisierungs-Detektor und meine eigene Sternchen-Probe —
+jedes Mal meldete eine Prüfung Erfolg, die ihre eigene Bedingung nie
+hergestellt hatte.
