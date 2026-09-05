@@ -16,10 +16,11 @@ from backend.dependencies import (
 )
 from backend.middleware.rate_limit import (
     RATE_LIMIT_AI_CHAT,
+    RATE_LIMIT_AI_GENERATION,
     RATE_LIMIT_EXTERNAL_API,
     limiter,
 )
-from backend.models.auth import ConversationLockRequest
+from backend.models.auth import ConversationLockRequest, SceneImageRequest
 from backend.models.chat import (
     AddAgentRequest,
     ChatMessageResponse,
@@ -37,7 +38,14 @@ from backend.models.chat import (
 from backend.models.common import CurrentUser, SuccessResponse
 from backend.routers.auth import verify_account_password
 from backend.services.audit_service import AuditService
+from backend.services.chat.scene_image_service import (
+    SceneImageRefusedError,
+    SceneImageService,
+    SceneSpan,
+)
 from backend.services.chat_service import ChatService
+from backend.services.forge_draft_service import ForgeDraftService
+from backend.services.image_content_policy import ContentRating, SceneVantage
 from supabase import AsyncClient as Client
 
 logger = logging.getLogger(__name__)
@@ -566,6 +574,62 @@ async def set_conversation_lock(
         details={"locked": body.locked},
     )
     return SuccessResponse(data={"id": str(conversation_id), "locked": body.locked})
+
+
+@router.post("/conversations/{conversation_id}/scene-image")
+@limiter.limit(RATE_LIMIT_AI_GENERATION)
+async def create_scene_image(
+    request: Request,
+    simulation_id: UUID,
+    conversation_id: UUID,
+    body: SceneImageRequest,
+    user: Annotated[CurrentUser, Depends(get_current_user)],
+    _role_check: Annotated[str, Depends(require_role("viewer"))],
+    supabase: Annotated[Client, Depends(get_effective_supabase)],
+) -> SuccessResponse[dict]:
+    """Ein Bild aus dem, was gerade gesagt wurde.
+
+    ``verify_ownership`` zuerst, wie beim Verschluss nebenan: ein Bild aus
+    einem fremden Gespraech waere ein Leck, und `require_role("viewer")`
+    allein deckt das nicht — es prueft die Weltrolle, nicht den Besitz.
+
+    ``RATE_LIMIT_AI_GENERATION`` und nicht ``RATE_LIMIT_AI_CHAT``: das hier
+    kostet einen Modellaufruf UND eine Bilderzeugung, ist aber kein
+    Gespraechszug. 120/Stunde ist die Kappe, die auch die Schmiede faehrt.
+    """
+    await _service.verify_ownership(supabase, conversation_id, user.id)
+    or_key, _ = await ForgeDraftService.get_user_keys(user.id)
+
+    dienst = SceneImageService(supabase, simulation_id)
+    try:
+        nachricht = await dienst.generate(
+            conversation_id=conversation_id,
+            user_id=user.id,
+            span=SceneSpan(body.span),
+            vantage=SceneVantage(body.vantage) if body.vantage else None,
+            rating=ContentRating(body.rating),
+            openrouter_key=or_key,
+        )
+    except SceneImageRefusedError as abgelehnt:
+        # 422 und nicht 400: die Anfrage war wohlgeformt, ihr INHALT geht
+        # nicht. Der Text stammt aus `image_content_policy` und ist fuer den
+        # Nutzer geschrieben — er nennt absichtlich nicht, welches Wort
+        # gegriffen hat.
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(abgelehnt),
+        ) from abgelehnt
+
+    await AuditService.safe_log(
+        supabase,
+        simulation_id,
+        user.id,
+        "chat_messages",
+        conversation_id,
+        "scene_image",
+        details={"span": body.span, "rating": body.rating},
+    )
+    return SuccessResponse(data=nachricht)
 
 
 @router.patch("/conversations/{conversation_id}/continuation")

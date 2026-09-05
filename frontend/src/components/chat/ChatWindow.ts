@@ -712,6 +712,15 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
 
   @state() private _loading = false;
   @state() private _sending = false;
+  /**
+   * Ein Szenenbild ist unterwegs.
+   *
+   * Eigene Marke und nicht `_sending`: das Bild sperrt den Verfasser NICHT.
+   * Wer weiterschreiben will, waehrend das Bild entsteht, soll das koennen —
+   * es dauert Sekunden, und ein Gespraech anzuhalten, um darauf zu warten,
+   * waere die falsche Reihenfolge.
+   */
+  @state() private _picturing = false;
   @state() private _showEventsBar = false;
   @state() private _detailAgent: Agent | null = null;
   @state() private _streamingAgentId = '';
@@ -1039,6 +1048,44 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
     void this.updateComplete.then(() => {
       this.renderRoot.querySelector('velg-chat-composer')?.focus();
     });
+  }
+
+  /**
+   * Ein Bild aus dem Gespraech anfordern und in den Faden legen.
+   *
+   * Kein optimistischer Platzhalter: die Erzeugung kann mit 422 abgelehnt
+   * werden (die Grenze in `image_content_policy`), und ein Bild, das erst
+   * erscheint und dann verschwindet, waere schlechter als eines, das ein paar
+   * Sekunden auf sich warten laesst. Der Knopf zeigt die Wartezeit, der Faden
+   * bleibt unberuehrt, bis es etwas zu zeigen gibt.
+   */
+  private async _handleSceneImage(
+    e: CustomEvent<{ span: 'message' | 'round' | 'section' }>,
+  ): Promise<void> {
+    const conversationId = this.conversation?.id;
+    if (!conversationId || !this.simulationId || this._picturing) return;
+
+    this._picturing = true;
+    try {
+      const response = await chatApi.createSceneImage(this.simulationId, conversationId, {
+        span: e.detail.span,
+      });
+      if (!response.success || !response.data) {
+        // Der Text kommt vom Server und ist fuer den Nutzer geschrieben — bei
+        // 422 nennt er den Grund, bei allem anderen bleibt er allgemein.
+        VelgToast.error(response.error?.message || msg('The image could not be created.'));
+        return;
+      }
+      // Ueber den Speicher, nicht ueber eine eigene Liste: `addMessage`
+      // entdoppelt nach Kennung, und derselbe Faden kann in zwei Fenstern
+      // offen sein.
+      chatStore.addMessage(conversationId, response.data);
+    } catch (err) {
+      captureError(err, { source: 'ChatWindow._handleSceneImage' });
+      VelgToast.error(msg('The image could not be created.'));
+    } finally {
+      this._picturing = false;
+    }
   }
 
   /** Say so when a message went out and nothing came back.
@@ -1918,8 +1965,10 @@ export class VelgChatWindow extends SignalWatcher(LitElement) {
             ? html`
           <velg-chat-composer
             ?disabled=${this._sending || this._loading || session.streaming.value || isArchived}
+            ?picturing=${this._picturing}
             .initialContent=${this._restoredDraft}
             @send-message=${this._handleSendMessage}
+            @scene-image-request=${this._handleSceneImage}
             @composer-typing=${this._handleComposerTyping}
             @draft-change=${this._handleDraftChange}
           ></velg-chat-composer>

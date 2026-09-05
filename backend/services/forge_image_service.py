@@ -11,6 +11,7 @@ from backend.services.ai_usage_service import AIUsageService
 from backend.services.ai_utils import key_source_for
 from backend.services.external.replicate import ReplicateService
 from backend.services.generation_service import GenerationService
+from backend.services.image_content_policy import ContentRating
 from backend.services.model_resolver import ModelResolver
 from backend.services.style_reference_service import StyleReferenceService
 from backend.utils.image import AVIF_QUALITY, AVIF_QUALITY_THUMB, MAX_IMAGE_DIMENSION, convert_to_avif
@@ -512,6 +513,73 @@ class ForgeImageService:
 
         await self._log_image_usage(image_model.model, "lore_image")
         logger.info("Lore image uploaded", extra={"entity_type": "lore", "path": url})
+        return url
+
+    async def generate_scene_image(
+        self,
+        *,
+        description: str,
+        references: list[str],
+        rating: ContentRating,
+        conversation_id: UUID,
+    ) -> str:
+        """Ein Szenenbild aus dem Gespraech, mit den Gesichtern der Welt.
+
+        DER UNTERSCHIED ZU ALLEN ANDEREN BILDERN HIER: mehrere Referenzen.
+        `flux-2` nimmt sie als Liste (`input_images`) und ist ausdruecklich
+        dafuer gebaut, dieselbe Figur ueber verschiedene Erzeugungen zu halten
+        — genau das, was eine Szene mit drei Figuren braucht. Die uebrigen
+        Wege in dieser Datei kommen mit einer Referenz aus und weichen deshalb
+        auf ein Gemeinschaftsmodell mit EINEM Bild aus.
+
+        Wie viele durchgehen, entscheidet die Modellfamilie und nicht diese
+        Methode: `ResolvedImageModel.references` kappt auf `max_references`.
+        Bei einem Modell, das nur eines nimmt, ist das die erste Figur der
+        Spanne — schlechter als acht, aber richtig.
+        """
+        description = self._sanitize_prompt(description)
+
+        style_prompt = await self._model_resolver.resolve_style_prompt("scene")
+        if style_prompt:
+            description = f"{description}, {style_prompt}"
+
+        image_model = await self._model_resolver.resolve_image_model("scene", rating=rating)
+        if references:
+            image_model.reference_image_url = references[0]
+            image_model.extra_reference_urls = tuple(references[1:])
+        # Die Toleranz haengt an der Stufe und ist keine Konstante mehr. 5 ist
+        # die offenste, 2 die vorsichtige — welche gilt, hat der Betreiber in
+        # `image_safety_tolerance_*` stehen, nicht dieser Code.
+        image_model.safety_tolerance = 5 if rating is ContentRating.MATURE else 2
+
+        params = image_model.to_replicate_params()
+        raw_bytes = await self._replicate.generate_image(
+            model=image_model.model,
+            prompt=description,
+            prompt_key=image_model.prompt_param_name,
+            **params,
+        )
+
+        # AVIF-Wandlung ist CPU-gebunden (0,1-5 s) und gehoert vom Ereignisband
+        # herunter — dieselbe Begruendung wie bei `generate_lore_image` (P1-6).
+        path = f"chat/{conversation_id}/{uuid4().hex}.avif"
+        full_avif = await asyncio.to_thread(convert_to_avif, raw_bytes, max_dimension=None, quality=AVIF_QUALITY)
+        thumb_avif = await asyncio.to_thread(
+            convert_to_avif, raw_bytes, max_dimension=MAX_IMAGE_DIMENSION, quality=AVIF_QUALITY_THUMB
+        )
+        await self._upload_to_storage("simulation.assets", path.replace(".avif", ".full.avif"), full_avif)
+        url = await self._upload_to_storage("simulation.assets", path, thumb_avif)
+
+        await self._log_image_usage(image_model.model, "scene_image")
+        logger.info(
+            "Scene image uploaded",
+            extra={
+                "conversation_id": str(conversation_id),
+                "references": len(image_model.references),
+                "rating": rating.value,
+                "model": image_model.model,
+            },
+        )
         return url
 
     async def _generate_embassy_description(

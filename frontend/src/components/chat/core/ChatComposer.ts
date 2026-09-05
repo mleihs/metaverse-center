@@ -184,6 +184,37 @@ export class ChatComposer extends LitElement {
      * a muted icon so the amber send button keeps the primacy of the row. It
      * only raises its voice while the microphone is actually open.
      */
+    .composer__scene {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      background: none;
+      border: var(--border-width-thin) solid var(--color-border);
+      color: var(--color-text-muted);
+      cursor: pointer;
+      transition:
+        color var(--transition-fast),
+        border-color var(--transition-fast);
+    }
+
+    .composer__scene:hover:not(:disabled) {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+
+    .composer__scene:focus-visible {
+      outline: none;
+      box-shadow: var(--ring-focus);
+    }
+
+    .composer__scene:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .composer__mic {
       position: relative;
       display: flex;
@@ -459,6 +490,8 @@ export class ChatComposer extends LitElement {
   @property({ type: Number }) charWarn = DEFAULT_CHAR_WARN;
   @property({ type: Boolean }) disabled = false;
   @property({ type: Boolean }) sending = false;
+  /** Ein Szenenbild ist unterwegs. Eigene Marke, weil es den Verfasser nicht sperrt. */
+  @property({ type: Boolean }) picturing = false;
   @property({ type: String }) placeholder = '';
   /** Pre-fill content (e.g. restored draft). */
   @property({ type: String }) initialContent = '';
@@ -570,6 +603,26 @@ export class ChatComposer extends LitElement {
       e.preventDefault();
       this._send();
     }
+  }
+
+  /**
+   * Ein Bild aus der letzten Runde.
+   *
+   * Die Runde ist die Vorgabe und nicht „die letzten drei Nachrichten": die
+   * Zuege einer Runde beschreiben denselben Augenblick aus verschiedener
+   * Sicht, sind also EIN Moment. Wer einen anderen Ausschnitt will, waehlt ihn
+   * an der einzelnen Nachricht — dort steht die Handlung an der Nachricht, wo
+   * sie hingehoert, statt in einem Menue am Verfasser.
+   */
+  private _requestScene(): void {
+    if (this.picturing) return;
+    this.dispatchEvent(
+      new CustomEvent('scene-image-request', {
+        bubbles: true,
+        composed: true,
+        detail: { span: 'round' },
+      }),
+    );
   }
 
   private _send(): void {
@@ -844,6 +897,16 @@ export class ChatComposer extends LitElement {
           `
               : nothing
           }
+          <button
+            type="button"
+            class="composer__scene"
+            ?disabled=${isDisabled || this.picturing}
+            aria-label=${msg('Draw this round')}
+            title=${msg('Draw this round')}
+            @click=${this._requestScene}
+          >
+            ${this.picturing ? html`<div class="composer__spinner"></div>` : icons.image(18)}
+          </button>
           <button
             class=${classMap({
               composer__send: true,

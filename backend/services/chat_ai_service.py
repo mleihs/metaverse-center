@@ -159,6 +159,7 @@ def _user_speaker(locale: str | None) -> str:
     """Die Marke des Menschen in der Sprache der Welt."""
     return _USER_SPEAKER_BY_LOCALE.get((locale or "de").lower(), _USER_SPEAKER_BY_LOCALE["de"])
 
+
 #: Die Marke der SZENE — eine Stimme, die keiner Figur gehört.
 #:
 #: Der Raum, das Wetter, wer eintritt, was sich bewegt. Bis heute war das
@@ -181,6 +182,10 @@ def _user_speaker(locale: str | None) -> str:
 #: Strukturell wie `_USER_SPEAKER` und `_DEPARTED_SPEAKER`: englisch, im
 #: Prompt, nie auf dem Bildschirm.
 _SCENE_SPEAKER = "Scene"
+
+#: Die Rolle eines Bildes im Faden. Kein Sprecher, kein Zug, kein Teilnehmer —
+#: `_load_history` laesst sie aussen vor, `ChatService.get_messages` nicht.
+SCENE_IMAGE_ROLE = "scene_image"
 
 # ── Zeichen je Token, je Sprache ──────────────────────────────────────────
 #
@@ -547,9 +552,7 @@ class ChatAIService:
         return self._append_closing_instruction(messages, closing_instruction)
 
     @staticmethod
-    def _append_closing_instruction(
-        messages: list[dict[str, str]], instruction: str
-    ) -> list[dict[str, str]]:
+    def _append_closing_instruction(messages: list[dict[str, str]], instruction: str) -> list[dict[str, str]]:
         """Die Anweisung, die UNMITTELBAR VOR der Antwort stehen muss.
 
         ⚠ GEMESSEN am 04.09.2026: die Gruppen-Anweisung stand an Position 0 von
@@ -1930,8 +1933,7 @@ class ChatAIService:
                 ungesehen,
             )
         history_messages: list[dict[str, str]] = [
-            self._as_turn(msg, agents=agents, current_agent_id=current_agent_id, locale=locale)
-            for msg in history
+            self._as_turn(msg, agents=agents, current_agent_id=current_agent_id, locale=locale) for msg in history
         ]
         # Auch die FRISCHE Nutzernachricht traegt die Marke. Ohne sie stuende
         # ausgerechnet der Satz, auf den geantwortet werden soll, als
@@ -1939,9 +1941,7 @@ class ChatAIService:
         history_messages.append(
             {
                 "role": "user",
-                "content": (
-                    f"[{_user_speaker(locale)}]: {user_message}" if len(agents) > 1 else user_message
-                ),
+                "content": (f"[{_user_speaker(locale)}]: {user_message}" if len(agents) > 1 else user_message),
             }
         )
 
@@ -2028,8 +2028,8 @@ class ChatAIService:
             teile.append(
                 f"Der Mensch spricht in seiner letzten Zeile {wen} an, nicht dich. "
                 f"Was er {wen} tut oder sagt, geschieht nicht dir — du bist die, die es mitbekommt."
-                if de else
-                f"In their last line the human is addressing {wen}, not you. "
+                if de
+                else f"In their last line the human is addressing {wen}, not you. "
                 f"What they do or say to {wen} does not happen to you — you are the one who notices it."
             )
         elif ich_genannt and andere_genannt:
@@ -2049,15 +2049,15 @@ class ChatAIService:
             teile.append(
                 f"Der Mensch nennt in seiner letzten Zeile dich, {ich}, und ausserdem {wen}. "
                 f"Beide Namen stehen darin; nur was er DIR sagt oder tut, geschieht dir."
-                if de else
-                f"In their last line the human names you, {ich}, and also {wen}. "
+                if de
+                else f"In their last line the human names you, {ich}, and also {wen}. "
                 f"Both names are in it; only what they say or do to YOU happens to you."
             )
         elif ich_genannt:
             teile.append(
                 f"Der Mensch spricht in seiner letzten Zeile dich an, {ich}."
-                if de else
-                f"In their last line the human is addressing you, {ich}."
+                if de
+                else f"In their last line the human is addressing you, {ich}."
             )
 
         if vor_mir:
@@ -2066,8 +2066,8 @@ class ChatAIService:
                 f"In dieser Runde haben vor dir schon {wer} geantwortet. "
                 f"Ihre Zeilen gehoeren ihnen und beschreiben denselben Augenblick aus ihrer Sicht; "
                 f"deine ist eine andere."
-                if de else
-                f"Earlier in this round {wer} already answered. "
+                if de
+                else f"Earlier in this round {wer} already answered. "
                 f"Those lines are theirs and describe the same moment from their vantage point; "
                 f"yours is a different one."
             )
@@ -2214,9 +2214,7 @@ class ChatAIService:
         return {"role": "user", "content": f"[{label}]: {content}"}
 
     @staticmethod
-    def _bound_to_perspective(
-        history: list[dict], joined_at: str | None
-    ) -> tuple[list[dict], int]:
+    def _bound_to_perspective(history: list[dict], joined_at: str | None) -> tuple[list[dict], int]:
         """Der Verlauf, den DIESE Figur miterlebt hat. Gibt (Verlauf, weggelassen).
 
         ⚠ DER STÄRKSTE GEMESSENE BEFUND DIESER ARBEIT, und er stand bis zum
@@ -2255,9 +2253,7 @@ class ChatAIService:
         if not joined_at:
             return history, 0
 
-        letzte_szene = next(
-            (m for m in reversed(history) if m.get("sender_role") == "system"), None
-        )
+        letzte_szene = next((m for m in reversed(history) if m.get("sender_role") == "system"), None)
         erlebt = [m for m in history if str(m.get("created_at") or "") >= joined_at]
         weggelassen = len(history) - len(erlebt)
 
@@ -2633,6 +2629,12 @@ class ChatAIService:
             self._supabase.table("chat_messages")
             .select("content, sender_role, agent_id, created_at, agents(name)")
             .eq("conversation_id", str(conversation_id))
+            # Ein Szenenbild ist kein Zug. Es steht im Faden, weil ein Mensch es
+            # dort sehen will, aber es hat niemand gesagt — es dem Modell als
+            # `user`-Zeile zu geben (und das taete jede Rolle ausser
+            # `assistant`) machte aus einer Abbildung eine Aeusserung, und die
+            # naechste Figur schriebe daran weiter.
+            .neq("sender_role", SCENE_IMAGE_ROLE)
             .order("created_at", desc=True)
             .limit(_max_history_messages(model_id))
             .execute()

@@ -791,12 +791,35 @@ export interface ChatReactionSummary {
   reacted_by_me: boolean;
 }
 
+/**
+ * Ein Bild, das aus einer Spanne des Gespraechs entstanden ist.
+ *
+ * Es liegt unter `metadata.scene_image` und nicht in einer eigenen Spalte:
+ * eine Nachricht bleibt eine Nachricht, und der Faden muss keine zweite
+ * Tabelle zusammenfuehren, um sie anzuzeigen.
+ */
+export interface SceneImageMeta {
+  url: string;
+  span: 'message' | 'round' | 'section';
+  vantage: 'human' | 'agent' | 'wide';
+  rating: 'general' | 'mature';
+  agent_ids: UUID[];
+  references: number;
+  /** Gesetzt, wenn die gewuenschte Stufe nicht gegeben wurde — mit Begruendung. */
+  downgraded?: string | null;
+}
+
 export interface ChatMessage {
   id: UUID;
   conversation_id: UUID;
-  sender_role: 'user' | 'assistant';
+  /**
+   * `scene_image` ist kein Sprecher. Die Rolle steht hier, weil der Faden sie
+   * anzeigt — der Modellverlauf laesst sie aus (`_load_history`), sonst
+   * schriebe die naechste Figur an einer Abbildung weiter.
+   */
+  sender_role: 'user' | 'assistant' | 'system' | 'scene_image';
   content: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> & { scene_image?: SceneImageMeta };
   created_at: string;
   agent_id?: UUID;
   agent?: AgentBrief;

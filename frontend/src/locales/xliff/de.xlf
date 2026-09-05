@@ -32189,6 +32189,42 @@ Shattered worlds. Bleeding borders. The map has no edges. Which world do you ent
   <source>The attempt failed before the password was checked. The lock stays.</source>
   <target>Der Versuch scheiterte, bevor das Passwort geprüft wurde. Der Verschluss bleibt.</target>
 </trans-unit>
+<trans-unit id="s5266f9c57e43979c">
+  <source>The image could not be created.</source>
+  <target>Das Bild konnte nicht erzeugt werden.</target>
+</trans-unit>
+<trans-unit id="s72bebb52abfd2b95">
+  <source>Draw this round</source>
+  <target>Diese Runde malen</target>
+</trans-unit>
+<trans-unit id="s49164309a0aaf45c">
+  <source>from this message</source>
+  <target>aus dieser Nachricht</target>
+</trans-unit>
+<trans-unit id="sbd76512b8a443663">
+  <source>from this round</source>
+  <target>aus dieser Runde</target>
+</trans-unit>
+<trans-unit id="sda5bb4808fdbccab">
+  <source>from this passage</source>
+  <target>aus diesem Abschnitt</target>
+</trans-unit>
+<trans-unit id="s9b3a2e208cc612bf">
+  <source>reader’s view</source>
+  <target>Blick des Lesers</target>
+</trans-unit>
+<trans-unit id="s021f9e8134e0c8b0">
+  <source>a character’s view</source>
+  <target>Blick einer Figur</target>
+</trans-unit>
+<trans-unit id="s1b765ef547254d16">
+  <source>wide shot</source>
+  <target>Totale</target>
+</trans-unit>
+<trans-unit id="s4ccdcb97cca63ae8">
+  <source><x id="0" equiv-text="${scene.references}"/> characters as reference</source>
+  <target><x id="0" equiv-text="${scene.references}"/> Figuren als Vorlage</target>
+</trans-unit>
 </body>
 </file>
 </xliff>

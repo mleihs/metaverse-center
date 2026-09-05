@@ -168,6 +168,21 @@ _FRAME_SCENE = (
     f"{_FORMAT_DESCRIPTORS}"
 )
 
+#: Der Rahmen fuer ein Bild aus einem Gespraech.
+#:
+#: Anders als `_FRAME_SCENE` darf hier eine Figur im Bild stehen — das ist der
+#: Punkt. Was er dennoch verbietet, sind die zwei Dinge, an denen eine Szene
+#: aus Prosa regelmaessig scheitert: gelesener Text (Modelle schreiben die
+#: Dialogzeile ins Bild, wenn man ihnen Dialog gibt) und die Aufzaehlung aller
+#: Anwesenden ohne Komposition.
+_FRAME_SCENE_FROM_CHAT = (
+    "COMPOSITION (platform requirement, overrides anything above): one coherent moment, "
+    "not a list of people. Place the named subjects in relation to each other and to the "
+    "space. No speech bubbles, no captions, no readable text of any kind, no UI elements. "
+    "Describe what a camera would see, never what a character thinks or knows.\n"
+    f"{_FORMAT_DESCRIPTORS}"
+)
+
 _FRAME_BANNER = (
     "COMPOSITION (platform requirement, overrides anything above): a wide 16:9 establishing shot "
     "of the world. Landscape and atmosphere, no character in focus, no readable text, no UI "
@@ -266,7 +281,7 @@ _FRAME_GROUP = (
     "as far as your own action needs it – what they seem to be doing, how they look to "
     "you, what you make of it. What they think, decide, or do NEXT is theirs to write.\n"
     "The others are marked with their names; [User] is the human you are talking to. "
-    "You may report what has already happened indirectly (\"she asked for the file\"), "
+    'You may report what has already happened indirectly ("she asked for the file"), '
     "but you never author their next move.\n"
     "One action per turn. When the scene needs someone else to move, let it wait."
 )
@@ -293,9 +308,7 @@ def _contract(
     if not pflicht <= alle:
         msg = f"{template_type}: Pflichtvariablen nicht deklariert: {sorted(pflicht - alle)}"
         raise ValueError(msg)
-    return PromptContract(
-        template_type=template_type, variables=alle, frame=frame, required=pflicht
-    )
+    return PromptContract(template_type=template_type, variables=alle, frame=frame, required=pflicht)
 
 
 _AGENT_IDENTITY = ("agent_name", "agent_character", "agent_background")
@@ -449,6 +462,20 @@ PROMPT_CONTRACTS: Mapping[str, PromptContract] = {
                 *_WORLD,
             ),
             frame=_FRAME_BUILDING,
+        ),
+        # Aus Prosa wird ein Bild. Der Vertrag ist derselbe Zweischritt wie in
+        # der Schmiede-Recherche: Text hinein, STRUKTUR heraus — nicht der
+        # Rohtext als Prompt. `flux-2` nimmt genau diese Felder als JSON.
+        _contract(
+            "chat_scene_image",
+            (
+                "scene_text",
+                "participants",
+                "vantage_instruction",
+                "world_context",
+                "simulation_name",
+            ),
+            frame=_FRAME_SCENE_FROM_CHAT,
         ),
         _contract(
             "lore_image_description",
@@ -845,9 +872,7 @@ def sanitize_template(text: str, contract: PromptContract | None) -> SanitizeRes
     # verlieren. Ausserdem gibt es keine Stelle im fremden Text, die man
     # aufschneiden koennte, ohne ihn zu redigieren.
     if audit.missing:
-        result = result.rstrip() + "\n\n" + "\n\n".join(
-            "{" + name + "}" for name in sorted(audit.missing)
-        )
+        result = result.rstrip() + "\n\n" + "\n\n".join("{" + name + "}" for name in sorted(audit.missing))
 
     return SanitizeResult(text=result, audit=audit, changed=result != original)
 

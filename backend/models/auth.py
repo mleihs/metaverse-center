@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -40,3 +42,17 @@ class ConversationLockRequest(BaseModel):
 
     locked: bool
     password: str = Field(min_length=1, max_length=256)
+
+
+class SceneImageRequest(BaseModel):
+    """Ein Bild aus dem Gespraech.
+
+    Alle drei Felder sind WUENSCHE, keine Feststellungen. Was wirklich gilt,
+    rechnet der Server aus den Einstellungen des Nutzers — siehe
+    ``image_content_policy``. Ein Klient, der ``rating='mature'`` schickt,
+    erhoeht damit nichts.
+    """
+
+    span: Literal["message", "round", "section"] = "round"
+    vantage: Literal["human", "agent", "wide"] | None = None
+    rating: Literal["general", "mature"] = "general"

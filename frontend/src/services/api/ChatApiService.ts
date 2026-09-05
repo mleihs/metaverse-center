@@ -31,6 +31,37 @@ export class ChatApiService extends BaseApiService {
   }
 
   /**
+   * Ein Bild aus dem, was gerade gesagt wurde.
+   *
+   * `span` waehlt den Ausschnitt: `round` ist die Vorgabe und die richtige
+   * Einheit — die Zuege einer Runde beschreiben DENSELBEN Augenblick aus
+   * verschiedener Sicht, sind also ein Moment und nicht mehrere. Ein
+   * gleitendes Fenster ueber die letzten N Nachrichten schnitte mitten hinein.
+   *
+   * `vantage` und `rating` sind WUENSCHE. Was wirklich gilt, rechnet der
+   * Server aus den Einstellungen des Nutzers; `rating: 'mature'` von hier aus
+   * erhoeht nichts.
+   */
+  createSceneImage(
+    simulationId: string,
+    conversationId: string,
+    options: {
+      span?: 'message' | 'round' | 'section';
+      vantage?: 'human' | 'agent' | 'wide';
+      rating?: 'general' | 'mature';
+    } = {},
+  ): Promise<ApiResponse<ChatMessage>> {
+    return this.post(
+      `/simulations/${simulationId}/chat/conversations/${conversationId}/scene-image`,
+      {
+        span: options.span ?? 'round',
+        vantage: options.vantage,
+        rating: options.rating ?? 'general',
+      },
+    );
+  }
+
+  /**
    * Den Verschluss eines Gespraechs umlegen.
    *
    * Das Passwort geht im SELBEN Aufruf mit: so liegt kein Fenster zwischen

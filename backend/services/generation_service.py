@@ -939,6 +939,43 @@ class GenerationService:
             model_used=result.get("model_used", "unknown"),
         )
 
+    async def generate_chat_scene_image(
+        self,
+        *,
+        scene_text: str,
+        participants: str,
+        vantage_instruction: str,
+        world_context: str,
+        simulation_name: str,
+        locale: str = "en",
+    ) -> str:
+        """Aus einer Spanne des Gespraechs eine BILDBESCHREIBUNG, kein Bild.
+
+        Der Zweischritt, den `chat/scene_image_service` im Kopf begruendet:
+        Prosa hinein, Struktur heraus. Der Rohtext als Bildprompt waere die
+        schwaechste Betriebsart — Dialog im Prompt fuehrt dazu, dass das Modell
+        die Dialogzeile ins Bild schreibt.
+
+        Fassade und nicht `_generate` beim Aufrufer: dieselbe Hausregel wie bei
+        `generate_instagram_caption`, damit Vorlagentyp und Modellzweck an
+        EINER Stelle stehen. `scene` als Zweck, weil eine Bildbeschreibung
+        dieselbe Arbeit ist wie die der Lore-Bilder und nicht die eines
+        Gespraechszugs.
+        """
+        result = await self._generate(
+            template_type="chat_scene_image",
+            model_purpose="scene",
+            variables={
+                "scene_text": scene_text,
+                "participants": participants,
+                "vantage_instruction": vantage_instruction,
+                "world_context": world_context or self._world_context,
+                "simulation_name": simulation_name,
+            },
+            locale=locale,
+        )
+        return str(result.get("content") or "").strip()
+
     async def generate_instagram_caption(
         self,
         *,

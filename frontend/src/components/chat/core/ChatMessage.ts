@@ -15,14 +15,14 @@
  * Consumed by ChatFeed via repeat() directive with stable message IDs.
  */
 
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import type { OptimisticChatMessage } from '../../../services/chat/ChatSessionStore.js';
 import type { Participant } from '../../../services/chat/chat-types.js';
-import type { ChatMessage as ChatMessageData } from '../../../types/index.js';
+import type { ChatMessage as ChatMessageData, SceneImageMeta } from '../../../types/index.js';
 import { moodBand, moodRingColor } from '../../../utils/agent-colors.js';
 import { formatRelativeTimeVerbose } from '../../../utils/date-format.js';
 import { agentAltText } from '../../../utils/text.js';
@@ -36,6 +36,45 @@ import './ReactionBar.js';
 @customElement('velg-chat-message')
 export class ChatMessage extends LitElement {
   static styles = css`
+    /* ---- Szenenbild ---- */
+
+    .scene {
+      margin: var(--space-4) 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+
+    .scene__img {
+      display: block;
+      width: 100%;
+      max-width: 640px;
+      height: auto;
+      border: var(--border-width-thin) solid var(--color-border);
+      box-shadow: var(--shadow-md);
+      background: var(--color-surface-sunken);
+    }
+
+    .scene__caption {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2);
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      text-transform: var(--label-transform);
+      letter-spacing: var(--label-tracking);
+      color: var(--color-text-muted);
+      max-width: 640px;
+    }
+
+    .scene__note {
+      margin: 0;
+      max-width: 640px;
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--color-text-secondary);
+    }
+
     :host {
       display: block;
     }
@@ -342,8 +381,57 @@ export class ChatMessage extends LitElement {
   // Render
   // ---------------------------------------------------------------------------
 
+  /**
+   * Ein Szenenbild ist keine Sprechblase.
+   *
+   * Es bekommt keinen Absender, keinen Avatar und keine Reaktionsleiste — es
+   * hat niemand gesagt. Was es bekommt: den Bildtext als `alt`, damit eine
+   * Vorlesehilfe nicht vor einem leeren Kasten steht, und eine Fusszeile, die
+   * nennt, woraus es entstanden ist. Ohne die waere es ein Bild ohne Herkunft
+   * mitten in einem Gespraech.
+   */
+  private _renderSceneImage(scene: SceneImageMeta) {
+    const spanLabel = {
+      message: msg('from this message'),
+      round: msg('from this round'),
+      section: msg('from this passage'),
+    }[scene.span];
+    const vantageLabel = {
+      human: msg('reader\u2019s view'),
+      agent: msg('a character\u2019s view'),
+      wide: msg('wide shot'),
+    }[scene.vantage];
+
+    return html`
+      <figure class="scene">
+        <img
+          class="scene__img"
+          src=${scene.url}
+          alt=${this.message.content}
+          loading="lazy"
+          decoding="async"
+        />
+        <figcaption class="scene__caption">
+          <span>${spanLabel}</span>
+          <span aria-hidden="true">&middot;</span>
+          <span>${vantageLabel}</span>
+          ${
+            scene.references > 0
+              ? html`<span aria-hidden="true">&middot;</span>
+                  <span>${msg(str`${scene.references} characters as reference`)}</span>`
+              : nothing
+          }
+        </figcaption>
+        ${scene.downgraded ? html`<p class="scene__note" role="note">${scene.downgraded}</p>` : nothing}
+      </figure>
+    `;
+  }
+
   protected render() {
     const m = this.message;
+    const scene = m.metadata?.scene_image;
+    if (scene) return this._renderSceneImage(scene);
+
     const isUser = m.sender_role === 'user';
     const isOptimistic = !!(m as OptimisticChatMessage)._optimistic;
     const showSender = !this.grouped;
