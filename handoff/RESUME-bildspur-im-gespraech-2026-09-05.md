@@ -26,7 +26,7 @@ Blattgold, Suse Sonnenblum, Doktor Freundlich.
 ## 1. DER BEFUND, aus dem alles Offene folgt
 
 Der Betreiber hat ein Szenenbild in einem Faden mit 586 Nachrichten erzeugt.
-Ergebnis: **das Bild passte nicht zur Szene, die Erwachsenendarstellung fehlte.**
+Ergebnis: **das Bild passte nicht zur Szene, die Erwachsenenstufe griff nicht.**
 An der erzeugten Zeile auf Prod nachgemessen:
 
 ```
@@ -38,13 +38,15 @@ model       black-forest-labs/flux-2-pro   safety_tolerance 2
 ```
 
 Auch die Übersetzung ins Bildprompt war richtig — sie hat die Szene wörtlich
-genommen, samt ihres expliziten Teils. Dann ging dieses Prompt an ein Modell,
-das beim Anbieter filtert.
+genommen. Dann ging dieses Prompt an ein Modell, das beim Anbieter filtert.
 
-**Flux hat nicht abgelehnt. Es hat die Szene umgeschrieben.** Gleiche
-Personenzahl, gleiches Bett, aus Fesseln wurden Blutdruckmanschetten, aus dem
-Zimmer eine Pflegestation. Ein plausibles Bild, ein anderer Inhalt, kein Fehler,
-keine Meldung.
+**Flux hat nicht abgelehnt. Es hat die Szene durch eine andere ersetzt.**
+Gleiche Personenzahl, harmloser Kontext, nichts von dem, was bestellt war. Ein
+plausibles Bild, ein anderer Inhalt, kein Fehler, keine Meldung.
+
+(Was in der Szene stand, gehört nicht hierher und steht nirgends im Repo. Für
+den Befund genügt die Form: Prompt korrekt, Modell falsch gewählt, Ausgabe
+still ersetzt.)
 
 Das ist die Fehlerklasse des ganzen Tages, diesmal beim Anbieter: **eine stille
 Ersetzung sieht aus wie ein Erfolg.**
@@ -90,7 +92,11 @@ hat. Die Totale ist nicht gefährlicher als der Leserblick, nur anders.
 
 ## 3. DIE OFFENEN PUNKTE
 
-### P0 — Die zwei Bilder nachholen (angefangen, blockiert gewesen)
+### P0 — ZUERST: die zwei Vergleichsbilder nachholen
+
+> **Das ist der erste Schritt nach einem Kontextverlust.** Ausdrücklicher
+> Auftrag des Betreibers, und alles andere hängt davon ab, ob die Spur wirklich
+> trägt.
 
 Auftrag des Betreibers: dieselbe Runde noch einmal, **mit proteus UND
 juggernaut zum Vergleich**, und die Ergebnisse direkt in den Chat einspielen.
